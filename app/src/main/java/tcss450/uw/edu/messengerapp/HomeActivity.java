@@ -1,5 +1,7 @@
 package tcss450.uw.edu.messengerapp;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -124,6 +126,16 @@ public class HomeActivity extends AppCompatActivity
 
         if (id == R.id.nav_home) {
             loadFragment(new HomeFragment());
+        }
+
+        if (id == R.id.nav_logout) {
+            SharedPreferences prefs = getSharedPreferences(getString(R.string.keys_shared_prefs),
+                    Context.MODE_PRIVATE);
+            prefs.edit().remove(getString(R.string.keys_prefs_username));
+
+            prefs.edit().putBoolean(getString(R.string.keys_prefs_stay_logged_in), false).apply();
+
+            finishAndRemoveTask();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

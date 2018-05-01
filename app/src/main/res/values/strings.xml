@@ -21,11 +21,12 @@
 
     <string name="login_text">Login to Messenger</string>
     <string name="login_button">Login</string>
-    <string name="register_button">Register</string>
-    <string name="email_login_screen">Email</string>
-    <string name="password_login_screen">Password</string>
+    <string name="login_register_button">Register</string>
+    <string name="login_email_hint">Email</string>
+    <string name="login_password_hint">Password</string>
+    <string name="login_checkbox_text">Stay Logged In</string>
 
-    <string name="submit_registration_button">Submit</string>
+    <string name="registration_submit_button">Submit</string>
     <string name="register_text_view">Register For An Account</string>
     <string name="register_fname_hint">First Name</string>
     <string name="register_lname_hint">Last Name</string>

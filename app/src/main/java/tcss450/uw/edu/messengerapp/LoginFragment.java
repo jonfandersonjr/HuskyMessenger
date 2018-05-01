@@ -4,11 +4,14 @@ package tcss450.uw.edu.messengerapp;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.text.Editable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+
+import instructor.tcss450.uw.edu.messengerapp.model.Credentials;
 
 
 /**
@@ -128,13 +131,29 @@ public class LoginFragment extends Fragment {
         return okay;
     }
 
+    public Editable getPassword() {
+        EditText password = getView().findViewById(R.id.passwordEditText);
+        Editable passwordString = password.getEditableText();
+        return passwordString;
+    }
+
+    public String getUsername() {
+        EditText username = getView().findViewById(R.id.usernameEditText);
+        String usernameString = username.getText().toString();
+        return usernameString;
+    }
+
     public void onLoginButtonClicked(View view) {
         boolean isNotEmail = usernameIsNotEmail();
         boolean userIsEmpty = usernameIsEmpty();
         boolean passIsEmpty = passwordIsEmpty();
+        String username = getUsername();
+        Editable password = getPassword();
 
         if (!(userIsEmpty || passIsEmpty || isNotEmail)) {
-            myListener.onLoginButtonInteraction();
+            instructor.tcss450.uw.edu.messengerapp.model.Credentials credentials =
+                    new Credentials.Builder(username, password).build();
+            myListener.onLoginButtonInteraction(credentials);
         }
     }
 
@@ -155,7 +174,7 @@ public class LoginFragment extends Fragment {
 
     public interface OnLoginFragmentInteractionListener {
         void onRegisterButtonInteraction();
-        void onLoginButtonInteraction();
+        void onLoginButtonInteraction(instructor.tcss450.uw.edu.messengerapp.model.Credentials credentials);
     }
 
 }
