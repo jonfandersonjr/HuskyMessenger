@@ -3,9 +3,14 @@ package tcss450.uw.edu.messengerapp;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.CheckBox;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class LoginActivity extends AppCompatActivity
         implements LoginFragment.OnLoginFragmentInteractionListener,
@@ -63,8 +68,9 @@ public class LoginActivity extends AppCompatActivity
     public void onRegisterButtonInteraction() {
         getSupportFragmentManager().beginTransaction()
                 .setCustomAnimations(R.anim.pop_enter, R.anim.pop_exit, R.anim.enter, R.anim.exit)
-                .replace(R.id.loginFragmentContainer, new RegisterFragment())
+                .replace(R.id.loginFragmentContainer, new RegisterFragment(), getString(R.string.keys_fragment_register))
                 .addToBackStack(null).commit();
+        getSupportFragmentManager().executePendingTransactions();
     }
 
     @Override
@@ -77,9 +83,56 @@ public class LoginActivity extends AppCompatActivity
     }
 
     @Override
-    public void onSubmitButtonInteraction() {
-        Intent intent = new Intent(this, HomeActivity.class);
+    public void onSubmitButtonInteraction(instructor.tcss450.uw.edu.messengerapp.model.Credentials credentials) {
+        //build the web service URL
+        Uri uri = new Uri.Builder()
+                .scheme("https")
+                .appendPath(getString(R.string.ep_base_url))
+                .appendPath(getString(R.string.ep_register))
+                .build();
+
+        //build the JSONObject
+        JSONObject msg = credentials.asJSONObject();
+
+        mCredentials = credentials;
+
+        new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
+                .onPreExecute(this::handleRegisterOnPre)
+                .onPostExecute(this::handleRegisterOnPost)
+                .onCancelled(this::handleErrorsInTask)
+                .build().execute();
+
+
+//        Intent intent = new Intent(this, HomeActivity.class);
 //        intent.setFlags(intent.getFlags() | Intent.FLAG_ACTIVITY_NO_HISTORY);
-        startActivity(intent);
+//        startActivity(intent);
+    }
+
+    private void handleErrorsInTask(String result) {
+        Log.e("ASYNC_TASK_ERROR", result);
+    }
+
+    private void handleRegisterOnPre() {
+        RegisterFragment frag = (RegisterFragment) getSupportFragmentManager()
+                .findFragmentByTag(getString(R.string.keys_fragment_register));
+        frag.handleOnPre();
+    }
+
+    private void handleRegisterOnPost(String result) {
+        try {
+            JSONObject resultsJSON = new JSONObject(result);
+            boolean success = resultsJSON.getBoolean("success");
+
+            if (success) {
+                skipLogin();
+            } else {
+                RegisterFragment frag = (RegisterFragment) getSupportFragmentManager()
+                        .findFragmentByTag(getString(R.string.keys_fragment_register));
+                frag.setError("Register was unsuccessful");
+                frag.handleOnError();
+            }
+        } catch (JSONException e) {
+            Log.e("JSON_PARSE_ERROR", result + System.lineSeparator() + e.getMessage());
+        }
     }
 }

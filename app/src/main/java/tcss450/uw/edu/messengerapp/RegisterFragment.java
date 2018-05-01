@@ -4,11 +4,17 @@ package tcss450.uw.edu.messengerapp;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.text.Editable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import instructor.tcss450.uw.edu.messengerapp.model.Credentials;
 
 
 /**
@@ -94,7 +100,20 @@ public class RegisterFragment extends Fragment {
         boolean meetsConstraints = passMeetsConstraints();
 
         if (!fieldIsEmpty && passwordsMatch && isEmail && meetsConstraints) {
-            myListener.onSubmitButtonInteraction();
+            String fname = getFname();
+            String lname = getLname();
+            String nickname = getNickname();
+            String email = getEmail();
+            Editable pass = getPassword();
+
+            instructor.tcss450.uw.edu.messengerapp.model.Credentials credentials =
+                    new Credentials.Builder(nickname, pass)
+                            .addFirstName(fname)
+                            .addLastName(lname)
+                            .addEmail(email)
+                            .build();
+
+            myListener.onSubmitButtonInteraction(credentials);
         }
     }
 
@@ -189,6 +208,42 @@ public class RegisterFragment extends Fragment {
         return meetsConstraints;
     }
 
+    public String getNickname() {
+        EditText nickName = getView().findViewById(R.id.register_nickname);
+        String nickNameString = nickName.getText().toString();
+
+        return nickNameString;
+    }
+
+    public Editable getPassword() {
+        EditText password = getView().findViewById(R.id.register_password);
+        Editable passwordString = password.getEditableText();
+
+        return passwordString;
+
+    }
+
+    public String getFname() {
+        EditText fname = getView().findViewById(R.id.register_fname);
+        String fnameString = fname.getText().toString();
+
+        return fnameString;
+    }
+
+    public String getLname() {
+        EditText lname = getView().findViewById(R.id.register_lname);
+        String lnameString = lname.getText().toString();
+
+        return lnameString;
+    }
+
+    public String getEmail() {
+        EditText email = getView().findViewById(R.id.register_email);
+        String emailString = email.getText().toString();
+
+        return emailString;
+    }
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -200,8 +255,33 @@ public class RegisterFragment extends Fragment {
         }
     }
 
+    public void handleOnPre() {
+        ProgressBar progBar = getView().findViewById(R.id.registerProgressBar);
+        progBar.setVisibility(ProgressBar.VISIBLE);
+
+        Button b = getView().findViewById(R.id.submitButton);
+        b.setEnabled(false);
+    }
+
+    public void handleOnError() {
+        ProgressBar progBar = getView().findViewById(R.id.registerProgressBar);
+        progBar.setVisibility(ProgressBar.GONE);
+
+        Button b = getView().findViewById(R.id.submitButton);
+        b.setEnabled(true);
+    }
+
+    public void setError(String err) {
+        //Register unsuccessful for reason: err. Try again.
+        Toast.makeText(getActivity(), "Register unsuccessful for reason: " + err,
+                Toast.LENGTH_SHORT).show();
+
+        ((TextView) getView().findViewById(R.id.register_fname))
+                .setError("Login Unsuccessful");
+    }
+
     public interface OnRegisterFragmentInteractionListener {
-        void onSubmitButtonInteraction();
+        void onSubmitButtonInteraction(instructor.tcss450.uw.edu.messengerapp.model.Credentials credentials);
     }
 
 }
