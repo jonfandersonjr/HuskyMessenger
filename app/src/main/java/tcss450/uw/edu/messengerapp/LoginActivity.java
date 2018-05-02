@@ -34,7 +34,7 @@ public class LoginActivity extends AppCompatActivity
                         Context.MODE_PRIVATE);
 
                 if (prefs.getBoolean(getString(R.string.keys_prefs_stay_logged_in), false)) {
-                    skipLogin();
+                    loadHomePage();
                 } else {
                     getSupportFragmentManager().beginTransaction()
                             .add(R.id.loginFragmentContainer, new LoginFragment(),
@@ -58,7 +58,7 @@ public class LoginActivity extends AppCompatActivity
         }
     }
 
-    private void skipLogin() {
+    private void loadHomePage() {
         Intent intent = new Intent(this, HomeActivity.class);
 //        intent.setFlags(intent.getFlags() | Intent.FLAG_ACTIVITY_NO_HISTORY);
         startActivity(intent);
@@ -75,11 +75,24 @@ public class LoginActivity extends AppCompatActivity
 
     @Override
     public void onLoginButtonInteraction(instructor.tcss450.uw.edu.messengerapp.model.Credentials credentials) {
+        //build the web service URL
+        Uri uri = new Uri.Builder()
+                .scheme("https")
+                .appendPath(getString(R.string.ep_base_url))
+                .appendPath(getString(R.string.ep_login))
+                .build();
+
+        //build the JSONObject
+        JSONObject msg = credentials.asJSONObject();
+
         mCredentials = credentials;
-        checkStayLoggedIn();
-        Intent intent = new Intent(this, HomeActivity.class);
-//        intent.setFlags(intent.getFlags() | Intent.FLAG_ACTIVITY_NO_HISTORY);
-        startActivity(intent);
+
+        //instantiate and execute the AsyncTask
+        new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
+                .onPreExecute(this::handleLoginOnPre)
+                .onPostExecute(this::handleLoginOnPost)
+                .onCancelled(this::handleErrorsInTask)
+                .build().execute();
     }
 
     @Override
@@ -118,13 +131,19 @@ public class LoginActivity extends AppCompatActivity
         frag.handleOnPre();
     }
 
+    private void handleLoginOnPre() {
+        LoginFragment frag = (LoginFragment) getSupportFragmentManager()
+                .findFragmentByTag(getString(R.string.keys_fragment_login));
+        frag.handleOnPre();
+    }
+
     private void handleRegisterOnPost(String result) {
         try {
             JSONObject resultsJSON = new JSONObject(result);
             boolean success = resultsJSON.getBoolean("success");
 
             if (success) {
-                skipLogin();
+                loadHomePage();
             } else {
                 RegisterFragment frag = (RegisterFragment) getSupportFragmentManager()
                         .findFragmentByTag(getString(R.string.keys_fragment_register));
@@ -132,6 +151,29 @@ public class LoginActivity extends AppCompatActivity
                 frag.handleOnError();
             }
         } catch (JSONException e) {
+            Log.e("JSON_PARSE_ERROR", result + System.lineSeparator() + e.getMessage());
+        }
+    }
+
+    private void handleLoginOnPost(String result) {
+        try {
+            JSONObject resultsJSON = new JSONObject(result);
+            boolean success = resultsJSON.getBoolean("success");
+
+            if (success) {
+                checkStayLoggedIn();
+                //Login was successful. Switch to the loadDisplayFragment
+                loadHomePage();
+            } else {
+                //Login was unsuccessful. Don't switch fragments and inform user
+                LoginFragment frag = (LoginFragment) getSupportFragmentManager()
+                        .findFragmentByTag(getString(R.string.keys_fragment_login));
+                frag.setError("Log in unsuccessful");
+                frag.handleOnError();
+            }
+        } catch (JSONException e) {
+            //It appears that the web service didn't return a JSON formatted string
+            //or it didn't have what we expected in it
             Log.e("JSON_PARSE_ERROR", result + System.lineSeparator() + e.getMessage());
         }
     }

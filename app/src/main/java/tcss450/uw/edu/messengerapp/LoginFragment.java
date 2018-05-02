@@ -10,6 +10,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import instructor.tcss450.uw.edu.messengerapp.model.Credentials;
 
@@ -155,6 +158,30 @@ public class LoginFragment extends Fragment {
                     new Credentials.Builder(username, password).build();
             myListener.onLoginButtonInteraction(credentials);
         }
+    }
+    public void handleOnPre() {
+        Button b = getView().findViewById(R.id.loginButton);
+        b.setEnabled(false);
+
+        ProgressBar progBar = getView().findViewById(R.id.loginProgressBar);
+        progBar.setVisibility(ProgressBar.VISIBLE);
+    }
+
+    public void handleOnError() {
+        ProgressBar progBar = getView().findViewById(R.id.loginProgressBar);
+        progBar.setVisibility(ProgressBar.GONE);
+
+        Button b = getView().findViewById(R.id.loginButton);
+        b.setEnabled(true);
+    }
+
+    public void setError(String err) {
+        //Log in unsuccessful for reason: err. Try again.
+        Toast.makeText(getActivity(), "Log in unsuccessful for reason: " + err,
+                Toast.LENGTH_SHORT).show();
+
+        ((TextView) getView().findViewById(R.id.usernameEditText))
+                .setError("Login Unsuccessful");
     }
 
     public void onRegisterButtonClicked(View view) {
