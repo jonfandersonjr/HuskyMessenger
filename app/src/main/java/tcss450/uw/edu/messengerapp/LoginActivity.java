@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.CheckBox;
+import android.widget.EditText;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -15,6 +16,10 @@ import org.json.JSONObject;
 public class LoginActivity extends AppCompatActivity
         implements LoginFragment.OnLoginFragmentInteractionListener,
         RegisterFragment.OnRegisterFragmentInteractionListener {
+
+    public String mUsername = "";
+
+    public final static String EXTRA_MESSAGE = "edu.messengerapp.MESSAGE";
 
     private instructor.tcss450.uw.edu.messengerapp.model.Credentials mCredentials;
 
@@ -61,6 +66,7 @@ public class LoginActivity extends AppCompatActivity
     private void loadHomePage() {
         Intent intent = new Intent(this, HomeActivity.class);
 //        intent.setFlags(intent.getFlags() | Intent.FLAG_ACTIVITY_NO_HISTORY);
+        intent.putExtra(EXTRA_MESSAGE, mUsername);
         startActivity(intent);
     }
 
@@ -86,6 +92,8 @@ public class LoginActivity extends AppCompatActivity
         JSONObject msg = credentials.asJSONObject();
 
         mCredentials = credentials;
+
+        mUsername = mCredentials.getUsername();
 
         //instantiate and execute the AsyncTask
         new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
