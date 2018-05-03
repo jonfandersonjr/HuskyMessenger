@@ -8,18 +8,16 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.CheckBox;
-import android.widget.EditText;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask;
+
 public class LoginActivity extends AppCompatActivity
         implements LoginFragment.OnLoginFragmentInteractionListener,
-        RegisterFragment.OnRegisterFragmentInteractionListener {
-
-    public String mUsername = "";
-
-    public final static String EXTRA_MESSAGE = "edu.messengerapp.MESSAGE";
+        RegisterFragment.OnRegisterFragmentInteractionListener,
+        VerifyFragment.OnVerifyFragmentInteractionListener {
 
     private instructor.tcss450.uw.edu.messengerapp.model.Credentials mCredentials;
 
@@ -66,8 +64,20 @@ public class LoginActivity extends AppCompatActivity
     private void loadHomePage() {
         Intent intent = new Intent(this, HomeActivity.class);
 //        intent.setFlags(intent.getFlags() | Intent.FLAG_ACTIVITY_NO_HISTORY);
-        intent.putExtra(EXTRA_MESSAGE, mUsername);
         startActivity(intent);
+    }
+
+    private void loadVerifyFragment(String email) {
+        //give email string to verify fragment
+        Bundle bundle = new Bundle();
+        bundle.putString("args", email);
+        VerifyFragment frag = new VerifyFragment();
+        frag.setArguments(bundle);
+
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.loginFragmentContainer, frag, getString(R.string.keys_fragment_verify))
+                .addToBackStack(null).commit();
+        getSupportFragmentManager().executePendingTransactions();
     }
 
     @Override
@@ -92,8 +102,6 @@ public class LoginActivity extends AppCompatActivity
         JSONObject msg = credentials.asJSONObject();
 
         mCredentials = credentials;
-
-        mUsername = mCredentials.getUsername();
 
         //instantiate and execute the AsyncTask
         new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
@@ -122,15 +130,39 @@ public class LoginActivity extends AppCompatActivity
                 .onPostExecute(this::handleRegisterOnPost)
                 .onCancelled(this::handleErrorsInTask)
                 .build().execute();
+    }
 
+    @Override
+    public void onVerifyButtonInteraction(String email, String code) {
+        Uri uri = new Uri.Builder()
+                .scheme("https")
+                .appendPath(getString(R.string.ep_base_url))
+                .appendPath(getString(R.string.ep_verify))
+                .build();
 
-//        Intent intent = new Intent(this, HomeActivity.class);
-//        intent.setFlags(intent.getFlags() | Intent.FLAG_ACTIVITY_NO_HISTORY);
-//        startActivity(intent);
+        JSONObject msg = new JSONObject();
+        try {
+            msg.put("email", email);
+            msg.put("code", code);
+        } catch (JSONException e) {
+            Log.wtf("Verify", "Error reading JSON" + e.getMessage());
+        }
+
+        new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
+                .onPreExecute(this::handleVerifyOnPre)
+                .onPostExecute(this::handleVerifyOnPost)
+                .onCancelled(this::handleErrorsInTask)
+                .build().execute();
     }
 
     private void handleErrorsInTask(String result) {
         Log.e("ASYNC_TASK_ERROR", result);
+    }
+
+    private void handleVerifyOnPre() {
+        VerifyFragment frag = (VerifyFragment) getSupportFragmentManager()
+                .findFragmentByTag(getString(R.string.keys_fragment_verify));
+        frag.handleOnPre();
     }
 
     private void handleRegisterOnPre() {
@@ -145,13 +177,32 @@ public class LoginActivity extends AppCompatActivity
         frag.handleOnPre();
     }
 
-    private void handleRegisterOnPost(String result) {
+    private void handleVerifyOnPost(String result) {
         try {
             JSONObject resultsJSON = new JSONObject(result);
             boolean success = resultsJSON.getBoolean("success");
 
             if (success) {
                 loadHomePage();
+            } else {
+                VerifyFragment frag = (VerifyFragment) getSupportFragmentManager()
+                        .findFragmentByTag(getString(R.string.keys_fragment_verify));
+                frag.setError("Credentials are not matching");
+                frag.handleOnError();
+            }
+        } catch (JSONException e) {
+            Log.e("JSON_PARSE_ERROR", result + System.lineSeparator() + e.getMessage());
+        }
+    }
+
+    private void handleRegisterOnPost(String result) {
+        try {
+            JSONObject resultsJSON = new JSONObject(result);
+            boolean success = resultsJSON.getBoolean("success");
+            String email = resultsJSON.getString("userEmail");
+
+            if (success) {
+                loadVerifyFragment(email);
             } else {
                 RegisterFragment frag = (RegisterFragment) getSupportFragmentManager()
                         .findFragmentByTag(getString(R.string.keys_fragment_register));
@@ -167,11 +218,16 @@ public class LoginActivity extends AppCompatActivity
         try {
             JSONObject resultsJSON = new JSONObject(result);
             boolean success = resultsJSON.getBoolean("success");
+            boolean verification = resultsJSON.getBoolean("verification");
+            String email = resultsJSON.getString("userEmail");
 
-            if (success) {
+            if (success && verification) {
+                //CHECK VERIFICATION FROM JSON
                 checkStayLoggedIn();
                 //Login was successful. Switch to the loadDisplayFragment
                 loadHomePage();
+            } else if (success & !(verification)){
+                loadVerifyFragment(email);
             } else {
                 //Login was unsuccessful. Don't switch fragments and inform user
                 LoginFragment frag = (LoginFragment) getSupportFragmentManager()

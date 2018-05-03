@@ -1,13 +1,11 @@
 package tcss450.uw.edu.messengerapp;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -18,8 +16,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.SearchView;
-import android.widget.TextView;
 
 public class HomeActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -37,16 +33,6 @@ public class HomeActivity extends AppCompatActivity
             }
         }
 
-        //SearchView searchView = findViewById(R.id.searchView);
-        //searchView.setQueryHint("Type something...");
-
-        //Code below does not work. Should be getting username from database to dispay on home fragment.
-        /*
-        Intent intent = getIntent();
-        String message = intent.getStringExtra(LoginActivity.EXTRA_MESSAGE);
-        TextView tv = findViewById(R.id.homeWelcome);
-        tv.setText(message);
-        */
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -54,7 +40,7 @@ public class HomeActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Navigate to new chat menu", Snackbar.LENGTH_LONG)
+                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
             }
         });
@@ -116,48 +102,40 @@ public class HomeActivity extends AppCompatActivity
         transaction.commit();
     }
 
-    /**
-     * Where we handle the user clicking anything on the home page
-     * @param drawerItem that was clicked
-     * @return
-     */
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
-    public boolean onNavigationItemSelected(MenuItem drawerItem) {
+    public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
-        int id = drawerItem.getItemId();
+        int id = item.getItemId();
 
-        switch (id) {
-            case R.id.nav_connections:
-                loadFragment(new ConnectionsFragment());
-                break;
-            case R.id.nav_chat:
-                loadFragment(new ChatFragment());
-                break;
-            case R.id.nav_chatmanager:
-                loadFragment(new ChatManagerFragment());
-                break;
-            case R.id.nav_weather:
-                loadFragment(new WeatherFragment());
-                break;
-            case R.id.nav_home:
-                loadFragment(new HomeFragment());
-                //TO-DO
-                //Welcome the user with name from database
-                break;
-            case R.id.nav_logout:
-                SharedPreferences prefs = getSharedPreferences(getString(R.string.keys_shared_prefs),
-                        Context.MODE_PRIVATE);
-                prefs.edit().remove(getString(R.string.keys_prefs_username));
+        if (id == R.id.nav_connections) {
+            loadFragment(new ConnectionsFragment());
+        }
 
-                prefs.edit().putBoolean(getString(R.string.keys_prefs_stay_logged_in), false).apply();
+        if (id == R.id.nav_chat) {
+            loadFragment(new ChatFragment());
+        }
 
-                finishAndRemoveTask();
-                break;
-            default:
-                Log.wtf("ERROR", "Something wrong in drawer buttons");
-                break;
+        if (id == R.id.nav_chatmanager) {
+            loadFragment(new ChatManagerFragment());
+        }
 
+        if (id == R.id.nav_weather) {
+            loadFragment(new WeatherFragment());
+        }
+
+        if (id == R.id.nav_home) {
+            loadFragment(new HomeFragment());
+        }
+
+        if (id == R.id.nav_logout) {
+            SharedPreferences prefs = getSharedPreferences(getString(R.string.keys_shared_prefs),
+                    Context.MODE_PRIVATE);
+            prefs.edit().remove(getString(R.string.keys_prefs_username));
+
+            prefs.edit().putBoolean(getString(R.string.keys_prefs_stay_logged_in), false).apply();
+
+            finishAndRemoveTask();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

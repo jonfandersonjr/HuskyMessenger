@@ -251,7 +251,7 @@ public class RegisterFragment extends Fragment {
             myListener = (OnRegisterFragmentInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnLoginFragmentInteractionListener");
+                    + " must implement OnRegisterFragmentInteractionListener");
         }
     }
 
