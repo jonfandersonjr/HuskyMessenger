@@ -146,6 +146,7 @@ public class LoginActivity extends AppCompatActivity
     }
 
     private void handleRegisterOnPost(String result) {
+        Log.wtf("LOGIN ACTIVITY", "In handle on register, string is: " + result);
         try {
             JSONObject resultsJSON = new JSONObject(result);
             boolean success = resultsJSON.getBoolean("success");
@@ -155,7 +156,10 @@ public class LoginActivity extends AppCompatActivity
             } else {
                 RegisterFragment frag = (RegisterFragment) getSupportFragmentManager()
                         .findFragmentByTag(getString(R.string.keys_fragment_register));
-                frag.setError("Register was unsuccessful");
+                String failReason = resultsJSON.getJSONObject("error").getString("detail");
+                String str = failReason.split("[\\(\\)]")[1];
+                frag.setError(" " + str + " already exists!");
+
                 frag.handleOnError();
             }
         } catch (JSONException e) {
