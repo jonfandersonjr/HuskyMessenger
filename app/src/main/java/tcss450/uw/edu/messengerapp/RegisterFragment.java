@@ -5,6 +5,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -272,6 +273,7 @@ public class RegisterFragment extends Fragment {
     }
 
     public void setError(String err) {
+        Log.wtf("REGISTER FRAGMENT", "In set error, string is: " + err);
         //Register unsuccessful for reason: err. Try again.
         Toast.makeText(getActivity(), "Register unsuccessful for reason: " + err,
                 Toast.LENGTH_SHORT).show();

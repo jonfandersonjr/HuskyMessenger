@@ -183,6 +183,7 @@ public class LoginActivity extends AppCompatActivity
             boolean success = resultsJSON.getBoolean("success");
 
             if (success) {
+                checkStayLoggedIn();
                 loadHomePage();
             } else {
                 VerifyFragment frag = (VerifyFragment) getSupportFragmentManager()
@@ -206,13 +207,17 @@ public class LoginActivity extends AppCompatActivity
             } else {
                 RegisterFragment frag = (RegisterFragment) getSupportFragmentManager()
                         .findFragmentByTag(getString(R.string.keys_fragment_register));
-                frag.setError("Register was unsuccessful");
+                String failReason = resultsJSON.getJSONObject("error").getString("detail");
+                String str = failReason.split("[\\(\\)]")[1];
+                str = str.substring(0, 1).toUpperCase() + str.substring(1);
+                frag.setError(" " + str + " already exists!");
                 frag.handleOnError();
             }
         } catch (JSONException e) {
             Log.e("JSON_PARSE_ERROR", result + System.lineSeparator() + e.getMessage());
         }
     }
+
 
     private void handleLoginOnPost(String result) {
         try {
