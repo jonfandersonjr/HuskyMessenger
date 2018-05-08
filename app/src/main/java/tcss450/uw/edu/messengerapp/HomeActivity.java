@@ -1,11 +1,13 @@
 package tcss450.uw.edu.messengerapp;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -16,6 +18,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import tcss450.uw.edu.messengerapp.utils.ChatActivity;
 
 public class HomeActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -40,8 +44,7 @@ public class HomeActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                loadFragment(new ChatManagerFragment());
             }
         });
 
@@ -87,9 +90,17 @@ public class HomeActivity extends AppCompatActivity
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch (id) {
+            case (R.id.color1):
+                getWindow().setNavigationBarColor(getResources().getColor(R.color.colorPrimary1));
+                //swap to color 1
+                break;
+            case (R.id.color2):
+                //swap
+                break;
+            case (R.id.color3):
+                //swap
+                break;
         }
 
         return super.onOptionsItemSelected(item);
@@ -97,9 +108,14 @@ public class HomeActivity extends AppCompatActivity
 
     private void loadFragment(Fragment frag) {
         android.support.v4.app.FragmentTransaction transaction = getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.homeFragmentContainer, frag);
+                    .beginTransaction()
+                    .replace(R.id.homeFragmentContainer, frag);
         transaction.commit();
+    }
+
+    public void loadChatActivity() {
+        Intent intent = new Intent(this, ChatActivity.class);
+        startActivity(intent);
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -108,34 +124,33 @@ public class HomeActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_connections) {
-            loadFragment(new ConnectionsFragment());
-        }
-
-        if (id == R.id.nav_chat) {
-            loadFragment(new ChatFragment());
-        }
-
-        if (id == R.id.nav_chatmanager) {
-            loadFragment(new ChatManagerFragment());
-        }
-
-        if (id == R.id.nav_weather) {
-            loadFragment(new WeatherFragment());
-        }
-
-        if (id == R.id.nav_home) {
-            loadFragment(new HomeFragment());
-        }
-
-        if (id == R.id.nav_logout) {
-            SharedPreferences prefs = getSharedPreferences(getString(R.string.keys_shared_prefs),
-                    Context.MODE_PRIVATE);
-            prefs.edit().remove(getString(R.string.keys_prefs_username));
-
-            prefs.edit().putBoolean(getString(R.string.keys_prefs_stay_logged_in), false).apply();
-
-            finishAndRemoveTask();
+        switch (id) {
+            case R.id.nav_connections:
+                loadFragment(new ConnectionsFragment());
+                break;
+            case R.id.nav_chat:
+                loadChatActivity();
+                //loadFragment(new ChatFragment());
+                break;
+            case R.id.nav_chatmanager:
+                loadFragment(new ChatManagerFragment());
+                break;
+            case R.id.nav_weather:
+                loadFragment(new WeatherFragment());
+                break;
+            case R.id.nav_home:
+                loadFragment(new HomeFragment());
+                break;
+            case R.id.nav_logout:
+                SharedPreferences prefs = getSharedPreferences(getString(R.string.keys_shared_prefs),
+                        Context.MODE_PRIVATE);
+                prefs.edit().remove(getString(R.string.keys_prefs_username));
+                prefs.edit().putBoolean(getString(R.string.keys_prefs_stay_logged_in), false).apply();
+                finishAndRemoveTask();
+                break;
+            default:
+                Log.wtf("ISSUE:", "Problem in home activity item selected");
+                break;
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
