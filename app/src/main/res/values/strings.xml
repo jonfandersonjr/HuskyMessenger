@@ -51,5 +51,8 @@
     <string name="verify_code_hint">Enter Code</string>
     <string name="verify_text_view">Verify Email With Code</string>
     <string name="verify_button">Verify</string>
+    <string name="verify_dowhat_button">Do What?</string>
+    <string name="verify_dowhat_text">We sent you a verification code to the email that you provided.
+        Please enter that code in the box above.</string>
 
 </resources>
