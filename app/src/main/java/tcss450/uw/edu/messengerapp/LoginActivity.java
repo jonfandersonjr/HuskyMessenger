@@ -49,13 +49,14 @@ public class LoginActivity extends AppCompatActivity
     }
 
     private void checkStayLoggedIn() {
+        SharedPreferences prefs =
+                getSharedPreferences(getString(R.string.keys_shared_prefs),
+                        Context.MODE_PRIVATE);
+        //save the username for later usage
+        prefs.edit().putString(getString(R.string.keys_prefs_username),
+                mCredentials.getUsername()).apply();
+
         if (((CheckBox) findViewById(R.id.logCheckBox)).isChecked()) {
-            SharedPreferences prefs =
-                    getSharedPreferences(getString(R.string.keys_shared_prefs),
-                            Context.MODE_PRIVATE);
-            //save the username for later usage
-            prefs.edit().putString(getString(R.string.keys_prefs_username),
-                    mCredentials.getUsername()).apply();
             //save the users "want" to stay logged in
             prefs.edit().putBoolean(getString(R.string.keys_prefs_stay_logged_in), true).apply();
         }
