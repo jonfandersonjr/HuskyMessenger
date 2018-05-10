@@ -20,7 +20,12 @@
     <string name="keys_json_messages">messages</string>
     <string name="keys_json_success">success</string>
     <string name="keys_json_chat_id">chatId</string>
+    <string name="keys_json_request_memberid">memberid_a</string>
+    <string name="keys_json_requests">requests</string>
     <string name="keys_json_success_value_true">true</string>
     <string name="keys_json_success_value_false">false</string>
+
+    <string name="keys_json_requests_firstname">firstname</string>
+    <string name="keys_json_requests_lastname">lastname</string>
 
 </resources>

@@ -147,13 +147,12 @@ public class LoginFragment extends Fragment {
     }
 
     public void onLoginButtonClicked(View view) {
-        boolean isNotEmail = usernameIsNotEmail();
         boolean userIsEmpty = usernameIsEmpty();
         boolean passIsEmpty = passwordIsEmpty();
         String username = getUsername();
         Editable password = getPassword();
 
-        if (!(userIsEmpty || passIsEmpty || isNotEmail)) {
+        if (!(userIsEmpty || passIsEmpty)) {
             instructor.tcss450.uw.edu.messengerapp.model.Credentials credentials =
                     new Credentials.Builder(username, password).build();
             myListener.onLoginButtonInteraction(credentials);

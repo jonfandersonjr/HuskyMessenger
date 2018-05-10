@@ -49,13 +49,14 @@ public class LoginActivity extends AppCompatActivity
     }
 
     private void checkStayLoggedIn() {
+        SharedPreferences prefs =
+                getSharedPreferences(getString(R.string.keys_shared_prefs),
+                        Context.MODE_PRIVATE);
+        //save the username for later usage
+        prefs.edit().putString(getString(R.string.keys_prefs_username),
+                mCredentials.getUsername()).apply();
+
         if (((CheckBox) findViewById(R.id.logCheckBox)).isChecked()) {
-            SharedPreferences prefs =
-                    getSharedPreferences(getString(R.string.keys_shared_prefs),
-                            Context.MODE_PRIVATE);
-            //save the username for later usage
-            prefs.edit().putString(getString(R.string.keys_prefs_username),
-                    mCredentials.getUsername()).apply();
             //save the users "want" to stay logged in
             prefs.edit().putBoolean(getString(R.string.keys_prefs_stay_logged_in), true).apply();
         }
@@ -183,7 +184,7 @@ public class LoginActivity extends AppCompatActivity
             boolean success = resultsJSON.getBoolean("success");
 
             if (success) {
-                checkStayLoggedIn();
+                //checkStayLoggedIn();
                 loadHomePage();
             } else {
                 VerifyFragment frag = (VerifyFragment) getSupportFragmentManager()
@@ -200,9 +201,9 @@ public class LoginActivity extends AppCompatActivity
         try {
             JSONObject resultsJSON = new JSONObject(result);
             boolean success = resultsJSON.getBoolean("success");
-            String email = resultsJSON.getString("userEmail");
 
             if (success) {
+                String email = resultsJSON.getString("userEmail");
                 loadVerifyFragment(email);
             } else {
                 RegisterFragment frag = (RegisterFragment) getSupportFragmentManager()
@@ -224,7 +225,6 @@ public class LoginActivity extends AppCompatActivity
             JSONObject resultsJSON = new JSONObject(result);
             boolean success = resultsJSON.getBoolean("success");
             boolean verification = resultsJSON.getBoolean("verification");
-            String email = resultsJSON.getString("userEmail");
 
             if (success && verification) {
                 //CHECK VERIFICATION FROM JSON
@@ -232,6 +232,7 @@ public class LoginActivity extends AppCompatActivity
                 //Login was successful. Switch to the loadDisplayFragment
                 loadHomePage();
             } else if (success & !(verification)){
+                String email = resultsJSON.getString("userEmail");
                 loadVerifyFragment(email);
             } else {
                 //Login was unsuccessful. Don't switch fragments and inform user

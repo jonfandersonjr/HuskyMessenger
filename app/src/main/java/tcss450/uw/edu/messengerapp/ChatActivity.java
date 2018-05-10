@@ -1,4 +1,4 @@
-package tcss450.uw.edu.messengerapp.utils;
+package tcss450.uw.edu.messengerapp;
 
 import android.content.Context;
 import android.content.SharedPreferences;

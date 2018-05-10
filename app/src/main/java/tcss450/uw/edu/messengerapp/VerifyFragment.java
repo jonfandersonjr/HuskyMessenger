@@ -34,7 +34,6 @@ public class VerifyFragment extends Fragment {
             mEmail = getArguments().getString("args");
         }
 
-        Toast.makeText(getActivity(), "Email: " + mEmail, Toast.LENGTH_SHORT).show();
     }
 
 
@@ -49,6 +48,15 @@ public class VerifyFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 onVerifyButtonClicked(view);
+            }
+        });
+
+        b = (Button) v.findViewById(R.id.doWhatButton);
+        b.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                TextView text = v.findViewById(R.id.verifyDoWhatTextView);
+                text.setVisibility(TextView.VISIBLE);
             }
         });
 
