@@ -7,6 +7,7 @@
     <string name="ep_send_message">sendMessages</string>
     <string name="ep_get_message">getMessages</string>
     <string name="ep_get_requests">getRequests</string>
+    <string name="ep_get_pending_requests">getPendingRequests</string>
     <string name="ep_get_credentials_id">getCredentialsFromId</string>
 
 

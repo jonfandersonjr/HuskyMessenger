@@ -8,12 +8,20 @@ import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,16 +31,23 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import tcss450.uw.edu.messengerapp.model.MyRecyclerViewAdapter;
 import tcss450.uw.edu.messengerapp.utils.ListenManager;
 
 
-public class ConnectionsFragment extends Fragment {
+public class ConnectionsFragment extends Fragment implements AdapterView.OnItemSelectedListener,
+        MyRecyclerViewAdapter.ItemClickListener {
 
-    private TextView mRequestsTextView;
     private String mUsername;
+    private String mSearchBy;
     private ListenManager mListenerManager;
+    private ListenManager mPendingListenManager;
     private ArrayList<String> mRequests;
-
+    private ArrayList<String> mPending;
+    private TextView mVerifiedTextList;
+    private TextView mPendingTextList;
+    private RecyclerView mRequestList;
+    private MyRecyclerViewAdapter mRecyclerAdapter;
     public ConnectionsFragment() {
         // Required empty public constructor
     }
@@ -44,7 +59,15 @@ public class ConnectionsFragment extends Fragment {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_connections, container, false);
 
-        mRequestsTextView = v.findViewById(R.id.requestTextView);
+        Spinner spinner = (Spinner) v.findViewById(R.id.connectionsSearchSpinner);
+        ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(getActivity(),
+                R.array.connections_search_filter,
+                android.R.layout.simple_spinner_item);
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(spinnerAdapter);
+        spinner.setOnItemSelectedListener(this);
+
+        mVerifiedTextList = v.findViewById(R.id.connectionsVerifiedTextList);
 
         return v;
     }
@@ -62,26 +85,40 @@ public class ConnectionsFragment extends Fragment {
 
         mUsername = prefs.getString(getString(R.string.keys_prefs_username), "");
         mRequests = new ArrayList<>();
+        mPending = new ArrayList<>();
 
-        Uri retrieve = new Uri.Builder()
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
+
+        mRequestList = getView().findViewById(R.id.connectionsRequestsRecycler);
+        mRequestList.setLayoutManager(layoutManager);
+
+        mRecyclerAdapter = new MyRecyclerViewAdapter(getActivity(), mRequests);
+        mRecyclerAdapter.setClickListener(this);
+        mRequestList.setAdapter(mRecyclerAdapter);
+
+        DividerItemDecoration dividerItemDecoration =
+                new DividerItemDecoration(mRequestList.getContext(),
+                        layoutManager.getOrientation());
+        mRequestList.addItemDecoration(dividerItemDecoration);
+
+        Uri retrieveRequests = new Uri.Builder()
                 .scheme("https")
                 .appendPath(getString(R.string.ep_base_url))
                 .appendPath(getString(R.string.ep_get_requests))
                 .appendQueryParameter("username", mUsername)
                 .build();
 
-        if (prefs.contains(getString(R.string.keys_prefs_time_stamp))) {
-            mListenerManager = new ListenManager.Builder(retrieve.toString(), this::publishRequests)
-                    .setTimeStamp(prefs.getString(getString(R.string.keys_prefs_time_stamp), "0"))
-                    .setExceptionHandler(this::handleError)
-                    .setDelay(1000)
-                    .build();
-        } else {
-            mListenerManager = new ListenManager.Builder(retrieve.toString(), this::publishRequests)
-                    .setExceptionHandler(this::handleError)
-                    .setDelay(1000)
-                    .build();
-        }
+        Uri retrievePending = new Uri.Builder()
+                .scheme("https")
+                .appendPath(getString(R.string.ep_base_url))
+                .appendPath(getString(R.string.ep_get_pending_requests))
+                .appendQueryParameter("username", mUsername)
+                .build();
+
+        mListenerManager = new ListenManager.Builder(retrieveRequests.toString(), this::publishRequests)
+                .setExceptionHandler(this::handleError)
+                .setDelay(5000)
+                .build();
 
     }
 
@@ -101,72 +138,33 @@ public class ConnectionsFragment extends Fragment {
         prefs.edit().putString(getString(R.string.keys_prefs_time_stamp), latestMessage).apply();
     }
 
+    @Override
+    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+        String choice = (String) adapterView.getAdapter().getItem(i);
+        if (choice.equals("Username")) {
+            mSearchBy = "username";
+        } else if (choice.equals("First Name")) {
+            mSearchBy = "firstname";
+        } else if (choice.equals("Last Name")) {
+            mSearchBy = "lastname";
+        } else {
+            mSearchBy = "email";
+        }
+
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> adapterView) {
+
+    }
+
+    @Override
+    public void onItemClick(View v, int position) {
+
+    }
+
     private void handleError(final Exception e) {
         Log.e("LISTEN ERROR!!!", e.getMessage());
-    }
-
-    private void getUserInfoFromId(int memberId) {
-        Uri uri = new Uri.Builder()
-                .scheme("https")
-                .appendPath(getString(R.string.ep_base_url))
-                .appendPath(getString(R.string.ep_get_credentials_id))
-                .build();
-
-        JSONObject msg = new JSONObject();
-        try {
-            msg.put("memberId", memberId);
-        } catch (JSONException e) {
-            Log.wtf("getUserInfoFromId", "Error reading JSON" + e.getMessage());
-        }
-
-        new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
-                .onPreExecute(this::handleOnPre)
-                .onPostExecute(this::handleOnPost)
-                .onCancelled(this::handleErrorsInTask)
-                .build().execute();
-    }
-
-    private void handleOnPre() {
-        ProgressBar progBar = getView().findViewById(R.id.connectionsProgressBar);
-        progBar.setVisibility(ProgressBar.VISIBLE);
-    }
-
-    private void handleOnPost(String result) {
-        try {
-            JSONObject resultsJSON = new JSONObject(result);
-            boolean success = resultsJSON.getBoolean("success");
-
-            if (success) {
-                String username = resultsJSON.getString(getString(R.string.keys_json_username));
-                String firstName = resultsJSON.getString(getString(R.string.keys_json_firstname));
-                String lastName = resultsJSON.getString(getString(R.string.keys_json_lastname));
-
-                if (!mRequests.contains(username)) {
-                    mRequestsTextView.append(username + " (" + lastName + ", " +
-                            firstName + ") has requested you as a connection!");
-                    mRequestsTextView.append(System.lineSeparator());
-                    mRequestsTextView.append(System.lineSeparator());
-
-                    mRequests.add(username);
-
-                }
-            } else {
-                Toast.makeText(getActivity(), "Something went wrong in handleOnPost",
-                        Toast.LENGTH_LONG).show();
-            }
-        } catch (JSONException e) {
-            Log.e("JSON_PARSE_ERROR", result + System.lineSeparator() + e.getMessage());
-        }
-
-    }
-
-    private void handleOnError() {
-        ProgressBar progBar = getView().findViewById(R.id.loginProgressBar);
-        progBar.setVisibility(ProgressBar.GONE);
-    }
-
-    private void handleErrorsInTask(String result) {
-        Log.e("ASYNC_TASK_ERROR", result);
     }
 
     private void publishRequests(JSONObject requests) {
@@ -186,43 +184,18 @@ public class ConnectionsFragment extends Fragment {
                     String str = username + " (" + lastName + ", " +
                             firstName + ") has requested you as a connection!";
 
-                    //helperAppendMethod(reqs[i], username);
-
-                    if (!mRequests.contains(username)) {
+                    if (!mRequests.contains(str)) {
+                        mRequests.add(str);
                         getActivity().runOnUiThread(() -> {
-                            mRequestsTextView.append(str);
-                            mRequestsTextView.append(System.lineSeparator());
-                            mRequestsTextView.append(System.lineSeparator());
+                            mRecyclerAdapter.notifyDataSetChanged();
                         });
-
-                        mRequests.add(username);
                     }
                 }
+
             } catch (JSONException e) {
                 e.printStackTrace();
                 return;
             }
-//
-//            getActivity().runOnUiThread(() -> {
-//                for (String req : reqs) {
-//
-//                        mRequestsTextView.append(req);
-//                        mRequestsTextView.append(System.lineSeparator());
-//                        mRequestsTextView.append(System.lineSeparator());
-//                }
-//            });
-        }
-    }
-
-    private void helperAppendMethod(String str, String username) {
-
-        if (!mRequests.contains(username)) {
-            mRequestsTextView.append(str);
-            mRequestsTextView.append(System.lineSeparator());
-            mRequestsTextView.append(System.lineSeparator());
-
-            mRequests.add(username);
-
         }
     }
 

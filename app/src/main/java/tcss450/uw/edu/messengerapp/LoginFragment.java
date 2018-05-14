@@ -14,7 +14,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import instructor.tcss450.uw.edu.messengerapp.model.Credentials;
+import tcss450.uw.edu.messengerapp.model.Credentials;
 
 
 /**
@@ -153,7 +153,7 @@ public class LoginFragment extends Fragment {
         Editable password = getPassword();
 
         if (!(userIsEmpty || passIsEmpty)) {
-            instructor.tcss450.uw.edu.messengerapp.model.Credentials credentials =
+            tcss450.uw.edu.messengerapp.model.Credentials credentials =
                     new Credentials.Builder(username, password).build();
             myListener.onLoginButtonInteraction(credentials);
         }
@@ -200,7 +200,7 @@ public class LoginFragment extends Fragment {
 
     public interface OnLoginFragmentInteractionListener {
         void onRegisterButtonInteraction();
-        void onLoginButtonInteraction(instructor.tcss450.uw.edu.messengerapp.model.Credentials credentials);
+        void onLoginButtonInteraction(tcss450.uw.edu.messengerapp.model.Credentials credentials);
     }
 
 }
