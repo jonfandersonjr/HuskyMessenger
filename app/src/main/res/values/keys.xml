@@ -28,4 +28,11 @@
     <string name="keys_json_requests_firstname">firstname</string>
     <string name="keys_json_requests_lastname">lastname</string>
 
+    /**Keys for Notifacations**/
+    <string name="keys_sp_on">true</string>
+    <string name="keys_extra_results">results</string>
+    <string name="keys_is_foreground">FOREGROUND</string>
+
+
+
 </resources>

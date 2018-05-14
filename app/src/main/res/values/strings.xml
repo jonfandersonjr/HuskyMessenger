@@ -67,5 +67,11 @@
     /**Strings for Connections Fragment UI**/
     <string name="connections_request_text_view">Connection Requests</string>
 
+    /**Strings for Weather Fragment UI**/
+    <string name="weather_button_start">Start Service</string>
+    <string name="weather_button_end">End Service</string>
+    <string name="weather_button_result">New Results</string>
+    <string name="weather_button_fetching">Fetching</string>
+
 
 </resources>
