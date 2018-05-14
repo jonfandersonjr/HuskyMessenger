@@ -24,7 +24,7 @@
             android:name=".HomeActivity"
             android:label="@string/title_activity_home"
             android:theme="@style/AppTheme.NoActionBar"
-            android:windowSoftInputMode="stateHidden" />
+            android:windowSoftInputMode="adjustNothing" />
         <activity
             android:name=".ChatActivity"
             android:label="@string/title_activity_chat"

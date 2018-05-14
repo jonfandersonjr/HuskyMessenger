@@ -15,7 +15,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import instructor.tcss450.uw.edu.messengerapp.model.Credentials;
+import tcss450.uw.edu.messengerapp.model.Credentials;
 
 
 /**
@@ -59,14 +59,6 @@ public class RegisterFragment extends Fragment {
         return fragment;
     }
 
-//    @Override
-//    public void onCreate(Bundle savedInstanceState) {
-//        super.onCreate(savedInstanceState);
-//        if (getArguments() != null) {
-//            mParam1 = getArguments().getString(ARG_PARAM1);
-//            mParam2 = getArguments().getString(ARG_PARAM2);
-//        }
-//    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -107,7 +99,7 @@ public class RegisterFragment extends Fragment {
             String email = getEmail();
             Editable pass = getPassword();
 
-            instructor.tcss450.uw.edu.messengerapp.model.Credentials credentials =
+            tcss450.uw.edu.messengerapp.model.Credentials credentials =
                     new Credentials.Builder(nickname, pass)
                             .addFirstName(fname)
                             .addLastName(lname)
@@ -283,7 +275,7 @@ public class RegisterFragment extends Fragment {
     }
 
     public interface OnRegisterFragmentInteractionListener {
-        void onSubmitButtonInteraction(instructor.tcss450.uw.edu.messengerapp.model.Credentials credentials);
+        void onSubmitButtonInteraction(tcss450.uw.edu.messengerapp.model.Credentials credentials);
     }
 
 }

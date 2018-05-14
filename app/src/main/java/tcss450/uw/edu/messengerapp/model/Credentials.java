@@ -1,4 +1,4 @@
-package instructor.tcss450.uw.edu.messengerapp.model;
+package tcss450.uw.edu.messengerapp.model;
 
 import android.text.Editable;
 import android.util.Log;

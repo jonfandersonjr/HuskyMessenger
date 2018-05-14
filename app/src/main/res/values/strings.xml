@@ -66,6 +66,19 @@
 
     /**Strings for Connections Fragment UI**/
     <string name="connections_request_text_view">Connection Requests</string>
+    <string name="connections_pending_request_text_view">Pending Requests</string>
+    <string name="connections_search_hint">Search for someone!</string>
+    <string name="connections_searchBy_text">Search by:</string>
+    <string name="connections_verified_header_text">Connections</string>
+    <string name="connections_verified_generic_text_view">verifiedTextView</string>
+    <string name="connections_requests_resolve_button">Resolve Requests</string>
+
+    <string-array name="connections_search_filter">
+        <item>Username</item>
+        <item>First Name</item>
+        <item>Last Name</item>
+        <item>Email</item>
+    </string-array>
 
 
 </resources>

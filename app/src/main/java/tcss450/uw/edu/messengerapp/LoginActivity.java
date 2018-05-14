@@ -19,7 +19,7 @@ public class LoginActivity extends AppCompatActivity
         RegisterFragment.OnRegisterFragmentInteractionListener,
         VerifyFragment.OnVerifyFragmentInteractionListener {
 
-    private instructor.tcss450.uw.edu.messengerapp.model.Credentials mCredentials;
+    private tcss450.uw.edu.messengerapp.model.Credentials mCredentials;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,7 +91,7 @@ public class LoginActivity extends AppCompatActivity
     }
 
     @Override
-    public void onLoginButtonInteraction(instructor.tcss450.uw.edu.messengerapp.model.Credentials credentials) {
+    public void onLoginButtonInteraction(tcss450.uw.edu.messengerapp.model.Credentials credentials) {
         //build the web service URL
         Uri uri = new Uri.Builder()
                 .scheme("https")
@@ -113,7 +113,7 @@ public class LoginActivity extends AppCompatActivity
     }
 
     @Override
-    public void onSubmitButtonInteraction(instructor.tcss450.uw.edu.messengerapp.model.Credentials credentials) {
+    public void onSubmitButtonInteraction(tcss450.uw.edu.messengerapp.model.Credentials credentials) {
         //build the web service URL
         Uri uri = new Uri.Builder()
                 .scheme("https")
