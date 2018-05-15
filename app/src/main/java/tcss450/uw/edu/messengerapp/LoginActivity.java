@@ -12,8 +12,6 @@ import android.widget.CheckBox;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask;
-
 public class LoginActivity extends AppCompatActivity
         implements LoginFragment.OnLoginFragmentInteractionListener,
         RegisterFragment.OnRegisterFragmentInteractionListener,
