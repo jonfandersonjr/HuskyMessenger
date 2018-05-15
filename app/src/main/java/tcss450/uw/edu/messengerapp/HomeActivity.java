@@ -166,8 +166,8 @@ public class HomeActivity extends AppCompatActivity
             case R.id.nav_chatmanager:
                 loadFragment(new ChatManagerFragment());
                 mChatNotifacations = 0;
-                mNotificationsBar = (TextView) findViewById(R.id.notifacationBar);
-                updateNotificationsUI();
+                //mNotificationsBar = (TextView) findViewById(R.id.notifacationBar);
+                //updateNotificationsUI();
                 break;
             case R.id.nav_weather:
                 loadFragment(new WeatherFragment());
@@ -175,7 +175,7 @@ public class HomeActivity extends AppCompatActivity
             case R.id.nav_home:
                 loadFragment(new HomeFragment());
                 mNotificationsBar = (TextView) findViewById(R.id.notifacationBar);
-                updateNotificationsUI();
+                //updateNotificationsUI();
                 break;
             case R.id.nav_logout:
                 SharedPreferences prefs = getSharedPreferences(getString(R.string.keys_shared_prefs),
