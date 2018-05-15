@@ -5,10 +5,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.MenuItemCompat;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -23,23 +27,24 @@ import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import tcss450.uw.edu.messengerapp.ChatActivity;
 import tcss450.uw.edu.messengerapp.model.PullService;
+import tcss450.uw.edu.messengerapp.utils.BadgeDrawable;
 
 public class HomeActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final String TAG = "HomeActivity";
-
     private DataUpdateReciever mDataUpdateReceiver;
-
-    public int mNumberOfResults = 0;
-
-
+    public int mTotalNotifacations = 0;
+    public int mChatNotifacations = 0;
+    public int mNumConnectionNotifacations = 0;
+    TextView chatNotifications, connectionNotifications, mNotificationsBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,6 +87,10 @@ public class HomeActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        chatNotifications = (TextView) MenuItemCompat.getActionView(navigationView.getMenu().
+                findItem(R.id.nav_chatmanager));
+        connectionNotifications = (TextView) MenuItemCompat.getActionView(navigationView.getMenu().
+                findItem(R.id.nav_connections));
     }
 
     @Override
@@ -98,8 +107,8 @@ public class HomeActivity extends AppCompatActivity
                     .beginTransaction()
                     .replace(R.id.homeFragmentContainer, new HomeFragment());
             transaction.commit();
-
         }
+
     }
 
     @Override
@@ -117,15 +126,15 @@ public class HomeActivity extends AppCompatActivity
         int id = item.getItemId();
 
         switch (id) {
-            case (R.id.color1):
-                getWindow().setNavigationBarColor(getResources().getColor(R.color.colorPrimary1));
-
-                //swap to color 1
+            case (R.id.color_rugged):
                 break;
-            case (R.id.color2):
+            case (R.id.color_modern):
                 //swap
                 break;
-            case (R.id.color3):
+            case (R.id.color_summer):
+                //swap
+                break;
+            case (R.id.color_UW):
                 //swap
                 break;
         }
@@ -154,6 +163,9 @@ public class HomeActivity extends AppCompatActivity
         switch (id) {
             case R.id.nav_connections:
                 loadFragment(new ConnectionsFragment());
+                mNumConnectionNotifacations = 0;
+                mNotificationsBar = (TextView) findViewById(R.id.notifacationBar);
+                updateNotificationsUI();
                 break;
             case R.id.nav_chat:
                 loadChatActivity();
@@ -161,12 +173,17 @@ public class HomeActivity extends AppCompatActivity
                 break;
             case R.id.nav_chatmanager:
                 loadFragment(new ChatManagerFragment());
+                mChatNotifacations = 0;
+                mNotificationsBar = (TextView) findViewById(R.id.notifacationBar);
+                updateNotificationsUI();
                 break;
             case R.id.nav_weather:
                 loadFragment(new WeatherFragment());
                 break;
             case R.id.nav_home:
                 loadFragment(new HomeFragment());
+                mNotificationsBar = (TextView) findViewById(R.id.notifacationBar);
+                updateNotificationsUI();
                 break;
             case R.id.nav_logout:
                 SharedPreferences prefs = getSharedPreferences(getString(R.string.keys_shared_prefs),
@@ -223,7 +240,8 @@ public class HomeActivity extends AppCompatActivity
         IntentFilter iFilter = new IntentFilter(PullService.RECEIVED_UPDATE);
         registerReceiver(mDataUpdateReceiver, iFilter);
 
-
+        mNotificationsBar = (TextView) findViewById(R.id.notifacationBar);
+        updateNotificationsUI();
     }
 
     @Override
@@ -282,19 +300,48 @@ public class HomeActivity extends AppCompatActivity
         return result;
     }
 
+    private void updateNotificationsUI (){
+        StringBuilder sb = new StringBuilder();
+        if (mTotalNotifacations % 2 == 0) {
+            mChatNotifacations++;
+        } else {
+            mNumConnectionNotifacations++;
+        }
+        sb.append("You have ");
+        //if (notification == chat) mChatNotifacations++;
+        //if (notification == connection) mConnectionNotifacations++;
+        mTotalNotifacations = mChatNotifacations + mNumConnectionNotifacations;
+        sb.append(mTotalNotifacations);
+        if (mTotalNotifacations == 1) {
+            sb.append(" notification");
+        } else {
+            sb.append(" notifications");
+        }
+
+        mNotificationsBar.setText(sb.toString());
+
+        if (mChatNotifacations > 0) {
+            chatNotifications.setGravity(Gravity.CENTER_VERTICAL);
+            chatNotifications.setTypeface(null, Typeface.BOLD);
+            chatNotifications.setTextColor(getResources().getColor(R.color.colorAccent));
+            chatNotifications.setText(String.valueOf(mChatNotifacations)); } else chatNotifications.setText("");
+        if (mNumConnectionNotifacations > 0) {
+            connectionNotifications.setGravity(Gravity.CENTER_VERTICAL);
+            connectionNotifications.setTypeface(null, Typeface.BOLD);
+            connectionNotifications.setTextColor(getResources().getColor(R.color.colorAccent));
+            connectionNotifications.setText(String.valueOf(mNumConnectionNotifacations)); } else connectionNotifications.setText("");
+
+    }
+
     //**********DATA UPDATE RECEIVER************//
     private class DataUpdateReciever extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(PullService.RECEIVED_UPDATE)) {
-                StringBuilder sb = new StringBuilder();
-                sb.append("You have ");
                 Log.d("UpdateReceiver", "hey I just got your broadcast!");
-                mNumberOfResults++;
-                sb.append(mNumberOfResults);
-                sb.append(" new notifications");
-                TextView text = findViewById(R.id.notifacationBar);
-                text.setText(sb.toString());
+
+                mNotificationsBar = (TextView) findViewById(R.id.notifacationBar);
+                updateNotificationsUI();
                 //mResultStrings.add(intent.getStringExtra(getString(R.string.keys_extra_results)));
 
                 //TO-DO handle notifacations properly (display red symbols on items?)
