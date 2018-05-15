@@ -294,7 +294,7 @@ public class HomeActivity extends AppCompatActivity
                 sb.append(mNumberOfResults);
                 sb.append(" new notifications");
                 TextView text = findViewById(R.id.notifacationBar);
-                text.setText(sb.toString());
+                //text.setText(sb.toString());
                 //mResultStrings.add(intent.getStringExtra(getString(R.string.keys_extra_results)));
 
                 //TO-DO handle notifacations properly (display red symbols on items?)

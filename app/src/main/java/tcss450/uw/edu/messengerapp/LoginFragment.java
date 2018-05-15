@@ -162,6 +162,9 @@ public class LoginFragment extends Fragment {
         Button b = getView().findViewById(R.id.loginButton);
         b.setEnabled(false);
 
+        b = getView().findViewById(R.id.registerButton);
+        b.setEnabled(false);
+
         ProgressBar progBar = getView().findViewById(R.id.loginProgressBar);
         progBar.setVisibility(ProgressBar.VISIBLE);
     }
@@ -171,6 +174,9 @@ public class LoginFragment extends Fragment {
         progBar.setVisibility(ProgressBar.GONE);
 
         Button b = getView().findViewById(R.id.loginButton);
+        b.setEnabled(true);
+
+        b = getView().findViewById(R.id.registerButton);
         b.setEnabled(true);
     }
 

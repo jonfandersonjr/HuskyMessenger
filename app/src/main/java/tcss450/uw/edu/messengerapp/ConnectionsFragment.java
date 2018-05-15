@@ -40,15 +40,23 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
 
     private String mUsername;
     private String mSearchBy;
+
     private ListenManager mListenerManager;
-    private ListenManager mPendingListenManager;
+
     private ArrayList<String> mRequests;
     private ArrayList<String> mVerified;
-    private TextView mPendingTextList;
+    private ArrayList<String> mPending;
+
     private RecyclerView mRequestList;
     private RecyclerView mVerifiedList;
+    private RecyclerView mPendingList;
+
     private MyRecyclerViewAdapter mRecyclerAdapter;
     private MyRecyclerViewAdapter mVerifiedRecyclerAdapter;
+    private MyRecyclerViewAdapter mPendingAdapter;
+
+    private OnConnectionsInteractionListener mInteractionListener;
+
     public ConnectionsFragment() {
         // Required empty public constructor
     }
@@ -86,8 +94,10 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
         mUsername = prefs.getString(getString(R.string.keys_prefs_username), "");
         mRequests = new ArrayList<>();
         mVerified = new ArrayList<>();
+        mPending = new ArrayList<>();
 
         getContacts();
+        getPending();
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
 
@@ -95,7 +105,7 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
         mRequestList.setLayoutManager(layoutManager);
 
         mRecyclerAdapter = new MyRecyclerViewAdapter(getActivity(), mRequests);
-        mRecyclerAdapter.setClickListener(this);
+        mRecyclerAdapter.setClickListener(this::onItemClickRequests);
         mRequestList.setAdapter(mRecyclerAdapter);
 
         DividerItemDecoration dividerItemDecoration =
@@ -116,6 +126,67 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
                 .build();
 
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mListenerManager.startListening();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        String latestMessage = mListenerManager.stopListening();
+        SharedPreferences prefs = getActivity()
+                .getSharedPreferences(getString(R.string.keys_shared_prefs), Context.MODE_PRIVATE);
+
+        prefs.edit().putString(getString(R.string.keys_prefs_time_stamp), latestMessage).apply();
+    }
+
+    @Override
+    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+        String choice = (String) adapterView.getAdapter().getItem(i);
+        if (choice.equals("Username")) {
+            mSearchBy = "username";
+        } else if (choice.equals("First Name")) {
+            mSearchBy = "firstname";
+        } else if (choice.equals("Last Name")) {
+            mSearchBy = "lastname";
+        } else {
+            mSearchBy = "email";
+        }
+
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> adapterView) {
+
+    }
+
+    @Override
+    public void onItemClick(View v, int position) {
+        String str = mVerifiedRecyclerAdapter.getItem(position);
+        str = str.substring(0, str.indexOf(" "));
+
+        Toast.makeText(getActivity(),
+                "You clicked " + str + " on row number " +
+                        position, Toast.LENGTH_SHORT).show();
+
+        //mInteractionListener.onConnectionsInteractionListener(str);
+    }
+
+    public void onItemClickRequests(View v, int position) {
+        String str = mRecyclerAdapter.getItem(position);
+        str = str.substring(0, str.indexOf(" "));
+
+        Toast.makeText(getActivity(),
+                "You clicked " + str + " on row number " +
+                        position, Toast.LENGTH_SHORT).show();
+
+
+        //mInteractionListener.onRequestInteractionListener(str);
+    }
+
 
     public void getContacts() {
         SharedPreferences prefs =
@@ -144,7 +215,38 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
                 .build().execute();
     }
 
+    public void getPending() {
+        SharedPreferences prefs = getActivity().
+                getSharedPreferences(getString(R.string.keys_shared_prefs),
+                        Context.MODE_PRIVATE);
+        String username = prefs.getString(getString(R.string.keys_prefs_username), "");
+
+        Uri uri = new Uri.Builder()
+                .scheme("https")
+                .appendPath(getString(R.string.ep_base_url))
+                .appendPath(getString(R.string.ep_get_pending_requests))
+                .build();
+
+        JSONObject msg = new JSONObject();
+        try {
+            msg.put("username", username);
+        } catch (JSONException e) {
+            Log.wtf("JSON EXCEPTION", e.toString());
+        }
+
+        new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
+                .onPreExecute(this::handlePendingOnPre)
+                .onPostExecute(this::handlePendingOnPost)
+                .onCancelled(this::handleErrorsInTask)
+                .build().execute();
+
+    }
+
     public void handleContactsOnPre() {
+
+    }
+
+    public void handlePendingOnPre() {
 
     }
 
@@ -216,49 +318,58 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
         }
     }
 
+    public void handlePendingOnPost(String result) {
+        try {
+            JSONObject resultsJSON = new JSONObject(result);
+            boolean success = resultsJSON.getBoolean("success");
+
+            if (success) {
+                if (resultsJSON.has(getString(R.string.keys_json_requests))) {
+                    try {
+                        JSONArray jReqs = resultsJSON.getJSONArray(getString(R.string.keys_json_requests));
+                        for (int i = 0; i < jReqs.length(); i++) {
+                            JSONObject req = jReqs.getJSONObject(i);
+                            String username = req.get(getString(R.string.keys_json_username))
+                                    .toString();
+                            String firstName = req.get(getString(R.string.keys_json_requests_firstname))
+                                    .toString();
+                            String lastName = req.get(getString(R.string.keys_json_requests_lastname))
+                                    .toString();
+                            String str = "Waiting on " + username + "'s " +
+                                    " (" + lastName + ", " + firstName + ") response...";
+                            mPending.add(str);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+
+                mPending.sort(String::compareToIgnoreCase);
+
+                LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
+
+                mPendingList = getView().findViewById(R.id.connectionsPendingRecycler);
+                mPendingList.setLayoutManager(layoutManager);
+
+                mPendingAdapter = new MyRecyclerViewAdapter(getActivity(), mPending);
+                mPendingList.setAdapter(mPendingAdapter);
+
+                DividerItemDecoration dividerItemDecoration =
+                        new DividerItemDecoration(mPendingList.getContext(),
+                                layoutManager.getOrientation());
+                mVerifiedList.addItemDecoration(dividerItemDecoration);
+
+            } else {
+                Log.wtf("IT'S NOT WORKING (PENDING ON POST)", "WHY NOT");
+            }
+        } catch (JSONException e) {
+            Log.e("JSON_PARSE_ERROR", result + System.lineSeparator() + e.getMessage());
+        }
+    }
+
     public void handleErrorsInTask(String result) {
         Log.e("ASYNC_TASK_ERROR", result);
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        mListenerManager.startListening();
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        String latestMessage = mListenerManager.stopListening();
-        SharedPreferences prefs = getActivity()
-                .getSharedPreferences(getString(R.string.keys_shared_prefs), Context.MODE_PRIVATE);
-
-        prefs.edit().putString(getString(R.string.keys_prefs_time_stamp), latestMessage).apply();
-    }
-
-    @Override
-    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-        String choice = (String) adapterView.getAdapter().getItem(i);
-        if (choice.equals("Username")) {
-            mSearchBy = "username";
-        } else if (choice.equals("First Name")) {
-            mSearchBy = "firstname";
-        } else if (choice.equals("Last Name")) {
-            mSearchBy = "lastname";
-        } else {
-            mSearchBy = "email";
-        }
-
-    }
-
-    @Override
-    public void onNothingSelected(AdapterView<?> adapterView) {
-
-    }
-
-    @Override
-    public void onItemClick(View v, int position) {
-
     }
 
     private void handleError(final Exception e) {
@@ -296,6 +407,11 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
                 return;
             }
         }
+    }
+
+    public interface OnConnectionsInteractionListener {
+        void onConnectionsInteractionListener(String username);
+        void onRequestInteractionListener(String username);
     }
 
 }

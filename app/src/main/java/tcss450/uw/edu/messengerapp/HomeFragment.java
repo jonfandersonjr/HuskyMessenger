@@ -4,6 +4,7 @@ package tcss450.uw.edu.messengerapp;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -71,6 +72,13 @@ public class HomeFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_home, container, false);
 
         mNotifacationsBar = v.findViewById(R.id.notifacationBar);
+        TextView tv = v.findViewById(R.id.homeWelcome);
+
+        SharedPreferences prefs = getActivity().
+                getSharedPreferences(getString(R.string.keys_shared_prefs), Context.MODE_PRIVATE);
+        String username = prefs.getString(getString(R.string.keys_prefs_username), "");
+
+        tv.setText("Welcome " + username + "!");
 
         // Inflate the layout for this fragment
         return v;
