@@ -43,11 +43,12 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
     private ListenManager mListenerManager;
     private ListenManager mPendingListenManager;
     private ArrayList<String> mRequests;
-    private ArrayList<String> mPending;
-    private TextView mVerifiedTextList;
+    private ArrayList<String> mVerified;
     private TextView mPendingTextList;
     private RecyclerView mRequestList;
+    private RecyclerView mVerifiedList;
     private MyRecyclerViewAdapter mRecyclerAdapter;
+    private MyRecyclerViewAdapter mVerifiedRecyclerAdapter;
     public ConnectionsFragment() {
         // Required empty public constructor
     }
@@ -67,7 +68,6 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
         spinner.setAdapter(spinnerAdapter);
         spinner.setOnItemSelectedListener(this);
 
-        mVerifiedTextList = v.findViewById(R.id.connectionsVerifiedTextList);
 
         return v;
     }
@@ -85,7 +85,9 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
 
         mUsername = prefs.getString(getString(R.string.keys_prefs_username), "");
         mRequests = new ArrayList<>();
-        mPending = new ArrayList<>();
+        mVerified = new ArrayList<>();
+
+        getContacts();
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
 
@@ -108,18 +110,114 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
                 .appendQueryParameter("username", mUsername)
                 .build();
 
-        Uri retrievePending = new Uri.Builder()
-                .scheme("https")
-                .appendPath(getString(R.string.ep_base_url))
-                .appendPath(getString(R.string.ep_get_pending_requests))
-                .appendQueryParameter("username", mUsername)
-                .build();
-
         mListenerManager = new ListenManager.Builder(retrieveRequests.toString(), this::publishRequests)
                 .setExceptionHandler(this::handleError)
                 .setDelay(5000)
                 .build();
 
+    }
+
+    public void getContacts() {
+        SharedPreferences prefs =
+                getActivity().getSharedPreferences(getString(R.string.keys_shared_prefs),
+                        Context.MODE_PRIVATE);
+        String username = prefs.getString(getString(R.string.keys_prefs_username), "");
+
+        //build the web service URL
+        Uri uri = new Uri.Builder()
+                .scheme("https")
+                .appendPath(getString(R.string.ep_base_url))
+                .appendPath(getString(R.string.ep_get_contacts))
+                .build();
+
+        JSONObject msg = new JSONObject();
+        try {
+            msg.put("username", username);
+        } catch (JSONException e) {
+            Log.wtf("JSON EXCEPTION", e.toString());
+        }
+
+        new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
+                .onPreExecute(this::handleContactsOnPre)
+                .onPostExecute(this::handleContactsOnPost)
+                .onCancelled(this::handleErrorsInTask)
+                .build().execute();
+    }
+
+    public void handleContactsOnPre() {
+
+    }
+
+    public void handleContactsOnPost(String result) {
+        try {
+            JSONObject resultsJSON = new JSONObject(result);
+            boolean success = resultsJSON.getBoolean("success");
+
+            if (success) {
+                if (resultsJSON.has(getString(R.string.keys_json_connections_a))) {
+                    try {
+                        JSONArray jReqs = resultsJSON.getJSONArray(getString(R.string.keys_json_connections_a));
+                        for (int i = 0; i < jReqs.length(); i++) {
+                            JSONObject req = jReqs.getJSONObject(i);
+                            String username = req.get(getString(R.string.keys_json_username))
+                                    .toString();
+                            String firstName = req.get(getString(R.string.keys_json_requests_firstname))
+                                    .toString();
+                            String lastName = req.get(getString(R.string.keys_json_requests_lastname))
+                                    .toString();
+                            String str = username + " (" + lastName +", " + firstName + ")";
+                            mVerified.add(str);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+
+                if (resultsJSON.has(getString(R.string.keys_json_connections_b))) {
+                    try {
+                        JSONArray jReqs = resultsJSON.getJSONArray(getString(R.string.keys_json_connections_b));
+                        for (int i = 0; i < jReqs.length(); i++) {
+                            JSONObject req = jReqs.getJSONObject(i);
+                            String username = req.get(getString(R.string.keys_json_username))
+                                    .toString();
+                            String firstName = req.get(getString(R.string.keys_json_requests_firstname))
+                                    .toString();
+                            String lastName = req.get(getString(R.string.keys_json_requests_lastname))
+                                    .toString();
+                            String str = username + " (" + lastName +", " + firstName + ")";
+                            mVerified.add(str);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                mVerified.sort(String::compareToIgnoreCase);
+
+                LinearLayoutManager layoutManager2 = new LinearLayoutManager(getActivity());
+
+                mVerifiedList = getView().findViewById(R.id.connectionsVerifiedRecycler);
+                mVerifiedList.setLayoutManager(layoutManager2);
+
+                mVerifiedRecyclerAdapter = new MyRecyclerViewAdapter(getActivity(), mVerified);
+                mVerifiedRecyclerAdapter.setClickListener(this);
+                mVerifiedList.setAdapter(mVerifiedRecyclerAdapter);
+
+                DividerItemDecoration dividerItemDecoration2 =
+                        new DividerItemDecoration(mVerifiedList.getContext(),
+                                layoutManager2.getOrientation());
+                mVerifiedList.addItemDecoration(dividerItemDecoration2);
+            } else {
+                Log.e("IT DOESN'T WORK", "WHY NOT");
+            }
+        } catch (JSONException e) {
+            Log.e("JSON_PARSE_ERROR", result + System.lineSeparator() + e.getMessage());
+        }
+    }
+
+    public void handleErrorsInTask(String result) {
+        Log.e("ASYNC_TASK_ERROR", result);
     }
 
     @Override
@@ -186,6 +284,7 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
 
                     if (!mRequests.contains(str)) {
                         mRequests.add(str);
+                        mRequests.sort(String::compareToIgnoreCase);
                         getActivity().runOnUiThread(() -> {
                             mRecyclerAdapter.notifyDataSetChanged();
                         });
