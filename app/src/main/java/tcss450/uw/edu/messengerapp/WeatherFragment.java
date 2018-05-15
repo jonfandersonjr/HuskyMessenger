@@ -3,9 +3,16 @@ package tcss450.uw.edu.messengerapp;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import tcss450.uw.edu.messengerapp.model.PullService;
 
 
 /**
@@ -14,6 +21,14 @@ import android.view.ViewGroup;
  * create an instance of this fragment.
  */
 public class WeatherFragment extends Fragment {
+
+    private static final String TAG = "MainActivity";
+
+    private Button mResultsButton;
+    private Button mStartButton;
+    private Button mStopButton;
+
+
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -58,8 +73,29 @@ public class WeatherFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_weather, container, false);
+
+        View v = inflater.inflate(R.layout.fragment_weather, container, false);
+
+        //note because we are using an earlier SDK level, you will need to cast here.
+        mResultsButton = (Button) v.findViewById(R.id.resultsButton);
+
+        mStartButton = (Button) v.findViewById(R.id.startButton);
+        mStartButton.setOnClickListener(this::startListener);
+
+        mStopButton = (Button) v.findViewById(R.id.stopButton);
+        mStopButton.setOnClickListener(this::stopListener);
+
+        return v;
+    }
+
+    private void startListener(final View theButton) {
+        PullService.startServiceAlarm(getContext(), true);
+        mStartButton.setEnabled(false);
+    }
+
+    private void stopListener(final View theButton) {
+        PullService.stopServiceAlarm(getContext());
+        mStartButton.setEnabled(true);
     }
 
 }
