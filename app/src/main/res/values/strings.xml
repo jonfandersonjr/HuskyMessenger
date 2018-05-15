@@ -10,10 +10,11 @@
     <string name="nav_header_title">Group 3 Messenger</string>
     <string name="nav_header_subtitle">TCSS 450</string>
     <string name="nav_header_desc">Navigation header</string>
-    <string name="action_colorScheme">Color Scheme</string>
-    <string name="action_color1">Default</string>
-    <string name="action_color2">Teal</string>
-    <string name="action_color3">Red</string>
+    <string name="action_colorScheme">Color Schemes:</string>
+    <string name="action_color_rugged">Rugged</string>
+    <string name="action_color_modern">Modern</string>
+    <string name="action_color_summer">Summer</string>
+    <string name="action_color_UW">UW</string>
 
     /**Strings for home activity Drawer**/
     <string name="drawer_login">LOGIN</string>
@@ -49,7 +50,7 @@
     <string name="home_text_connection3">Friend 3</string>
     <string name="home_text_connection4">Friend 4</string>
     <string name="home_text_connection5">Friend 5</string>
-    <string name="home_text_notifacationBar">Notifacation Bar</string>
+    <string name="home_text_notifacationBar">Waiting for new notifications...</string>
 
     /**Strings for Verify Fragment UI**/
     <string name="verify_code_hint">Enter Code</string>

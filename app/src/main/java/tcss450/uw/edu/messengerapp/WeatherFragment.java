@@ -89,12 +89,12 @@ public class WeatherFragment extends Fragment {
     }
 
     private void startListener(final View theButton) {
-        PullService.startServiceAlarm(getContext(), true);
+        //PullService.startServiceAlarm(getContext(), true);
         mStartButton.setEnabled(false);
     }
 
     private void stopListener(final View theButton) {
-        PullService.stopServiceAlarm(getContext());
+        //PullService.stopServiceAlarm(getContext());
         mStartButton.setEnabled(true);
     }
 

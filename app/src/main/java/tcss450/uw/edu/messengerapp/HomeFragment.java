@@ -23,8 +23,6 @@ import tcss450.uw.edu.messengerapp.model.PullService;
  */
 public class HomeFragment extends Fragment {
 
-    public TextView mNotifacationsBar;
-
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -70,8 +68,6 @@ public class HomeFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_home, container, false);
-
-        mNotifacationsBar = v.findViewById(R.id.notifacationBar);
         TextView tv = v.findViewById(R.id.homeWelcome);
 
         SharedPreferences prefs = getActivity().
@@ -79,8 +75,6 @@ public class HomeFragment extends Fragment {
         String username = prefs.getString(getString(R.string.keys_prefs_username), "");
 
         tv.setText("Welcome " + username + "!");
-
-        // Inflate the layout for this fragment
         return v;
     }
 

@@ -23,7 +23,7 @@ import tcss450.uw.edu.messengerapp.R;
 public class PullService extends IntentService {
 
 
-    public static final String RECEIVED_UPDATE = "Something from Weather API?";
+    public static final String RECEIVED_UPDATE = "new show from phish.net!";
 
     //60 seconds - 1 minute is the minimum...
     private static final int POLL_INTERVAL = 60_000;
@@ -31,7 +31,7 @@ public class PullService extends IntentService {
     private static final String TAG = "PullService";
 
     public PullService() {
-        super("DemoIntentService");
+        super("PullService");
     }
 
     @Override
@@ -40,26 +40,6 @@ public class PullService extends IntentService {
             Log.d(TAG, "Performing the service");
             checkWebservice(intent.getBooleanExtra(getString(R.string.keys_is_foreground), false));
         }
-    }
-
-
-
-    /**
-     * Handle action Foo in the provided background thread with the provided
-     * parameters.
-     */
-    private void handleActionFoo(String param1, String param2) {
-        // TODO: Handle action Foo
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
-    /**
-     * Handle action Baz in the provided background thread with the provided
-     * parameters.
-     */
-    private void handleActionBaz(String param1, String param2) {
-        // TODO: Handle action Baz
-        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     public static void startServiceAlarm(Context context, boolean isInForeground) {
@@ -139,20 +119,20 @@ public class PullService extends IntentService {
             i.putExtra(getString(R.string.keys_extra_results), response.toString());
             sendBroadcast(i);
         } else {
-            //buildNotification(response.toString());
+            buildNotification(response.toString());
         }
         return true;
     }
 
 
-/*
+
     private void buildNotification(String s) {
         //IMPORT V4 not V7
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
-                        //.setSmallIcon(R.drawable.<your own icon>)
-                        .setContentTitle("Phish setlist")
-                        .setContentText("A new Setlist to view!");
+                        .setSmallIcon(R.drawable.ic_temp_icon)
+                        .setContentTitle("New Notification!")
+                        .setContentText("Click to open the app!");
 
         // Creates an Intent for the Activity
         Intent notifyIntent =
@@ -181,7 +161,7 @@ public class PullService extends IntentService {
         // mId allows you to update the notification later on.
         mNotificationManager.notify(1, mBuilder.build());
     }
-    */
+
 
 
 
