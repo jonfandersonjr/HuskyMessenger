@@ -6,11 +6,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
 import android.util.Log;
@@ -24,17 +21,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import tcss450.uw.edu.messengerapp.ChatActivity;
 import tcss450.uw.edu.messengerapp.model.PullService;
-import tcss450.uw.edu.messengerapp.utils.BadgeDrawable;
 
 public class HomeActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -190,6 +182,7 @@ public class HomeActivity extends AppCompatActivity
                         Context.MODE_PRIVATE);
                 prefs.edit().remove(getString(R.string.keys_prefs_username));
                 prefs.edit().putBoolean(getString(R.string.keys_prefs_stay_logged_in), false).apply();
+                PullService.stopServiceAlarm(this);
                 finishAndRemoveTask();
                 break;
             default:
@@ -220,18 +213,9 @@ public class HomeActivity extends AppCompatActivity
         //If true, then this Activity was started fro the notification bar
         if (getIntent().hasExtra(getString(R.string.keys_extra_results))) {
 
-            //TextView text = (TextView)findViewById(R.id.notifacationBar);
-
-            LinearLayout layout = (LinearLayout )findViewById(R.id.resultsLayout);
-            TextView textView = new TextView(this);
-            //get a substring of the JSON
-            textView.setText(getIntent()
-                    .getStringExtra(getString(R.string.keys_extra_results))
-                    .substring(85, 115));
-            textView.setLayoutParams(new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT));
-            layout.addView(textView);
+            loadFragment(new HomeFragment());
+            mChatNotifacations = 0;
+            mNotificationsBar = (TextView) findViewById(R.id.notifacationBar);
         }
 
         if (mDataUpdateReceiver == null) {
@@ -318,6 +302,7 @@ public class HomeActivity extends AppCompatActivity
             sb.append(" notifications");
         }
 
+        mNotificationsBar = (TextView) findViewById(R.id.notifacationBar);
         mNotificationsBar.setText(sb.toString());
 
         if (mChatNotifacations > 0) {

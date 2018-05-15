@@ -42,26 +42,6 @@ public class PullService extends IntentService {
         }
     }
 
-
-
-    /**
-     * Handle action Foo in the provided background thread with the provided
-     * parameters.
-     */
-    private void handleActionFoo(String param1, String param2) {
-        // TODO: Handle action Foo
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
-    /**
-     * Handle action Baz in the provided background thread with the provided
-     * parameters.
-     */
-    private void handleActionBaz(String param1, String param2) {
-        // TODO: Handle action Baz
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
     public static void startServiceAlarm(Context context, boolean isInForeground) {
         Intent i = new Intent(context, PullService.class);
         i.putExtra(context.getString(R.string.keys_is_foreground), isInForeground);
@@ -152,7 +132,7 @@ public class PullService extends IntentService {
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.ic_temp_icon)
                         .setContentTitle("New Notification!")
-                        .setContentText("Open App to View!");
+                        .setContentText("Click to open the app!");
 
         // Creates an Intent for the Activity
         Intent notifyIntent =
