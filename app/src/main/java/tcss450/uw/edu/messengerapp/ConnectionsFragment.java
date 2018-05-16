@@ -1,7 +1,9 @@
 package tcss450.uw.edu.messengerapp;
 
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
@@ -12,13 +14,16 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.Spinner;
@@ -144,6 +149,17 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
     }
 
     @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof OnConnectionsInteractionListener) {
+            mInteractionListener = (OnConnectionsInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnConnectionsInteractionListener");
+        }
+    }
+
+    @Override
     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
         String choice = (String) adapterView.getAdapter().getItem(i);
         if (choice.equals("Username")) {
@@ -168,20 +184,32 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
         String str = mVerifiedRecyclerAdapter.getItem(position);
         str = str.substring(0, str.indexOf(" "));
 
-        Toast.makeText(getActivity(),
-                "You clicked " + str + " on row number " +
-                        position, Toast.LENGTH_SHORT).show();
-
-        //mInteractionListener.onConnectionsInteractionListener(str);
     }
 
     public void onItemClickRequests(View v, int position) {
         String str = mRecyclerAdapter.getItem(position);
-        str = str.substring(0, str.indexOf(" "));
+        final String username = str.substring(0, str.indexOf(" "));
 
-        Toast.makeText(getActivity(),
-                "You clicked " + str + " on row number " +
-                        position, Toast.LENGTH_SHORT).show();
+        AlertDialog.Builder builder;
+        builder = new AlertDialog.Builder(getActivity(), android.R.style.Theme_Material_Dialog_Alert);
+        builder.setTitle("Resolve Request").setMessage("Would you like to accept " + username
+                + "'s connection request?")
+                .setPositiveButton(getString(R.string.connections_decline_request_diaglog_button),
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                    }
+                })
+                .setNegativeButton(getString(R.string.connections_accept_request_dialog_button),
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                mInteractionListener.onRequestInteractionListener(username);
+                            }
+                        })
+                .setIcon(R.drawable.ic_person_add)
+                .show();
 
 
         //mInteractionListener.onRequestInteractionListener(str);
@@ -288,7 +316,10 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
                             String lastName = req.get(getString(R.string.keys_json_requests_lastname))
                                     .toString();
                             String str = username + " (" + lastName +", " + firstName + ")";
-                            mVerified.add(str);
+
+                            if (!mVerified.contains(str)) {
+                                mVerified.add(str);
+                            }
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -337,7 +368,10 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
                                     .toString();
                             String str = "Waiting on " + username + "'s " +
                                     " (" + lastName + ", " + firstName + ") response...";
-                            mPending.add(str);
+
+                            if (!mPending.contains(str)) {
+                                mPending.add(str);
+                            }
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -407,6 +441,72 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
                 return;
             }
         }
+    }
+
+    public void handleVerifyRequestOnPre() {
+        ViewGroup vg = (ViewGroup) getView().findViewById(R.id.connectionsFrameLayout);
+        enableDisableViewGroup(vg, false);
+
+    }
+
+    public void handleVerifyRequestOnPost(boolean success, String username) {
+        ViewGroup vg = (ViewGroup) getView().findViewById(R.id.connectionsFrameLayout);
+
+        if (success) {
+            for (int i = 0; i < mRequests.size(); i++) {
+                String str = mRequests.get(i);
+                String subStr = str.substring(0, str.indexOf(" "));
+
+                if (username.equals(subStr)) {
+                    String[] arr = str.split(" ");
+                    String verified = arr[0] + " " + arr[1] + " " + arr[2];
+
+                    mVerified.add(verified);
+                    mRequests.remove(i);
+                    mVerifiedRecyclerAdapter.notifyDataSetChanged();
+                    mRecyclerAdapter.notifyDataSetChanged();
+                    break;
+                }
+            }
+        } else {
+            setError("Something happened on the back end I think...");
+        }
+
+        enableDisableViewGroup(vg, true);
+
+    }
+
+    private void enableDisableViewGroup(ViewGroup vg, boolean enabled) {
+        int children = vg.getChildCount();
+        for (int i = 0; i < children; i++) {
+            View v = vg.getChildAt(i);
+            v.setEnabled(enabled);
+            if (v instanceof ViewGroup) {
+                enableDisableViewGroup((ViewGroup) v, enabled);
+            }
+        }
+
+        if (enabled) {
+            ProgressBar pg = getView().findViewById(R.id.connectionsProgressBar);
+            pg.setVisibility(ProgressBar.GONE);
+        } else {
+            ProgressBar pg = getView().findViewById(R.id.connectionsProgressBar);
+            pg.setVisibility(ProgressBar.VISIBLE);
+        }
+    }
+
+    public void setError(String err) {
+        Toast.makeText(getActivity(), "Request unsuccessful for reason: " + err,
+                Toast.LENGTH_SHORT).show();
+    }
+
+    public void handleOnError(String e) {
+        ViewGroup vg = (ViewGroup) getView().findViewById(R.id.connectionsFrameLayout);
+
+        Toast.makeText(getActivity(), "Request unsuccessful for reason: " + e,
+                Toast.LENGTH_SHORT).show();
+
+        enableDisableViewGroup(vg, true);
     }
 
     public interface OnConnectionsInteractionListener {

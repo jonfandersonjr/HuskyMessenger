@@ -31,11 +31,10 @@ public class ChatFragment extends Fragment {
     private String mSendUrl;
     private TextView mOutputTextView;
     private ListenManager mListenManager;
-
+    private int currentMessages = 0;
     public ChatFragment() {
         // Required empty public constructor
     }
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -48,6 +47,12 @@ public class ChatFragment extends Fragment {
 
         return v;
     }
+
+
+    public void loadInitialMessages() {
+
+    }
+
 
     @Override
     public void onStart() {
@@ -75,6 +80,8 @@ public class ChatFragment extends Fragment {
                 .appendPath(getString(R.string.ep_get_message))
                 .appendQueryParameter("chatId", "1")
                 .build();
+                Log.i("A",retrieve.toString());
+
 
         if (prefs.contains(getString(R.string.keys_prefs_time_stamp))) {
             //ignore all of the seen messages. You may want to store these messages locally
@@ -181,10 +188,24 @@ public class ChatFragment extends Fragment {
             }
 
             getActivity().runOnUiThread(() -> {
-                for (String msg : msgs) {
-                    mOutputTextView.append(msg);
-                    mOutputTextView.append(System.lineSeparator());
+                //check if new messages!
+
+                if(currentMessages < msgs.length) {
+                    int dif = msgs.length - currentMessages;
+
+                    for(int i = msgs.length-dif; i <msgs.length;i++) {
+                        mOutputTextView.append(msgs[i]);
+                        mOutputTextView.append(System.lineSeparator());
+                    }
+
+                    currentMessages = msgs.length;
                 }
+
+//                for (String msg : msgs) {
+//                    mOutputTextView.append(msg);
+//                    mOutputTextView.append(System.lineSeparator());
+//                    Log.i("MESSAGE FROM CALL",msg);
+//                }
             });
         }
     }

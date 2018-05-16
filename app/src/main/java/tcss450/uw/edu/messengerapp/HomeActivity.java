@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
@@ -29,7 +30,8 @@ import org.json.JSONObject;
 import tcss450.uw.edu.messengerapp.model.PullService;
 
 public class HomeActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener,
+        ConnectionsFragment.OnConnectionsInteractionListener {
 
     private static final String TAG = "HomeActivity";
     private DataUpdateReciever mDataUpdateReceiver;
@@ -135,6 +137,15 @@ public class HomeActivity extends AppCompatActivity
     }
 
     private void loadFragment(Fragment frag) {
+        if (frag instanceof ConnectionsFragment) {
+            String tag = getString(R.string.keys_fragment_connections);
+
+            android.support.v4.app.FragmentTransaction transaction = getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.homeFragmentContainer, frag, tag);
+            transaction.commit();
+        }
+
         android.support.v4.app.FragmentTransaction transaction = getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.homeFragmentContainer, frag);
@@ -303,7 +314,7 @@ public class HomeActivity extends AppCompatActivity
         }
 
         mNotificationsBar = (TextView) findViewById(R.id.notifacationBar);
-        mNotificationsBar.setText(sb.toString());
+//        mNotificationsBar.setText(sb.toString());
 
         if (mChatNotifacations > 0) {
             chatNotifications.setGravity(Gravity.CENTER_VERTICAL);
@@ -316,6 +327,61 @@ public class HomeActivity extends AppCompatActivity
             connectionNotifications.setTextColor(getResources().getColor(R.color.colorAccent));
             connectionNotifications.setText(String.valueOf(mNumConnectionNotifacations)); } else connectionNotifications.setText("");
 
+    }
+
+    @Override
+    public void onConnectionsInteractionListener(String username) {
+
+    }
+
+    @Override
+    public void onRequestInteractionListener(String username) {
+        Uri uri = new Uri.Builder()
+                .scheme("https")
+                .appendPath(getString(R.string.ep_base_url))
+                .appendPath(getString(R.string.ep_verify_contact_request))
+                .build();
+
+        SharedPreferences prefs = getSharedPreferences(getString(R.string.keys_shared_prefs),
+                Context.MODE_PRIVATE);
+        String myName = prefs.getString(getString(R.string.keys_prefs_username), "");
+
+        JSONObject msg = new JSONObject();
+        try {
+            msg.put("usernameA", username);
+            msg.put("usernameB", myName);
+        } catch (JSONException e) {
+            Log.wtf("Verify Contact", "Error reading JSON" + e.getMessage());
+        }
+
+        new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
+                .onPreExecute(this::handleVerifyRequestOnPre)
+                .onPostExecute(this::handleVerifyRequestOnPost)
+                .onCancelled(this::handleErrorsInTask)
+                .build().execute();
+    }
+
+    private void handleVerifyRequestOnPre() {
+        ConnectionsFragment frag = (ConnectionsFragment) getSupportFragmentManager()
+                .findFragmentByTag(getString(R.string.keys_fragment_connections));
+        frag.handleVerifyRequestOnPre();
+    }
+
+    private void handleVerifyRequestOnPost(String result) {
+        ConnectionsFragment frag = (ConnectionsFragment) getSupportFragmentManager()
+                .findFragmentByTag(getString(R.string.keys_fragment_connections));
+
+        try {
+            JSONObject resultsJSON = new JSONObject(result);
+            boolean success = resultsJSON.getBoolean("success");
+            String username = resultsJSON.getString("username");
+
+            frag.handleVerifyRequestOnPost(success, username);
+
+        } catch (JSONException e) {
+            frag.setError("Something strange happened");
+            frag.handleOnError(e.toString());
+        }
     }
 
     //**********DATA UPDATE RECEIVER************//
@@ -331,6 +397,10 @@ public class HomeActivity extends AppCompatActivity
                 //TO-DO handle notifacations properly (display red symbols on items?)
             }
         }
+    }
+
+    private void handleErrorsInTask(String result) {
+        Log.e("ASYNC_TASK_ERROR", result);
     }
 
 

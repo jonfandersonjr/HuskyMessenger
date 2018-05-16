@@ -73,6 +73,8 @@
     <string name="connections_verified_header_text">Connections</string>
     <string name="connections_verified_generic_text_view">verifiedTextView</string>
     <string name="connections_requests_resolve_button">Resolve Requests</string>
+    <string name="connections_accept_request_dialog_button">Accept</string>
+    <string name="connections_decline_request_diaglog_button">Decline</string>
 
     <string-array name="connections_search_filter">
         <item>Username</item>

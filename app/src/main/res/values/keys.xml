@@ -9,6 +9,7 @@
     <string name="keys_fragment_login">loginFragmentTag</string>
     <string name="keys_fragment_register">registerFragmentTag</string>
     <string name="keys_fragment_verify">verifyFragmentTag</string>
+    <string name="keys_fragment_connections">connectionsFragmentTag</string>
     <string name="keys_prefs_time_stamp">ts key</string>
 
     <string name="keys_json_username">username</string>
