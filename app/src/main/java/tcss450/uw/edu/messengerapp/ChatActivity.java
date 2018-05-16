@@ -1,6 +1,7 @@
 package tcss450.uw.edu.messengerapp;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -48,6 +49,15 @@ public class ChatActivity extends AppCompatActivity {
                     .replace(R.id.chatContainer, theFragment);
         // Commit the transaction
         transaction.commit();
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Intent intent = new Intent(this, HomeActivity.class);
+        intent.putExtra("flag", "flag");
+        startActivity(intent);
+
     }
 
 

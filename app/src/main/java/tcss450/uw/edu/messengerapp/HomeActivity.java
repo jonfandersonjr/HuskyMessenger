@@ -45,11 +45,15 @@ public class HomeActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
+        Bundle bundle = getIntent().getExtras();
+
         if (savedInstanceState == null) {
             if (findViewById(R.id.homeFragmentContainer) != null) {
-                getSupportFragmentManager().beginTransaction()
-                        .add(R.id.homeFragmentContainer, new HomeFragment())
-                        .commit();
+                if (bundle != null) {
+                    loadFragment(new ChatManagerFragment());
+                } else {
+                    loadFragment(new HomeFragment());
+                }
             }
         }
 
@@ -94,13 +98,11 @@ public class HomeActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        } else if (!drawer.isDrawerOpen(GravityCompat.START) && currentFragment instanceof HomeFragment) {
+        } else if (!drawer.isDrawerOpen(GravityCompat.START) &&
+                (currentFragment instanceof HomeFragment) ||(currentFragment instanceof ChatFragment)) {
             super.onBackPressed();
         } else {
-            android.support.v4.app.FragmentTransaction transaction = getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.homeFragmentContainer, new HomeFragment());
-            transaction.commit();
+            loadFragment(new HomeFragment());
         }
 
     }
@@ -167,18 +169,16 @@ public class HomeActivity extends AppCompatActivity
             case R.id.nav_connections:
                 loadFragment(new ConnectionsFragment());
                 mNumConnectionNotifacations = 0;
-                mNotificationsBar = (TextView) findViewById(R.id.notifacationBar);
                 updateNotificationsUI();
                 break;
             case R.id.nav_chat:
                 loadChatActivity();
-                //loadFragment(new ChatFragment());
+                getSupportFragmentManager().popBackStack();
                 break;
             case R.id.nav_chatmanager:
                 loadFragment(new ChatManagerFragment());
                 mChatNotifacations = 0;
-                //mNotificationsBar = (TextView) findViewById(R.id.notifacationBar);
-                //updateNotificationsUI();
+                updateNotificationsUI();
                 break;
             case R.id.nav_weather:
                 loadFragment(new WeatherFragment());
@@ -186,7 +186,6 @@ public class HomeActivity extends AppCompatActivity
             case R.id.nav_home:
                 loadFragment(new HomeFragment());
                 mNotificationsBar = (TextView) findViewById(R.id.notifacationBar);
-                //updateNotificationsUI();
                 break;
             case R.id.nav_logout:
                 SharedPreferences prefs = getSharedPreferences(getString(R.string.keys_shared_prefs),
@@ -296,25 +295,29 @@ public class HomeActivity extends AppCompatActivity
     }
 
     private void updateNotificationsUI (){
-        StringBuilder sb = new StringBuilder();
         if (mTotalNotifacations % 2 == 0) {
             mChatNotifacations++;
         } else {
             mNumConnectionNotifacations++;
         }
-        sb.append("You have ");
         //if (notification == chat) mChatNotifacations++;
         //if (notification == connection) mConnectionNotifacations++;
         mTotalNotifacations = mChatNotifacations + mNumConnectionNotifacations;
-        sb.append(mTotalNotifacations);
-        if (mTotalNotifacations == 1) {
-            sb.append(" notification");
-        } else {
-            sb.append(" notifications");
-        }
 
-        mNotificationsBar = (TextView) findViewById(R.id.notifacationBar);
-//        mNotificationsBar.setText(sb.toString());
+        Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.homeFragmentContainer);
+
+        if (currentFragment instanceof HomeFragment) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("You have ");
+            sb.append(mTotalNotifacations);
+            if (mTotalNotifacations == 1) {
+                sb.append(" notification");
+            } else {
+                sb.append(" notifications");
+            }
+            mNotificationsBar = (TextView) findViewById(R.id.notifacationBar);
+            mNotificationsBar.setText(sb.toString());
+        }
 
         if (mChatNotifacations > 0) {
             chatNotifications.setGravity(Gravity.CENTER_VERTICAL);
