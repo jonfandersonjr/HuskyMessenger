@@ -335,11 +335,19 @@ public class HomeActivity extends AppCompatActivity
     }
 
     @Override
-    public void onRequestInteractionListener(String username) {
+    public void onRequestInteractionListener(String username, boolean accept) {
+        String endpoint;
+
+        if (accept) {
+            endpoint = getString(R.string.ep_verify_contact_request);
+        } else {
+           endpoint = getString(R.string.ep_decline_contact_request);
+        }
+
         Uri uri = new Uri.Builder()
                 .scheme("https")
                 .appendPath(getString(R.string.ep_base_url))
-                .appendPath(getString(R.string.ep_verify_contact_request))
+                .appendPath(endpoint)
                 .build();
 
         SharedPreferences prefs = getSharedPreferences(getString(R.string.keys_shared_prefs),
@@ -354,20 +362,22 @@ public class HomeActivity extends AppCompatActivity
             Log.wtf("Verify Contact", "Error reading JSON" + e.getMessage());
         }
 
+
         new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
-                .onPreExecute(this::handleVerifyRequestOnPre)
-                .onPostExecute(this::handleVerifyRequestOnPost)
+                .onPreExecute(this::handleRequestOnPre)
+                .onPostExecute(this::handleRequestOnPost)
                 .onCancelled(this::handleErrorsInTask)
                 .build().execute();
+
     }
 
-    private void handleVerifyRequestOnPre() {
+    private void handleRequestOnPre() {
         ConnectionsFragment frag = (ConnectionsFragment) getSupportFragmentManager()
                 .findFragmentByTag(getString(R.string.keys_fragment_connections));
-        frag.handleVerifyRequestOnPre();
+        frag.handleRequestOnPre();
     }
 
-    private void handleVerifyRequestOnPost(String result) {
+    private void handleRequestOnPost(String result) {
         ConnectionsFragment frag = (ConnectionsFragment) getSupportFragmentManager()
                 .findFragmentByTag(getString(R.string.keys_fragment_connections));
 
@@ -375,8 +385,13 @@ public class HomeActivity extends AppCompatActivity
             JSONObject resultsJSON = new JSONObject(result);
             boolean success = resultsJSON.getBoolean("success");
             String username = resultsJSON.getString("username");
+            boolean accept = resultsJSON.getBoolean("accept");
 
-            frag.handleVerifyRequestOnPost(success, username);
+            if (accept) {
+                frag.handleRequestOnPost(success, username, accept);
+            } else {
+                frag.handleRequestOnPost(success, username, accept);
+            }
 
         } catch (JSONException e) {
             frag.setError("Something strange happened");

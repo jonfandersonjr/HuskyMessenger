@@ -198,14 +198,16 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-
+                        boolean accept = false;
+                        mInteractionListener.onRequestInteractionListener(username, accept);
                     }
                 })
                 .setNegativeButton(getString(R.string.connections_accept_request_dialog_button),
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
-                                mInteractionListener.onRequestInteractionListener(username);
+                                boolean accept = true;
+                                mInteractionListener.onRequestInteractionListener(username, accept);
                             }
                         })
                 .setIcon(R.drawable.ic_person_add)
@@ -443,13 +445,13 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
         }
     }
 
-    public void handleVerifyRequestOnPre() {
+    public void handleRequestOnPre() {
         ViewGroup vg = (ViewGroup) getView().findViewById(R.id.connectionsFrameLayout);
         enableDisableViewGroup(vg, false);
 
     }
 
-    public void handleVerifyRequestOnPost(boolean success, String username) {
+    public void handleRequestOnPost(boolean success, String username, boolean accept) {
         ViewGroup vg = (ViewGroup) getView().findViewById(R.id.connectionsFrameLayout);
 
         if (success) {
@@ -461,9 +463,12 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
                     String[] arr = str.split(" ");
                     String verified = arr[0] + " " + arr[1] + " " + arr[2];
 
-                    mVerified.add(verified);
+                    if (accept) {
+                        mVerified.add(verified);
+                        mVerified.sort(String::compareToIgnoreCase);
+                        mVerifiedRecyclerAdapter.notifyDataSetChanged();
+                    }
                     mRequests.remove(i);
-                    mVerifiedRecyclerAdapter.notifyDataSetChanged();
                     mRecyclerAdapter.notifyDataSetChanged();
                     break;
                 }
@@ -511,7 +516,7 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
 
     public interface OnConnectionsInteractionListener {
         void onConnectionsInteractionListener(String username);
-        void onRequestInteractionListener(String username);
+        void onRequestInteractionListener(String username, boolean accept);
     }
 
 }
