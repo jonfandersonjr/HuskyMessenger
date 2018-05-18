@@ -42,6 +42,7 @@ public class PullService extends IntentService {
     private static final String TAG = "PullService";
 
     private static String mUsername = "";
+    private static String mChatName = "";
 
     private boolean isInForeground;
 
@@ -114,57 +115,6 @@ public class PullService extends IntentService {
                 .onCancelled(this::handleErrorsInTask)
                 .build().execute();
 
-
-
-
-/*
-
-        StringBuilder response = new StringBuilder();
-        HttpURLConnection urlConnection = null;
-
-        //go out and ask for new messages
-
-        try {
-            Log.wtf(TAG, retrieve.toString());
-
-            /*
-            mListenManager = new ListenManager.Builder(retrieve.toString(), this::publishRequests)
-                    .setExceptionHandler(this::handleError)
-                    .setDelay(5000)
-                    .build();
-
-
-            URL urlObject = new URL(retrieve.toString());
-            urlConnection = (HttpURLConnection) urlObject.openConnection();
-            InputStream content = urlConnection.getInputStream();
-            BufferedReader buffer = new BufferedReader(new InputStreamReader(content));
-            String s;
-            while ((s = buffer.readLine()) != null) {
-                response.append(s);
-            }
-
-
-
-        } catch (Exception e) {
-            Log.e("ERROR", e.getMessage());
-        } finally {
-            if (urlConnection != null) {
-                urlConnection.disconnect();
-            }
-        }
-
-        if (isInForeground) {
-            Intent i = new Intent(RECEIVED_UPDATE);
-            //add bundle to send the response to any receivers
-            Log.wtf("****TEST****", response.toString());
-            i.putExtra(getString(R.string.keys_extra_results), response.toString());
-            sendBroadcast(i);
-        } else {
-            buildNotification(response.toString());
-        }
-
-        */
-
         return true;
     }
 
@@ -177,8 +127,8 @@ public class PullService extends IntentService {
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.ic_temp_icon)
-                        .setContentTitle("New Message from " + s + "!")
-                        .setContentText("Click to chat!");
+                        .setContentTitle("New Message in " + s + "!")
+                        .setContentText("Click to view!");
 
         // Creates an Intent for the Activity
         Intent notifyIntent =
@@ -230,6 +180,7 @@ public class PullService extends IntentService {
                             String currentDateTime = dateFormat.format(date);
 
                             int chatid = jReqs.getJSONObject(i).getInt("chatid");
+                            mChatName = jReqs.getJSONObject(i).getString("name");
 
                             //build the web service URL
                             Uri uri = new Uri.Builder()
@@ -294,11 +245,11 @@ public class PullService extends IntentService {
                                     Intent intent = new Intent(RECEIVED_UPDATE);
                                     //add bundle to send the response to any receivers
                                     Log.wtf("****TEST****", messageFrom);
-                                    intent.putExtra(getString(R.string.keys_extra_results), messageFrom);
+                                    intent.putExtra(getString(R.string.keys_extra_results), mChatName);
                                     sendBroadcast(intent);
                                 } else {
                                     Log.e(TAG, "Out of app building notification");
-                                    buildNotification(messageFrom);
+                                    buildNotification(mChatName);
                                 }
                                 break;
                             }
