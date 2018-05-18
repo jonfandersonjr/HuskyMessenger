@@ -10,6 +10,8 @@
     <string name="keys_fragment_register">registerFragmentTag</string>
     <string name="keys_fragment_verify">verifyFragmentTag</string>
     <string name="keys_fragment_connections">connectionsFragmentTag</string>
+    <string name="keys_fragment_searchConnections">searchConnectionsTag</string>
+
     <string name="keys_prefs_time_stamp">ts key</string>
 
     <string name="keys_json_username">username</string>
@@ -23,6 +25,7 @@
     <string name="keys_json_chat_id">chatId</string>
     <string name="keys_json_request_memberid">memberid_a</string>
     <string name="keys_json_requests">requests</string>
+    <string name="keys_json_results">results</string>
     <string name="keys_json_success_value_true">true</string>
     <string name="keys_json_success_value_false">false</string>
     <string name="keys_json_connections_a">connections_a</string>

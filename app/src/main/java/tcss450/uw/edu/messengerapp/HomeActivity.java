@@ -22,22 +22,31 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 import tcss450.uw.edu.messengerapp.model.PullService;
 
 public class HomeActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
-        ConnectionsFragment.OnConnectionsInteractionListener {
+        ConnectionsFragment.OnConnectionsInteractionListener,
+        SearchContactsFragment.OnSearchFragmentInteractionListener {
 
     private static final String TAG = "HomeActivity";
     private DataUpdateReciever mDataUpdateReceiver;
+    private String mUsername;
     public int mTotalNotifacations = 0;
     public int mChatNotifacations = 0;
     public int mNumConnectionNotifacations = 0;
+
+    private ArrayList<String> mContacts, mRequests, mPending;
+
     TextView chatNotifications, connectionNotifications, mNotificationsBar;
 
     @Override
@@ -64,6 +73,8 @@ public class HomeActivity extends AppCompatActivity
         final SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(getString(R.string.keys_sp_on), true);
         editor.apply();
+
+        mUsername = sharedPreferences.getString("username", "");
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -99,7 +110,9 @@ public class HomeActivity extends AppCompatActivity
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else if (!drawer.isDrawerOpen(GravityCompat.START) &&
-                (currentFragment instanceof HomeFragment) ||(currentFragment instanceof ChatFragment)) {
+                (currentFragment instanceof HomeFragment) ||
+                (currentFragment instanceof ChatFragment) ||
+                (currentFragment instanceof SearchContactsFragment)) {
             super.onBackPressed();
         } else {
             loadFragment(new HomeFragment());
@@ -146,12 +159,13 @@ public class HomeActivity extends AppCompatActivity
                     .beginTransaction()
                     .replace(R.id.homeFragmentContainer, frag, tag);
             transaction.commit();
-        }
+        } else {
 
-        android.support.v4.app.FragmentTransaction transaction = getSupportFragmentManager()
+            android.support.v4.app.FragmentTransaction transaction = getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.homeFragmentContainer, frag);
-        transaction.commit();
+            transaction.commit();
+        }
     }
 
     public void loadChatActivity() {
@@ -374,6 +388,48 @@ public class HomeActivity extends AppCompatActivity
 
     }
 
+    @Override
+    public void onSearchInteractionListener(String searchBy, String searchString,
+                                            ArrayList<String> contacts, ArrayList<String> requests,
+                                            ArrayList<String> pending) {
+        mContacts = contacts;
+        mRequests = requests;
+        mPending = pending;
+
+        searchString = searchString.toUpperCase();
+        String endpoint;
+
+        if (searchBy.equals("firstname")) {
+            endpoint = getString(R.string.ep_get_credentials_first);
+        } else if (searchBy.equals("lastname")) {
+            endpoint = getString(R.string.ep_get_credentials_last);
+        } else if (searchBy.equals("username")) {
+            endpoint = getString(R.string.ep_get_credentials_username);
+        } else {
+            endpoint = getString(R.string.ep_get_credentials_email);
+        }
+
+        Uri uri = new Uri.Builder()
+                .scheme("https")
+                .appendPath(getString(R.string.ep_base_url))
+                .appendPath(endpoint)
+                .build();
+
+        JSONObject msg = new JSONObject();
+        try {
+            msg.put(searchBy, searchString);
+        } catch (JSONException e) {
+            Log.wtf("Search Interaction", "Error reading JSON" + e.getMessage());
+        }
+
+        new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
+                .onPreExecute(this::handleRequestOnPre)
+                .onPostExecute(this::handleSearchOnPost)
+                .onCancelled(this::handleErrorsInTask)
+                .build().execute();
+
+    }
+
     private void handleRequestOnPre() {
         ConnectionsFragment frag = (ConnectionsFragment) getSupportFragmentManager()
                 .findFragmentByTag(getString(R.string.keys_fragment_connections));
@@ -400,6 +456,118 @@ public class HomeActivity extends AppCompatActivity
             frag.setError("Something strange happened");
             frag.handleOnError(e.toString());
         }
+    }
+
+    private void handleSearchOnPost(String result) {
+        ConnectionsFragment frag = (ConnectionsFragment) getSupportFragmentManager()
+                .findFragmentByTag(getString(R.string.keys_fragment_connections));
+
+        boolean inContacts;
+        boolean inRequests;
+        boolean inPending;
+
+        ArrayList<String> newPeople = new ArrayList<String>();
+        ArrayList<String> contactList = new ArrayList<String>();
+        ArrayList<String> requestList = new ArrayList<String>();
+        ArrayList<String> pendingList = new ArrayList<String>();
+
+        try {
+            JSONObject resultsJSON = new JSONObject(result);
+            boolean success = resultsJSON.getBoolean("success");
+
+            if (success) {
+                if (resultsJSON.has(getString(R.string.keys_json_results))) {
+                    try {
+                        JSONArray jRes = resultsJSON
+                                .getJSONArray(getString(R.string.keys_json_results));
+                        if (jRes.length() == 0) {
+                            frag.handleEmptySearch();
+                            return;
+                        } else {
+                            for (int i = 0; i < jRes.length(); i++) {
+                                JSONObject res = jRes.getJSONObject(i);
+                                String username = res.getString(getString(R.string.keys_json_username));
+                                String firstname = res.getString(getString(R.string.keys_json_requests_firstname));
+                                String lastname = res.getString(getString(R.string.keys_json_requests_lastname));
+                                String str = username + " (" + lastname + ", " + firstname + ")";
+
+                                inContacts = searchName(username, mContacts);
+                                inRequests = searchName(username, mRequests);
+                                inPending = searchName(username, mPending);
+
+                                if (!username.equals(mUsername))
+
+                                if (inContacts) {
+                                    contactList.add(str);
+                                } else if (inRequests) {
+                                    requestList.add(str);
+                                } else if (inPending) {
+                                    pendingList.add(str);
+                                } else {
+                                    newPeople.add(str);
+                                }
+
+                            }
+
+                            if (contactList.isEmpty() && requestList.isEmpty() &&
+                                    pendingList.isEmpty() && newPeople.isEmpty()) {
+                                frag.handleSearchForSelf();
+                                return;
+                            }
+
+                            frag.handleSearchOnPost();
+
+                            Bundle extras = new Bundle();
+                            extras.putStringArrayList("contacts", contactList);
+                            extras.putStringArrayList("requests", requestList);
+                            extras.putStringArrayList("pending", pendingList);
+                            extras.putStringArrayList("newPeople", newPeople);
+
+                            SearchContactsFragment fragment = new SearchContactsFragment();
+                            fragment.setArguments(extras);
+
+                            getSupportFragmentManager().beginTransaction()
+                                    .setCustomAnimations(R.anim.enter, R.anim.exit,
+                                            R.anim.pop_enter, R.anim.pop_exit)
+                                    .replace(R.id.homeFragmentContainer, fragment,
+                                            getString(R.string.keys_fragment_searchConnections))
+                                    .addToBackStack(null).commit();
+                            getSupportFragmentManager().executePendingTransactions();
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        frag.handleErrorsInTask(e.toString());
+                        frag.setError(e.toString());
+                    }
+                }
+            }
+        } catch (JSONException e) {
+            frag.setError("Something strange happened");
+            frag.handleOnError(e.toString());
+        }
+    }
+
+    private boolean searchName(String username, ArrayList<String> existingList) {
+        int low = 0;
+        int high = existingList.size() - 1;
+        int mid;
+
+        while (low <= high) {
+            mid = (low + high) / 2;
+            String name = existingList.get(mid);
+            String substr = name.substring(0, name.indexOf(" "));
+
+            if (substr.compareToIgnoreCase(username) < 0) {
+                low = mid + 1;
+            } else if (substr.compareToIgnoreCase(username) > 0) {
+                high = mid - 1;
+            } else {
+                return true;
+            }
+
+        }
+
+        return false;
     }
 
     //**********DATA UPDATE RECEIVER************//

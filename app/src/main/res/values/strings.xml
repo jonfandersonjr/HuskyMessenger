@@ -83,6 +83,12 @@
         <item>Email</item>
     </string-array>
 
+    /**Strings for SearchConnections Fragment UI**/
+    <string name="searchConnections_header_text_view">Search Results</string>
+    <string name="searchConnections_current_connections_text">Current Connections</string>
+    <string name="searchConnections_requests_text">They\'ve Requested to Connect!</string>
+    <string name="searchConnections_pending_text">You\'re Waiting On Them...</string>
+
     /**Strings for Weather Fragment UI**/
     <string name="weather_button_start">Start Service</string>
     <string name="weather_button_end">End Service</string>

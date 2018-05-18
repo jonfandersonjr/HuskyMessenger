@@ -22,6 +22,8 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.ProgressBar;
@@ -80,6 +82,14 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(spinnerAdapter);
         spinner.setOnItemSelectedListener(this);
+
+        ImageButton b = (ImageButton) v.findViewById(R.id.connectionsSearchButton);
+        b.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onSearchButtonClick();
+            }
+        });
 
 
         return v;
@@ -176,7 +186,7 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
 
     @Override
     public void onNothingSelected(AdapterView<?> adapterView) {
-
+        mSearchBy = "username";
     }
 
     @Override
@@ -217,6 +227,20 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
         //mInteractionListener.onRequestInteractionListener(str);
     }
 
+    public void onSearchButtonClick() {
+        EditText search = (EditText) getView().findViewById(R.id.connectionsSearchEditText);
+        String searchString = search.getText().toString();
+
+        if (searchString.trim().length() == 0) {
+            search.setError("Field cannot be empty");
+        } else {
+            mInteractionListener
+                    .onSearchInteractionListener(mSearchBy, searchString,
+                            mVerified, mRequests, mPending);
+        }
+
+    }
+
 
     public void getContacts() {
         SharedPreferences prefs =
@@ -239,7 +263,7 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
         }
 
         new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
-                .onPreExecute(this::handleContactsOnPre)
+                .onPreExecute(this::handleRequestOnPre)
                 .onPostExecute(this::handleContactsOnPost)
                 .onCancelled(this::handleErrorsInTask)
                 .build().execute();
@@ -265,18 +289,10 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
         }
 
         new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
-                .onPreExecute(this::handlePendingOnPre)
+                .onPreExecute(this::handleRequestOnPre)
                 .onPostExecute(this::handlePendingOnPost)
                 .onCancelled(this::handleErrorsInTask)
                 .build().execute();
-
-    }
-
-    public void handleContactsOnPre() {
-
-    }
-
-    public void handlePendingOnPre() {
 
     }
 
@@ -343,6 +359,11 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
                         new DividerItemDecoration(mVerifiedList.getContext(),
                                 layoutManager2.getOrientation());
                 mVerifiedList.addItemDecoration(dividerItemDecoration2);
+
+                ViewGroup vg = (ViewGroup) getView().findViewById(R.id.connectionsFrameLayout);
+
+                enableDisableViewGroup(vg, true);
+
             } else {
                 Log.e("IT DOESN'T WORK", "WHY NOT");
             }
@@ -396,6 +417,10 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
                                 layoutManager.getOrientation());
                 mVerifiedList.addItemDecoration(dividerItemDecoration);
 
+                ViewGroup vg = (ViewGroup) getView().findViewById(R.id.connectionsFrameLayout);
+
+                enableDisableViewGroup(vg, true);
+
             } else {
                 Log.wtf("IT'S NOT WORKING (PENDING ON POST)", "WHY NOT");
             }
@@ -405,6 +430,9 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
     }
 
     public void handleErrorsInTask(String result) {
+        ViewGroup vg = (ViewGroup) getView().findViewById(R.id.connectionsFrameLayout);
+        enableDisableViewGroup(vg, true);
+
         Log.e("ASYNC_TASK_ERROR", result);
     }
 
@@ -481,6 +509,26 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
 
     }
 
+    public void handleSearchOnPost() {
+        ViewGroup vg = (ViewGroup) getView().findViewById(R.id.connectionsFrameLayout);
+        enableDisableViewGroup(vg, true);
+    }
+
+    public void handleEmptySearch() {
+        ViewGroup vg = (ViewGroup) getView().findViewById(R.id.connectionsFrameLayout);
+        enableDisableViewGroup(vg, true);
+
+        Toast.makeText(getActivity(), "Search yielded no results", Toast.LENGTH_LONG).show();
+    }
+
+    public void handleSearchForSelf() {
+        ViewGroup vg = (ViewGroup) getView().findViewById(R.id.connectionsFrameLayout);
+        enableDisableViewGroup(vg, true);
+
+        Toast.makeText(getActivity(), "I think you just searched for yourself...",
+                Toast.LENGTH_LONG).show();
+    }
+
     private void enableDisableViewGroup(ViewGroup vg, boolean enabled) {
         int children = vg.getChildCount();
         for (int i = 0; i < children; i++) {
@@ -517,6 +565,9 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
     public interface OnConnectionsInteractionListener {
         void onConnectionsInteractionListener(String username);
         void onRequestInteractionListener(String username, boolean accept);
+        void onSearchInteractionListener(String searchBy, String searchString,
+                                         ArrayList<String> contacts, ArrayList<String> requests,
+                                         ArrayList<String> pending);
     }
 
 }
