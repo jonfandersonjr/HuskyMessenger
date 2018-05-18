@@ -220,28 +220,6 @@ public class PullService extends IntentService {
         }
     }
 
-    //********************Working code, old version***************************//
-    /*
-                            for (int i = 0; i < jReqs.length(); i++) {
-                            String messageFrom = jReqs.getJSONObject(i).getString("username");
-
-                            if (messageFrom != mUsername) {
-                                if (isInForeground) {
-                                    Log.e(TAG, "Inside app sending notification");
-                                    Intent intent = new Intent(MESSAGE_UPDATE);
-                                    //add bundle to send the response to any receivers
-                                    Log.wtf("****TEST****", messageFrom);
-                                    intent.putExtra(getString(R.string.keys_extra_results), mChatName);
-                                    sendBroadcast(intent);
-                                } else {
-                                    Log.e(TAG, "Out of app building notification");
-                                    buildNotification(mChatName);
-                                }
-                                break;
-                            }
-                        }
-     */
-
     public void handleGetMessagesOnPre() {
 
     }
@@ -269,7 +247,7 @@ public class PullService extends IntentService {
                                 Log.e(TAG, "Inside app sending notification");
                                 Intent intent = new Intent(MESSAGE_UPDATE);
                                 Log.wtf("****TEST****", messageFrom);
-                                intent.putExtra(getString(R.string.keys_extra_results), mChatName);
+                                intent.putExtra(getString(R.string.keys_extra_results), messageFrom);
                                 sendBroadcast(intent);
                             } else {
                                 Log.e(TAG, "Out of app building notification");

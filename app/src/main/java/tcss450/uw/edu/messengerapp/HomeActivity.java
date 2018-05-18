@@ -570,7 +570,7 @@ public class HomeActivity extends AppCompatActivity
                     if (mIncomingMessages.indexOf(s) == mIncomingMessages.size() - 2)
                         sb.append("and ");
                     if (mIncomingMessages.indexOf(s) == mIncomingMessages.size() - 1)
-                        sb.append(" sent you a message!");
+                        sb.append(" sent a new a message!");
                 }
             } else if (!mIncomingConnectionRequests.isEmpty()) {
                 for (String s : mIncomingConnectionRequests) {
