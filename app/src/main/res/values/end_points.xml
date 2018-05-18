@@ -21,6 +21,13 @@
     <string name="ep_post_add_new_chat">addNewChat</string>
     <string name="ep_post_get_messages">getMessages3</string>
 
+    /**credentials endpoints**/
+    <string name="ep_get_credentials_username">getCredentialsFromUsername</string>
+    <string name="ep_get_credentials_first">getCredentialsFromFirst</string>
+    <string name="ep_get_credentials_last">getCredentialsFromLast</string>
+    <string name="ep_get_credentials_email">getCredentialsFromEmail</string>
+
+
     /**Temporary ep from Lab for testing Notifacations**/
     <string name="ep_my_api_key">BF2A6E6EEBD34563A52B</string>
     <string name="ep_api_key_arg">apikey</string>
