@@ -22,7 +22,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import org.json.JSONArray;
@@ -39,12 +38,15 @@ public class HomeActivity extends AppCompatActivity
         SearchContactsFragment.OnSearchFragmentInteractionListener {
 
     private static final String TAG = "HomeActivity";
-    private DataUpdateReciever mDataUpdateReceiver;
+    private MessageUpdateReceiver mMessagesUpdateReceiver;
+    private ConnectionUpdateReceiver mConnectionsUpdateReceiver;
     private String mUsername;
-    public int mTotalNotifacations = 0;
+    public int mTotalNotifications = 0;
     public int mChatNotifacations = 0;
     public int mNumConnectionNotifacations = 0;
 
+    private ArrayList<String> mIncomingMessages = new ArrayList<>();
+    private ArrayList<String> mIncomingConnectionRequests = new ArrayList<>();
     private ArrayList<String> mContacts, mRequests, mPending;
 
     TextView chatNotifications, connectionNotifications, mNotificationsBar;
@@ -185,8 +187,7 @@ public class HomeActivity extends AppCompatActivity
         switch (id) {
             case R.id.nav_connections:
                 loadFragment(new ConnectionsFragment());
-                mNumConnectionNotifacations = 0;
-                updateNotificationsUI();
+                updateNotificationsUI(mChatNotifacations, 0);
                 break;
             case R.id.nav_chat:
                 loadChatActivity();
@@ -194,8 +195,7 @@ public class HomeActivity extends AppCompatActivity
                 break;
             case R.id.nav_chatmanager:
                 loadFragment(new ChatManagerFragment());
-                mChatNotifacations = 0;
-                updateNotificationsUI();
+                updateNotificationsUI(0, mNumConnectionNotifacations);
                 break;
             case R.id.nav_weather:
                 loadFragment(new WeatherFragment());
@@ -249,13 +249,19 @@ public class HomeActivity extends AppCompatActivity
             mNotificationsBar = (TextView) findViewById(R.id.notifacationBar);
         }
 
-        if (mDataUpdateReceiver == null) {
-            mDataUpdateReceiver = new DataUpdateReciever();
+        if (mMessagesUpdateReceiver == null) {
+            mMessagesUpdateReceiver = new MessageUpdateReceiver();
         }
-        IntentFilter iFilter = new IntentFilter(PullService.RECEIVED_UPDATE);
-        registerReceiver(mDataUpdateReceiver, iFilter);
+        if (mConnectionsUpdateReceiver == null) {
+            mConnectionsUpdateReceiver = new ConnectionUpdateReceiver();
+        }
+        IntentFilter iFilter = new IntentFilter(PullService.MESSAGE_UPDATE);
+        registerReceiver(mMessagesUpdateReceiver, iFilter);
 
-        updateNotificationsUI();
+        IntentFilter iFilter2 = new IntentFilter(PullService.CONNECTION_UPDATE);
+        registerReceiver(mConnectionsUpdateReceiver, iFilter2);
+
+        updateNotificationsUI(mChatNotifacations, mNumConnectionNotifacations);
     }
 
     @Override
@@ -271,8 +277,11 @@ public class HomeActivity extends AppCompatActivity
             //restart but in the background
             PullService.startServiceAlarm(this, false);
         }
-        if (mDataUpdateReceiver != null){
-            unregisterReceiver(mDataUpdateReceiver);
+        if (mMessagesUpdateReceiver != null){
+            unregisterReceiver(mMessagesUpdateReceiver);
+        }
+        if (mConnectionsUpdateReceiver != null) {
+            unregisterReceiver(mConnectionsUpdateReceiver);
         }
 
     }
@@ -312,44 +321,6 @@ public class HomeActivity extends AppCompatActivity
             Log.e(TAG, e.toString());
         }
         return result;
-    }
-
-    private void updateNotificationsUI (){
-        if (mTotalNotifacations % 2 == 0) {
-            mChatNotifacations++;
-        } else {
-            mNumConnectionNotifacations++;
-        }
-        //if (notification == chat) mChatNotifacations++;
-        //if (notification == connection) mConnectionNotifacations++;
-        mTotalNotifacations = mChatNotifacations + mNumConnectionNotifacations;
-
-        Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.homeFragmentContainer);
-
-        if (currentFragment instanceof HomeFragment) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("You have ");
-            sb.append(mTotalNotifacations);
-            if (mTotalNotifacations == 1) {
-                sb.append(" notification");
-            } else {
-                sb.append(" notifications");
-            }
-            mNotificationsBar = (TextView) findViewById(R.id.notifacationBar);
-            mNotificationsBar.setText(sb.toString());
-        }
-
-        if (mChatNotifacations > 0) {
-            chatNotifications.setGravity(Gravity.CENTER_VERTICAL);
-            chatNotifications.setTypeface(null, Typeface.BOLD);
-            chatNotifications.setTextColor(getResources().getColor(R.color.colorAccent));
-            chatNotifications.setText(String.valueOf(mChatNotifacations)); } else chatNotifications.setText("");
-        if (mNumConnectionNotifacations > 0) {
-            connectionNotifications.setGravity(Gravity.CENTER_VERTICAL);
-            connectionNotifications.setTypeface(null, Typeface.BOLD);
-            connectionNotifications.setTextColor(getResources().getColor(R.color.colorAccent));
-            connectionNotifications.setText(String.valueOf(mNumConnectionNotifacations)); } else connectionNotifications.setText("");
-
     }
 
     @Override
@@ -553,6 +524,10 @@ public class HomeActivity extends AppCompatActivity
         }
     }
 
+    private void handleErrorsInTask(String result) {
+        Log.e("ASYNC_TASK_ERROR", result);
+    }
+
     private boolean searchName(String username, ArrayList<String> existingList) {
         int low = 0;
         int high = existingList.size() - 1;
@@ -576,24 +551,82 @@ public class HomeActivity extends AppCompatActivity
         return false;
     }
 
-    //**********DATA UPDATE RECEIVER************//
-    private class DataUpdateReciever extends BroadcastReceiver {
+
+    private void updateNotificationsUI (final int theChatNotifications, final int theConnectionNotifications){
+
+        mChatNotifacations = theChatNotifications;
+        mNumConnectionNotifacations = theConnectionNotifications;
+        mTotalNotifications = mChatNotifacations + mNumConnectionNotifacations;
+
+        Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.homeFragmentContainer);
+
+        if (currentFragment instanceof HomeFragment) {
+            StringBuilder sb = new StringBuilder();
+            if (!mIncomingMessages.isEmpty()) {
+                for (String s : mIncomingMessages) {
+                    sb.append(s);
+                    if (mIncomingMessages.indexOf(s) < mIncomingMessages.size() - 1)
+                        sb.append(", ");
+                    if (mIncomingMessages.indexOf(s) == mIncomingMessages.size() - 2)
+                        sb.append("and ");
+                    if (mIncomingMessages.indexOf(s) == mIncomingMessages.size() - 1)
+                        sb.append(" sent you a message!");
+                }
+            } else if (!mIncomingConnectionRequests.isEmpty()) {
+                for (String s : mIncomingConnectionRequests) {
+                    sb.append(s);
+                    if (mIncomingConnectionRequests.indexOf(s) < mIncomingConnectionRequests.size() - 1)
+                        sb.append(", ");
+                    if (mIncomingConnectionRequests.indexOf(s) == mIncomingConnectionRequests.size() - 2)
+                        sb.append("and ");
+                    if (mIncomingConnectionRequests.indexOf(s) == mIncomingConnectionRequests.size() - 1)
+                        sb.append(" sent you a connections request!");
+                }
+            } else {
+                sb.append("You have no new notifications");
+            }
+
+            mNotificationsBar = (TextView) findViewById(R.id.notifacationBar);
+            mNotificationsBar.setText(sb.toString());
+        }
+
+        if (mChatNotifacations > 0) {
+            chatNotifications.setGravity(Gravity.CENTER_VERTICAL);
+            chatNotifications.setTypeface(null, Typeface.BOLD);
+            chatNotifications.setTextColor(getResources().getColor(R.color.colorAccent));
+            chatNotifications.setText(String.valueOf(mChatNotifacations)); } else chatNotifications.setText("");
+        if (mNumConnectionNotifacations > 0) {
+            connectionNotifications.setGravity(Gravity.CENTER_VERTICAL);
+            connectionNotifications.setTypeface(null, Typeface.BOLD);
+            connectionNotifications.setTextColor(getResources().getColor(R.color.colorAccent));
+            connectionNotifications.setText(String.valueOf(mNumConnectionNotifacations)); } else connectionNotifications.setText("");
+
+        mIncomingMessages.clear();
+        mIncomingConnectionRequests.clear();
+
+    }
+
+
+    //**********NOTIFICATION RECEIVERS************//
+    private class MessageUpdateReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(PullService.RECEIVED_UPDATE)) {
-                Log.d("UpdateReceiver", "hey I just got your broadcast!");
-                mNotificationsBar = (TextView) findViewById(R.id.notifacationBar);
-                updateNotificationsUI();
-                //mResultStrings.add(intent.getStringExtra(getString(R.string.keys_extra_results)));
-
-                //TO-DO handle notifacations properly (display red symbols on items?)
+            if (intent.getAction().equals(PullService.MESSAGE_UPDATE)) {
+                Log.d("MessageReceiver", "hey, we got a new message!");
+                mIncomingMessages.add(intent.getStringExtra(getString(R.string.keys_extra_results)));
+                updateNotificationsUI(mChatNotifacations+1, mNumConnectionNotifacations);
             }
         }
     }
-
-    private void handleErrorsInTask(String result) {
-        Log.e("ASYNC_TASK_ERROR", result);
+    private class ConnectionUpdateReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(PullService.CONNECTION_UPDATE)) {
+                Log.d("NotificationReceiver", "hey, we got a new connection request!");
+                mIncomingConnectionRequests.add(intent.getStringExtra(getString(R.string.keys_extra_results)));
+                updateNotificationsUI(mChatNotifacations, mNumConnectionNotifacations+1);
+            }
+        }
     }
-
 
 }
