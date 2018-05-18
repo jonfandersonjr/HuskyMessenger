@@ -219,24 +219,9 @@ public class PullService extends IntentService {
         }
     }
 
-    public void handleGetMessagesOnPre() {
-
-    }
-
-    public void handleGetMessagesOnPost(String result) {
-
-        Log.e(TAG, "Inside getNewMessages post");
-
-        try {
-            JSONObject resultsJSON = new JSONObject(result);
-            boolean success = resultsJSON.getBoolean("success");
-            ArrayList<String> results = new ArrayList<String>();
-
-            if (success) {
-                if (resultsJSON.has(getString(R.string.keys_json_messages))) {
-                    try {
-                        JSONArray jReqs = resultsJSON.getJSONArray(getString(R.string.keys_json_messages));
-                        for (int i = 0; i < jReqs.length(); i++) {
+    //********************Working code, old version***************************//
+    /*
+                            for (int i = 0; i < jReqs.length(); i++) {
                             String messageFrom = jReqs.getJSONObject(i).getString("username");
 
                             if (messageFrom != mUsername) {
@@ -254,6 +239,38 @@ public class PullService extends IntentService {
                                 break;
                             }
                         }
+     */
+
+    public void handleGetMessagesOnPre() {
+
+    }
+
+    public void handleGetMessagesOnPost(String result) {
+
+        Log.e(TAG, "Inside getNewMessages post");
+
+        try {
+            JSONObject resultsJSON = new JSONObject(result);
+            boolean success = resultsJSON.getBoolean("success");
+            ArrayList<String> results = new ArrayList<String>();
+
+            if (success) {
+                if (resultsJSON.has(getString(R.string.keys_json_messages))) {
+                    try {
+                        JSONArray jReqs = resultsJSON.getJSONArray(getString(R.string.keys_json_messages));
+                        String messageFrom = jReqs.getJSONObject(jReqs.length()-1).getString("username");
+                        if (!messageFrom.equals(mUsername) && true)//check) {
+                            if (isInForeground) {
+                                Log.e(TAG, "Inside app sending notification");
+                                Intent intent = new Intent(RECEIVED_UPDATE);
+                                //add bundle to send the response to any receivers
+                                Log.wtf("****TEST****", messageFrom);
+                                intent.putExtra(getString(R.string.keys_extra_results), mChatName);
+                                sendBroadcast(intent);
+                            } else {
+                                Log.e(TAG, "Out of app building notification");
+                                buildNotification(mChatName);
+                            }
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -263,6 +280,8 @@ public class PullService extends IntentService {
             Log.e("JSON_PARSE_ERROR", result + System.lineSeparator() + e.getMessage());
         }
     }
+
+
 
     public void handleErrorsInTask(String result) {
         Log.e("ASYNC_TASK_ERROR", result);
