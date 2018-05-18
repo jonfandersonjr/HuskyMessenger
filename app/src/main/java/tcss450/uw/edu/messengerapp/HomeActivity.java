@@ -110,9 +110,11 @@ public class HomeActivity extends AppCompatActivity
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else if (!drawer.isDrawerOpen(GravityCompat.START) &&
+
                 (currentFragment instanceof HomeFragment) ||
                 (currentFragment instanceof ChatFragment) ||
                 (currentFragment instanceof SearchContactsFragment)) {
+
             super.onBackPressed();
         } else {
             loadFragment(new HomeFragment());
@@ -169,6 +171,7 @@ public class HomeActivity extends AppCompatActivity
     }
 
     public void loadChatActivity() {
+        super.onBackPressed();
         Intent intent = new Intent(this, ChatActivity.class);
         startActivity(intent);
     }
@@ -248,7 +251,6 @@ public class HomeActivity extends AppCompatActivity
         IntentFilter iFilter = new IntentFilter(PullService.RECEIVED_UPDATE);
         registerReceiver(mDataUpdateReceiver, iFilter);
 
-        mNotificationsBar = (TextView) findViewById(R.id.notifacationBar);
         updateNotificationsUI();
     }
 
