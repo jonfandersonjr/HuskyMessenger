@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="ep_base_url">group3-messenger-backend.herokuapp.com</string>
+
     <string name="ep_login">login</string>
     <string name="ep_register">register</string>
     <string name="ep_verify">verify</string>
@@ -14,7 +15,11 @@
     <string name="ep_verify_contact_request">verifyContactRequest</string>
     <string name="ep_decline_contact_request">declineContactRequest</string>
 
-
+    /**Messages Endpoints**/
+    <string name="ep_get_all_chats">getAllChats</string>
+    <string name="ep_post_add_user_to_chat">addUserToChat</string>
+    <string name="ep_post_add_new_chat">addNewChat</string>
+    <string name="ep_post_get_messages">getMessages3</string>
 
     /**Temporary ep from Lab for testing Notifacations**/
     <string name="ep_my_api_key">BF2A6E6EEBD34563A52B</string>

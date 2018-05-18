@@ -212,12 +212,16 @@ public class HomeActivity extends AppCompatActivity
         SharedPreferences sharedPreferences =
                 getSharedPreferences(getString(R.string.keys_shared_prefs),
                         Context.MODE_PRIVATE);
-        // Check to see if the service should aleardy be running
+        // Check to see if the service should already be running
         if (sharedPreferences.getBoolean(getString(R.string.keys_sp_on), false)) {
             //stop the service from the background
             PullService.stopServiceAlarm(this);
             //restart but in the foreground
             PullService.startServiceAlarm(this, true);
+
+            String username = sharedPreferences.getString(getString(R.string.keys_prefs_username), "");
+            PullService.setUsername(username);
+
         }
 
         //Look to see if the intent has a result string for us.
