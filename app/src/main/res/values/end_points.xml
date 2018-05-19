@@ -2,6 +2,7 @@
 <resources>
     <string name="ep_base_url">group3-messenger-backend.herokuapp.com</string>
 
+
     <string name="ep_login">login</string>
     <string name="ep_register">register</string>
     <string name="ep_verify">verify</string>

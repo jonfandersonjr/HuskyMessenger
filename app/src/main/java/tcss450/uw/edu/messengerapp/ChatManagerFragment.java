@@ -195,7 +195,7 @@ public class ChatManagerFragment extends Fragment {
 
                 }
 
-//                Log.e("VIEW CHATS", ""+ mChatnames.size());
+                Log.e("VIEW CHATS", ""+ mChatnames.size());
 
             }
         });
@@ -205,7 +205,7 @@ public class ChatManagerFragment extends Fragment {
 
 
     private void getAllChats() {
-        //Log.e("CALL","Called get all chats");
+        Log.e("CALL","Called get all chats");
         SharedPreferences prefs = getActivity().getSharedPreferences(getString(R.string.keys_shared_prefs),
                 Context.MODE_PRIVATE);
 
@@ -215,66 +215,85 @@ public class ChatManagerFragment extends Fragment {
 
         mUsername = "test1";
         //prefs.getString(getString(R.string.keys_prefs_username), "");
-
+        JSONObject msg = new JSONObject();
+        try {
+            msg.put("username", mUsername);
+        } catch (JSONException e) {
+            Log.wtf("JSON EXCEPTION", e.toString());
+        }
+//        Uri retrieveRequests = new Uri.Builder()
+////                .scheme("https")
+////                .appendPath(getString(R.string.ep_base_url))
+////                .appendPath(getString(R.string.ep_get_all_chats))
+////                .appendQueryParameter("username", mUsername)
+////                .build();
         Uri retrieveRequests = new Uri.Builder()
                 .scheme("https")
                 .appendPath(getString(R.string.ep_base_url))
                 .appendPath(getString(R.string.ep_get_all_chats))
-                .appendQueryParameter("username", mUsername)
                 .build();
 
-        //Log.e("CONTENT",retrieveRequests.toString());
+        Log.e("CONTENT",retrieveRequests.toString());
 
-        mListenerManager = new ListenManager.Builder(retrieveRequests.toString(), this::publishRequests)
-                .setExceptionHandler(this::handleError)
-                .setDelay(5000)
-                .build();
+//        mListenerManager = new ListenManager.Builder(retrieveRequests.toString(), this::publishRequests)
+//                .setExceptionHandler(this::handleError)
+//                .setDelay(5000)
+//                .build();
+        new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(retrieveRequests.toString(), msg)
+                .onPreExecute(this::handleGetChatsOnPre)
+                .onPostExecute(this::publishRequests)
+                .onCancelled(this::handleError)
+                .build().execute();
 
 
 
     }
-    private void handleError(final Exception e) {
-        Log.e("LISTEN ERROR!!!", e.getMessage());
+    public void handleGetChatsOnPre() {
+
+    }
+    private void handleError(String e) {
+        Log.e("LISTEN ERROR!!!", e);
     }
 
-    private void publishRequests(JSONObject requests) {
-//        Log.e("ChatManager",requests.toString());
-        final String[] reqs;
-        if (requests.has("chats")) {
-//            Log.e("INSIDE","I got here!!!");
+    public void publishRequests(String result) {
+        try {
+            JSONObject requests = new JSONObject(result);
+            boolean success = requests.getBoolean("success");
+            if (success) {
+                Log.e("ChatManager", requests.toString());
+                final String[] reqs;
+                if (requests.has("chats")) {
+                    Log.e("INSIDE", "I got here!!!");
 
-            try {
-                JSONArray jReqs = requests.getJSONArray("chats");
-//                Log.e("SIZE", "" +jReqs.length());
-                reqs = new String[jReqs.length()];
-                for (int i = 0; i < jReqs.length(); i++) {
-                    JSONObject req = jReqs.getJSONObject(i);
-                    String chatname = req.get(getString(R.string.keys_json_chatname))
-                            .toString();
-//                    Log.e("THE CHAT NAMES", chatname );
+                    try {
+                        JSONArray jReqs = requests.getJSONArray("chats");
+                        Log.e("SIZE", "" + jReqs.length());
+                        reqs = new String[jReqs.length()];
+                        for (int i = 0; i < jReqs.length(); i++) {
+                            JSONObject req = jReqs.getJSONObject(i);
+                            String chatname = req.get(getString(R.string.keys_json_chatname))
+                                    .toString();
+                            Log.e("THE CHAT NAMES", chatname);
 //                    chat1 = getView().findViewById(R.id.chat1);
 //                    chat1.setVisibility(View.VISIBLE);
 //                    chat1.setText(chatname);
 
-                    if (!(mChatnames.contains(chatname))) {
-                        mChatnames.add(chatname);
+                            if (!(mChatnames.contains(chatname))) {
+                                mChatnames.add(chatname);
 //                        Button b = new Button(getActivity());
 //                        b = getView().findViewById(R.id.chat2);
 //                        b.setVisibility(View.VISIBLE);
 //                        b.setText(chatname);
-                        //mChatManagerLayout.addView(b);
-                    }
-
-
+                                //mChatManagerLayout.addView(b);
+                            }
 
 
 //                    String firstName = req.get(getString(R.string.keys_json_requests_firstname))
 //                            .toString();
 //                    String lastName = req.get(getString(R.string.keys_json_requests_lastname))
 //                            .toString();
-                    //String str = username + " (" + lastName + ", " +
-                    //       firstName + ") has requested you as a connection!";
-
+                            //String str = username + " (" + lastName + ", " +
+                            //       firstName + ") has requested you as a connection!";
 
 
 //                    if (!mRequests.contains(str)) {
@@ -284,26 +303,30 @@ public class ChatManagerFragment extends Fragment {
 //                            mRecyclerAdapter.notifyDataSetChanged();
 //                        });
 //                    }
-                }
+                        }
 
-            } catch (JSONException e) {
-                e.printStackTrace();
-                return;
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        return;
+                    }
+                    Log.e("HOW MANY CHATS", "" + mChatnames.size());
+                }
             }
-//            Log.e("HOW MANY CHATS", ""+mChatnames.size());
+            } catch (JSONException e) {
+            e.printStackTrace();
         }
         //Log.e("HOW MANY CHATS", ""+mChatnames.size());
     }
     @Override
     public void onStart() {
         super.onStart();
-//        Log.e("HOW MANY CHATS", ""+mChatnames.size());
+        Log.e("HOW MANY CHATS", ""+mChatnames.size());
 
     }
     @Override
     public void onResume() {
         super.onResume();
-        mListenerManager.startListening();
+        //mListenerManager.startListening();
     }
 
 
