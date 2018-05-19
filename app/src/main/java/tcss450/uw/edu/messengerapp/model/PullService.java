@@ -33,8 +33,9 @@ import tcss450.uw.edu.messengerapp.R;
 
 public class PullService extends IntentService {
 
-
-    public static final String RECEIVED_UPDATE = "New Message!";
+    public static final String UPDATE = "UPDATE!";
+    public static final String MESSAGE_UPDATE = "New Message!";
+    public static final String CONNECTION_UPDATE = "New Connection Request!";
 
     //60 seconds - 1 minute is the minimum...
     private static final int POLL_INTERVAL = 60_000;
@@ -219,32 +220,15 @@ public class PullService extends IntentService {
         }
     }
 
-    //********************Working code, old version***************************//
-    /*
-                            for (int i = 0; i < jReqs.length(); i++) {
-                            String messageFrom = jReqs.getJSONObject(i).getString("username");
-
-                            if (messageFrom != mUsername) {
-                                if (isInForeground) {
-                                    Log.e(TAG, "Inside app sending notification");
-                                    Intent intent = new Intent(RECEIVED_UPDATE);
-                                    //add bundle to send the response to any receivers
-                                    Log.wtf("****TEST****", messageFrom);
-                                    intent.putExtra(getString(R.string.keys_extra_results), mChatName);
-                                    sendBroadcast(intent);
-                                } else {
-                                    Log.e(TAG, "Out of app building notification");
-                                    buildNotification(mChatName);
-                                }
-                                break;
-                            }
-                        }
-     */
-
     public void handleGetMessagesOnPre() {
 
     }
 
+    /**
+     * Read through the list of chats and see if the most recent is from
+     * somebody else and came recently.
+     * @param result of finding chats
+     */
     public void handleGetMessagesOnPost(String result) {
 
         Log.e(TAG, "Inside getNewMessages post");
@@ -252,20 +236,18 @@ public class PullService extends IntentService {
         try {
             JSONObject resultsJSON = new JSONObject(result);
             boolean success = resultsJSON.getBoolean("success");
-            ArrayList<String> results = new ArrayList<String>();
 
             if (success) {
                 if (resultsJSON.has(getString(R.string.keys_json_messages))) {
                     try {
                         JSONArray jReqs = resultsJSON.getJSONArray(getString(R.string.keys_json_messages));
                         String messageFrom = jReqs.getJSONObject(jReqs.length()-1).getString("username");
-                        if (!messageFrom.equals(mUsername) && true)//check) {
+                        if (!messageFrom.equals(mUsername) && true)//chat came recently) {
                             if (isInForeground) {
                                 Log.e(TAG, "Inside app sending notification");
-                                Intent intent = new Intent(RECEIVED_UPDATE);
-                                //add bundle to send the response to any receivers
+                                Intent intent = new Intent(MESSAGE_UPDATE);
                                 Log.wtf("****TEST****", messageFrom);
-                                intent.putExtra(getString(R.string.keys_extra_results), mChatName);
+                                intent.putExtra(getString(R.string.keys_extra_results), messageFrom);
                                 sendBroadcast(intent);
                             } else {
                                 Log.e(TAG, "Out of app building notification");

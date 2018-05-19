@@ -50,9 +50,9 @@
         android:src="@android:drawable/ic_menu_rotate"
         app:layout_constraintBottom_toBottomOf="@+id/openChats"
         app:layout_constraintEnd_toEndOf="@+id/openChats"
-        app:layout_constraintHorizontal_bias="0.808"
+        app:layout_constraintHorizontal_bias="0.852"
         app:layout_constraintStart_toStartOf="@+id/openChats"
         app:layout_constraintTop_toTopOf="@+id/openChats"
-        app:layout_constraintVertical_bias="0.698" />
+        app:layout_constraintVertical_bias="0.849" />
 
 </android.support.constraint.ConstraintLayout>
