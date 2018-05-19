@@ -42,14 +42,14 @@ public class HomeActivity extends AppCompatActivity
     private ConnectionUpdateReceiver mConnectionsUpdateReceiver;
     private String mUsername;
     public int mTotalNotifications = 0;
-    public int mChatNotifacations = 0;
-    public int mNumConnectionNotifacations = 0;
+    public int mChatNotifications = 0;
+    public int mNumConnectionNotifications = 0;
 
     private ArrayList<String> mIncomingMessages = new ArrayList<>();
     private ArrayList<String> mIncomingConnectionRequests = new ArrayList<>();
     private ArrayList<String> mContacts, mRequests, mPending;
 
-    TextView chatNotifications, connectionNotifications, mNotificationsBar;
+    private TextView chatNotifications, connectionNotifications, mNotificationsBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,7 +115,7 @@ public class HomeActivity extends AppCompatActivity
             super.onBackPressed();
         } else {
             loadFragment(new HomeFragment());
-            updateNotificationsUI(mChatNotifacations, mNumConnectionNotifacations);
+            updateNotificationsUI(mChatNotifications, mNumConnectionNotifications);
         }
 
     }
@@ -183,7 +183,7 @@ public class HomeActivity extends AppCompatActivity
         switch (id) {
             case R.id.nav_connections:
                 loadFragment(new ConnectionsFragment());
-                updateNotificationsUI(mChatNotifacations, 0);
+                updateNotificationsUI(mChatNotifications, 0);
                 break;
             case R.id.nav_chat:
                 loadChatActivity();
@@ -191,7 +191,7 @@ public class HomeActivity extends AppCompatActivity
                 break;
             case R.id.nav_chatmanager:
                 loadFragment(new ChatManagerFragment());
-                updateNotificationsUI(0, mNumConnectionNotifacations);
+                updateNotificationsUI(0, mNumConnectionNotifications);
                 break;
             case R.id.nav_weather:
                 loadFragment(new WeatherFragment());
@@ -241,11 +241,11 @@ public class HomeActivity extends AppCompatActivity
         if (getIntent().hasExtra(getString(R.string.keys_chat_notification))) {
             //load new chat activity with this person
             loadFragment(new ChatManagerFragment());
-            mChatNotifacations -= 1;
-            updateNotificationsUI(mChatNotifacations, mNumConnectionNotifacations);
+            mChatNotifications -= 1;
+            updateNotificationsUI(mChatNotifications, mNumConnectionNotifications);
         } else if (getIntent().hasExtra(getString(R.string.keys_connection_notification))) {
             loadFragment(new ConnectionsFragment());
-            updateNotificationsUI(mChatNotifacations, 0);
+            updateNotificationsUI(mChatNotifications, 0);
         }
 
         if (mMessagesUpdateReceiver == null) {
@@ -260,7 +260,7 @@ public class HomeActivity extends AppCompatActivity
         IntentFilter iFilter2 = new IntentFilter(PullService.CONNECTION_UPDATE);
         registerReceiver(mConnectionsUpdateReceiver, iFilter2);
 
-        updateNotificationsUI(mChatNotifacations, mNumConnectionNotifacations);
+        updateNotificationsUI(mChatNotifications, mNumConnectionNotifications);
     }
 
     @Override
@@ -516,9 +516,9 @@ public class HomeActivity extends AppCompatActivity
 
     private void updateNotificationsUI (final int theChatNotifications, final int theConnectionNotifications){
 
-        mChatNotifacations = theChatNotifications;
-        mNumConnectionNotifacations = theConnectionNotifications;
-        mTotalNotifications = mChatNotifacations + mNumConnectionNotifacations;
+        mChatNotifications = theChatNotifications;
+        mNumConnectionNotifications = theConnectionNotifications;
+        mTotalNotifications = mChatNotifications + mNumConnectionNotifications;
 
         Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.homeFragmentContainer);
 
@@ -552,16 +552,16 @@ public class HomeActivity extends AppCompatActivity
             mNotificationsBar.setText(sb.toString());
         }
 
-        if (mChatNotifacations > 0) {
+        if (mChatNotifications > 0) {
             chatNotifications.setGravity(Gravity.CENTER_VERTICAL);
             chatNotifications.setTypeface(null, Typeface.BOLD);
             chatNotifications.setTextColor(getResources().getColor(R.color.colorAccent));
-            chatNotifications.setText(String.valueOf(mChatNotifacations)); } else chatNotifications.setText("");
-        if (mNumConnectionNotifacations > 0) {
+            chatNotifications.setText(String.valueOf(mChatNotifications)); } else chatNotifications.setText("");
+        if (mNumConnectionNotifications > 0) {
             connectionNotifications.setGravity(Gravity.CENTER_VERTICAL);
             connectionNotifications.setTypeface(null, Typeface.BOLD);
             connectionNotifications.setTextColor(getResources().getColor(R.color.colorAccent));
-            connectionNotifications.setText(String.valueOf(mNumConnectionNotifacations)); } else connectionNotifications.setText("");
+            connectionNotifications.setText(String.valueOf(mNumConnectionNotifications)); } else connectionNotifications.setText("");
 
         mIncomingMessages.clear();
         mIncomingConnectionRequests.clear();
@@ -576,7 +576,7 @@ public class HomeActivity extends AppCompatActivity
             if (intent.getAction().equals(PullService.MESSAGE_UPDATE)) {
                 Log.d("MessageReceiver", "hey, we got a new message!");
                 mIncomingMessages.add(intent.getStringExtra(getString(R.string.keys_extra_results)));
-                updateNotificationsUI(mChatNotifacations+1, mNumConnectionNotifacations);
+                updateNotificationsUI(mChatNotifications +1, mNumConnectionNotifications);
             }
         }
     }
@@ -588,10 +588,10 @@ public class HomeActivity extends AppCompatActivity
                 int i = 0;
                 while (intent.getStringExtra(String.valueOf(i)) != null) {
                     mIncomingConnectionRequests.add(intent.getStringExtra(String.valueOf(i)));
-                    mNumConnectionNotifacations++;
+                    mNumConnectionNotifications++;
                     i++;
                 }
-                updateNotificationsUI(mChatNotifacations, mNumConnectionNotifacations);
+                updateNotificationsUI(mChatNotifications, mNumConnectionNotifications);
             }
         }
     }

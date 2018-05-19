@@ -195,7 +195,7 @@ public class ChatManagerFragment extends Fragment {
 
                 }
 
-                Log.e("VIEW CHATS", ""+ mChatnames.size());
+//                Log.e("VIEW CHATS", ""+ mChatnames.size());
 
             }
         });
@@ -205,7 +205,7 @@ public class ChatManagerFragment extends Fragment {
 
 
     private void getAllChats() {
-        Log.e("CALL","Called get all chats");
+        //Log.e("CALL","Called get all chats");
         SharedPreferences prefs = getActivity().getSharedPreferences(getString(R.string.keys_shared_prefs),
                 Context.MODE_PRIVATE);
 
@@ -223,7 +223,7 @@ public class ChatManagerFragment extends Fragment {
                 .appendQueryParameter("username", mUsername)
                 .build();
 
-        Log.e("CONTENT",retrieveRequests.toString());
+        //Log.e("CONTENT",retrieveRequests.toString());
 
         mListenerManager = new ListenManager.Builder(retrieveRequests.toString(), this::publishRequests)
                 .setExceptionHandler(this::handleError)
@@ -238,20 +238,20 @@ public class ChatManagerFragment extends Fragment {
     }
 
     private void publishRequests(JSONObject requests) {
-        Log.e("ChatManager",requests.toString());
+//        Log.e("ChatManager",requests.toString());
         final String[] reqs;
         if (requests.has("chats")) {
-            Log.e("INSIDE","I got here!!!");
+//            Log.e("INSIDE","I got here!!!");
 
             try {
                 JSONArray jReqs = requests.getJSONArray("chats");
-                Log.e("SIZE", "" +jReqs.length());
+//                Log.e("SIZE", "" +jReqs.length());
                 reqs = new String[jReqs.length()];
                 for (int i = 0; i < jReqs.length(); i++) {
                     JSONObject req = jReqs.getJSONObject(i);
                     String chatname = req.get(getString(R.string.keys_json_chatname))
                             .toString();
-                    Log.e("THE CHAT NAMES", chatname );
+//                    Log.e("THE CHAT NAMES", chatname );
 //                    chat1 = getView().findViewById(R.id.chat1);
 //                    chat1.setVisibility(View.VISIBLE);
 //                    chat1.setText(chatname);
@@ -290,14 +290,14 @@ public class ChatManagerFragment extends Fragment {
                 e.printStackTrace();
                 return;
             }
-            Log.e("HOW MANY CHATS", ""+mChatnames.size());
+//            Log.e("HOW MANY CHATS", ""+mChatnames.size());
         }
         //Log.e("HOW MANY CHATS", ""+mChatnames.size());
     }
     @Override
     public void onStart() {
         super.onStart();
-        Log.e("HOW MANY CHATS", ""+mChatnames.size());
+//        Log.e("HOW MANY CHATS", ""+mChatnames.size());
 
     }
     @Override

@@ -45,11 +45,11 @@
     /**Strings for home fragment UI**/
     <string name="home_searchbar">Search Connections</string>
     <string name="home_text_connectionList">Top Connections:</string>
-    <string name="home_text_connection1">Friend 1</string>
-    <string name="home_text_connection2">Friend 2</string>
-    <string name="home_text_connection3">Friend 3</string>
-    <string name="home_text_connection4">Friend 4</string>
-    <string name="home_text_connection5">Friend 5</string>
+    <string name="home_text_connection1">bigjon</string>
+    <string name="home_text_connection2">marsh</string>
+    <string name="home_text_connection3">diggitydawg</string>
+    <string name="home_text_connection4">mahadj</string>
+    <string name="home_text_connection5">karankurbur</string>
     <string name="home_text_notifacationBar">Waiting for new notifications...</string>
 
     /**Strings for Verify Fragment UI**/

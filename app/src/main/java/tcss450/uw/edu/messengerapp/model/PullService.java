@@ -93,7 +93,7 @@ public class PullService extends IntentService {
      */
     private boolean checkWebservice(boolean inForeground) {
         isInForeground = inForeground;
-        checkNewMessages();
+        //checkNewMessages();
         checkNewConnectionRequests();
         return true;
     }
@@ -109,17 +109,17 @@ public class PullService extends IntentService {
         //******Chat notification == 0, Connection notification == 1*****//
         if (notificationType == 0) {
             mBuilder = new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.ic_temp_icon)
+                        .setSmallIcon(R.drawable.ic_chat)
                         .setContentTitle("New Message in " + s + "!")
-                        .setContentText("Click to view!");
+                        .setContentText("Click to chat!");
             // Creates an Intent for the Activity
             notifyIntent = new Intent(this, HomeActivity.class);
             notifyIntent.putExtra(getString(R.string.keys_chat_notification), s);
         } else if (notificationType == 1) {
             mBuilder = new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.ic_temp_icon)
+                        .setSmallIcon(R.drawable.ic_person_add)
                         .setContentTitle(s + " sent you a new connection request!")
-                        .setContentText("Click to view!");
+                        .setContentText("Click to view your requests!");
             notifyIntent = new Intent(this, HomeActivity.class);
             notifyIntent.putExtra(getString(R.string.keys_connection_notification), s);
         }
@@ -151,7 +151,7 @@ public class PullService extends IntentService {
         Uri uri = new Uri.Builder()
                 .scheme("https")
                 .appendPath(getString(R.string.ep_base_url))
-                .appendPath(getString(R.string.ep_get_requests))
+                .appendPath(getString(R.string.ep_post_get_requests2))
                 .build();
 
         JSONObject msg = new JSONObject();
@@ -161,7 +161,6 @@ public class PullService extends IntentService {
             Log.wtf("JSON EXCEPTION", e.toString());
         }
 
-        Log.e(TAG, "Sending getAllChats request");
         new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
                 .onPreExecute(this::handleGetConnectionRequestsOnPre)
                 .onPostExecute(this::handleGetConnectionRequestsOnPost)
@@ -196,7 +195,7 @@ public class PullService extends IntentService {
                             if (!connectionRequests.contains(request)) {
                                 connectionRequests.add(request);
                                 if (isInForeground) {
-                                    newRequests.add(result);
+                                    newRequests.add(request);
                                 } else {
                                     buildNotification(request, 1);
                                 }
@@ -240,7 +239,6 @@ public class PullService extends IntentService {
             Log.wtf("JSON EXCEPTION", e.toString());
         }
 
-        Log.e(TAG, "Sending getAllChats request");
         new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
                 .onPreExecute(this::handleGetChatsOnPre)
                 .onPostExecute(this::handleGetChatsOnPost)
