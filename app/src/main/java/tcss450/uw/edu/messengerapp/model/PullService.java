@@ -47,7 +47,7 @@ public class PullService extends IntentService {
 
     private boolean isInForeground;
 
-    private ListenManager mListenManager;
+    ArrayList<String> connectionRequests = new ArrayList<>();
 
     public PullService() {
         super("PullService");
@@ -92,30 +92,9 @@ public class PullService extends IntentService {
      * @return
      */
     private boolean checkWebservice(boolean inForeground) {
-
         isInForeground = inForeground;
-
-        //build the web service URL
-        Uri uri = new Uri.Builder()
-                .scheme("https")
-                .appendPath(getString(R.string.ep_base_url))
-                .appendPath(getString(R.string.ep_get_all_chats))
-                .build();
-
-        JSONObject msg = new JSONObject();
-        try {
-            msg.put("username", mUsername);
-        } catch (JSONException e) {
-            Log.wtf("JSON EXCEPTION", e.toString());
-        }
-
-        Log.e(TAG, "Sending getAllChats request");
-        new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
-                .onPreExecute(this::handleGetChatsOnPre)
-                .onPostExecute(this::handleGetChatsOnPost)
-                .onCancelled(this::handleErrorsInTask)
-                .build().execute();
-
+        checkNewMessages();
+        checkNewConnectionRequests();
         return true;
     }
 
@@ -123,13 +102,21 @@ public class PullService extends IntentService {
      * Prepares a notification if the app is in the background.
      * @param s
      */
-    private void buildNotification(String s) {
-        //IMPORT V4 not V7
-        NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(this)
+    private void buildNotification(String s, int notificationType) {
+        NotificationCompat.Builder mBuilder = null;
+
+        //******Chat notification == 0, Connection notification == 1*****//
+        if (notificationType == 0) {
+            mBuilder = new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.ic_temp_icon)
                         .setContentTitle("New Message in " + s + "!")
                         .setContentText("Click to view!");
+        } else if (notificationType == 1) {
+            mBuilder = new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.ic_temp_icon)
+                        .setContentTitle(s + " sent you a new connection request!")
+                        .setContentText("Click to view!");
+        }
 
         // Creates an Intent for the Activity
         Intent notifyIntent =
@@ -158,6 +145,113 @@ public class PullService extends IntentService {
         // mId allows you to update the notification later on.
         mNotificationManager.notify(1, mBuilder.build());
     }
+
+    private void checkNewConnectionRequests() {
+        //build the web service URL
+        Uri uri = new Uri.Builder()
+                .scheme("https")
+                .appendPath(getString(R.string.ep_base_url))
+                .appendPath(getString(R.string.ep_get_requests))
+                .build();
+
+        JSONObject msg = new JSONObject();
+        try {
+            msg.put(getString(R.string.keys_json_username), mUsername);
+        } catch (JSONException e) {
+            Log.wtf("JSON EXCEPTION", e.toString());
+        }
+
+        Log.e(TAG, "Sending getAllChats request");
+        new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
+                .onPreExecute(this::handleGetConnectionRequestsOnPre)
+                .onPostExecute(this::handleGetConnectionRequestsOnPost)
+                .onCancelled(this::handleErrorsInTask)
+                .build().execute();
+    }
+
+    public void handleGetConnectionRequestsOnPre() {
+
+    }
+
+    /**
+     * Read through the list of chats and see if the most recent is from
+     * somebody else and came recently.
+     * @param result of finding chats
+     */
+    public void handleGetConnectionRequestsOnPost(String result) {
+
+        Log.e(TAG, "Inside getNewMessages post");
+
+        try {
+            JSONObject resultsJSON = new JSONObject(result);
+            boolean success = resultsJSON.getBoolean("success");
+
+            if (success) {
+                if (resultsJSON.has(getString(R.string.keys_json_requests))) {
+                    try {
+
+                        JSONArray jReqs = resultsJSON.getJSONArray(getString(R.string.keys_json_requests));
+                        ArrayList<String> newRequests = new ArrayList<>();
+
+                        for (int i = 0; i < jReqs.length(); i++) {
+                            String request = jReqs.getJSONObject(i).getString("username");
+                            if (!connectionRequests.contains(request)) {
+                                connectionRequests.add(request);
+                                if (isInForeground) {
+                                    newRequests.add(result);
+                                } else {
+                                    Log.e(TAG, "Building a connections request notification");
+                                    buildNotification(request, 1);
+                                }
+                            }
+                        }
+
+                        if (isInForeground) {
+                            Intent intent = new Intent(CONNECTION_UPDATE);
+                            int i = 0;
+                            String[] connectKeys = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
+                            for (String s : newRequests) {
+                                intent.putExtra(connectKeys[i], s);
+                            }
+                            Log.e(TAG, "Sending an in-app notification");
+                            sendBroadcast(intent);
+                        }
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        } catch (JSONException e) {
+            Log.e("JSON_PARSE_ERROR", result + System.lineSeparator() + e.getMessage());
+        }
+    }
+
+
+
+    private void checkNewMessages() {
+        //build the web service URL
+        Uri uri = new Uri.Builder()
+                .scheme("https")
+                .appendPath(getString(R.string.ep_base_url))
+                .appendPath(getString(R.string.ep_get_all_chats))
+                .build();
+
+        JSONObject msg = new JSONObject();
+        try {
+            msg.put("username", mUsername);
+        } catch (JSONException e) {
+            Log.wtf("JSON EXCEPTION", e.toString());
+        }
+
+        Log.e(TAG, "Sending getAllChats request");
+        new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
+                .onPreExecute(this::handleGetChatsOnPre)
+                .onPostExecute(this::handleGetChatsOnPost)
+                .onCancelled(this::handleErrorsInTask)
+                .build().execute();
+    }
+
 
     public void handleGetChatsOnPre() {
 
@@ -251,7 +345,7 @@ public class PullService extends IntentService {
                                 sendBroadcast(intent);
                             } else {
                                 Log.e(TAG, "Out of app building notification");
-                                buildNotification(mChatName);
+                                buildNotification(mChatName, 0);
                             }
                     } catch (JSONException e) {
                         e.printStackTrace();

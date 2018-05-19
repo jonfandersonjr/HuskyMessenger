@@ -582,8 +582,13 @@ public class HomeActivity extends AppCompatActivity
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(PullService.CONNECTION_UPDATE)) {
                 Log.d("NotificationReceiver", "hey, we got a new connection request!");
-                mIncomingConnectionRequests.add(intent.getStringExtra(getString(R.string.keys_extra_results)));
-                updateNotificationsUI(mChatNotifacations, mNumConnectionNotifacations+1);
+                int i = 0;
+                while (intent.getStringExtra(String.valueOf(i)) != null) {
+                    mIncomingConnectionRequests.add(intent.getStringExtra(String.valueOf(i)));
+                    mNumConnectionNotifacations++;
+                    i++;
+                }
+                updateNotificationsUI(mChatNotifacations, mNumConnectionNotifacations);
             }
         }
     }
