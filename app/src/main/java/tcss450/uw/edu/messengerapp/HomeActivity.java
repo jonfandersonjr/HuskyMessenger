@@ -111,15 +111,11 @@ public class HomeActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        } else if (!drawer.isDrawerOpen(GravityCompat.START) &&
-
-                (currentFragment instanceof HomeFragment) ||
-                (currentFragment instanceof ChatFragment) ||
-                (currentFragment instanceof SearchContactsFragment)) {
-
+        } else if (!drawer.isDrawerOpen(GravityCompat.START) &&(currentFragment instanceof HomeFragment)) {
             super.onBackPressed();
         } else {
             loadFragment(new HomeFragment());
+            updateNotificationsUI(mChatNotifacations, mNumConnectionNotifacations);
         }
 
     }
@@ -284,43 +280,6 @@ public class HomeActivity extends AppCompatActivity
             unregisterReceiver(mConnectionsUpdateReceiver);
         }
 
-    }
-
-    /**
-     * Gets some information from all this data.
-     * The input is expected to use the format based on the documentation found :
-     * https://phishnet.api-docs.io/v3/setlists/get-a-random-phish-setlist
-     *
-     * @param jsonResult a JSON String
-     * @return the data and location of the show
-     */
-    private String parseJson(final String jsonResult) {
-        String result = "";
-
-        try {
-            JSONObject json = new JSONObject(jsonResult);
-            if (json.has("error_code") && json.getInt("error_code") == 0) {
-                if (json.has("response")) {
-                    JSONObject response = json.getJSONObject("response");
-                    if (response.has("data")) {
-                        JSONObject show = response.getJSONArray("data").getJSONObject(0);
-                        if (show.has("long_date")) {
-                            result = show.getString("long_date");
-                        }
-                        if (show.has("location")) {
-                            result += System.lineSeparator();
-                            result += show.getString("location");
-                            result += System.lineSeparator();
-                        }
-                    }
-                }
-            } else {
-                result = "Error from web service";
-            }
-        } catch (JSONException e) {
-            Log.e(TAG, e.toString());
-        }
-        return result;
     }
 
     @Override
