@@ -32,6 +32,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/home_text_connection1"
+                android:background="@drawable/button_bg_stroke"
                 android:textSize="18sp" />
 
             <Button
@@ -40,6 +41,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/home_text_connection2"
+                android:background="@drawable/button_bg_stroke"
                 android:textSize="18sp" />
 
             <Button
@@ -48,6 +50,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/home_text_connection3"
+                android:background="@drawable/button_bg_stroke"
                 android:textSize="18sp" />
 
             <Button
@@ -57,6 +60,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/home_text_connection4"
+                android:background="@drawable/button_bg_stroke"
                 android:textSize="18sp" />
 
             <Button
@@ -66,6 +70,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/home_text_connection5"
+                android:background="@drawable/button_bg_stroke"
                 android:textSize="18sp" />
         </LinearLayout>
     </ScrollView>
@@ -126,10 +131,10 @@
         android:focusable="false"
         android:focusableInTouchMode="false"
         android:fontFamily="serif-monospace"
-        android:text="@string/home_text_connectionList"
+        android:text="@string/home_text_recent_chats"
         android:textAlignment="center"
         android:textColor="@android:color/black"
-        android:textSize="22sp"
+        android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/connectionList"
         app:layout_constraintEnd_toEndOf="parent"
@@ -147,7 +152,6 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="16dp"
         android:clickable="false"
-        android:cursorVisible="false"
         android:ems="10"
         android:focusable="false"
         android:focusableInTouchMode="false"
@@ -169,9 +173,9 @@
         android:id="@+id/notifacationBar"
         android:layout_width="0dp"
         android:layout_height="40sp"
+        android:layout_marginTop="2dp"
         android:background="@color/colorPrimary2"
         android:clickable="false"
-        android:cursorVisible="false"
         android:ems="10"
         android:focusable="false"
         android:focusableInTouchMode="false"
