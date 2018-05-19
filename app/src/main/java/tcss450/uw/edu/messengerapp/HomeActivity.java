@@ -5,10 +5,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.MenuItemCompat;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -20,37 +22,47 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.EditText;
-import android.widget.LinearLayout;
+import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import tcss450.uw.edu.messengerapp.ChatActivity;
+import java.util.ArrayList;
+
 import tcss450.uw.edu.messengerapp.model.PullService;
 
 public class HomeActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener,
+        ConnectionsFragment.OnConnectionsInteractionListener,
+        SearchContactsFragment.OnSearchFragmentInteractionListener {
 
     private static final String TAG = "HomeActivity";
-
     private DataUpdateReciever mDataUpdateReceiver;
+    private String mUsername;
+    public int mTotalNotifacations = 0;
+    public int mChatNotifacations = 0;
+    public int mNumConnectionNotifacations = 0;
 
-    public int mNumberOfResults = 0;
+    private ArrayList<String> mContacts, mRequests, mPending;
 
-
+    TextView chatNotifications, connectionNotifications, mNotificationsBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
+        Bundle bundle = getIntent().getExtras();
+
         if (savedInstanceState == null) {
             if (findViewById(R.id.homeFragmentContainer) != null) {
-                getSupportFragmentManager().beginTransaction()
-                        .add(R.id.homeFragmentContainer, new HomeFragment())
-                        .commit();
+                if (bundle != null) {
+                    loadFragment(new ChatManagerFragment());
+                } else {
+                    loadFragment(new HomeFragment());
+                }
             }
         }
 
@@ -61,6 +73,8 @@ public class HomeActivity extends AppCompatActivity
         final SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(getString(R.string.keys_sp_on), true);
         editor.apply();
+
+        mUsername = sharedPreferences.getString("username", "");
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -82,6 +96,10 @@ public class HomeActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        chatNotifications = (TextView) MenuItemCompat.getActionView(navigationView.getMenu().
+                findItem(R.id.nav_chatmanager));
+        connectionNotifications = (TextView) MenuItemCompat.getActionView(navigationView.getMenu().
+                findItem(R.id.nav_connections));
     }
 
     @Override
@@ -91,15 +109,17 @@ public class HomeActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        } else if (!drawer.isDrawerOpen(GravityCompat.START) && currentFragment instanceof HomeFragment) {
+        } else if (!drawer.isDrawerOpen(GravityCompat.START) &&
+
+                (currentFragment instanceof HomeFragment) ||
+                (currentFragment instanceof ChatFragment) ||
+                (currentFragment instanceof SearchContactsFragment)) {
+
             super.onBackPressed();
         } else {
-            android.support.v4.app.FragmentTransaction transaction = getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.homeFragmentContainer, new HomeFragment());
-            transaction.commit();
-
+            loadFragment(new HomeFragment());
         }
+
     }
 
     @Override
@@ -117,15 +137,15 @@ public class HomeActivity extends AppCompatActivity
         int id = item.getItemId();
 
         switch (id) {
-            case (R.id.color1):
-                getWindow().setNavigationBarColor(getResources().getColor(R.color.colorPrimary1));
-
-                //swap to color 1
+            case (R.id.color_rugged):
                 break;
-            case (R.id.color2):
+            case (R.id.color_modern):
                 //swap
                 break;
-            case (R.id.color3):
+            case (R.id.color_summer):
+                //swap
+                break;
+            case (R.id.color_UW):
                 //swap
                 break;
         }
@@ -134,13 +154,24 @@ public class HomeActivity extends AppCompatActivity
     }
 
     private void loadFragment(Fragment frag) {
-        android.support.v4.app.FragmentTransaction transaction = getSupportFragmentManager()
+        if (frag instanceof ConnectionsFragment) {
+            String tag = getString(R.string.keys_fragment_connections);
+
+            android.support.v4.app.FragmentTransaction transaction = getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.homeFragmentContainer, frag, tag);
+            transaction.commit();
+        } else {
+
+            android.support.v4.app.FragmentTransaction transaction = getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.homeFragmentContainer, frag);
-        transaction.commit();
+            transaction.commit();
+        }
     }
 
     public void loadChatActivity() {
+        super.onBackPressed();
         Intent intent = new Intent(this, ChatActivity.class);
         startActivity(intent);
     }
@@ -154,25 +185,31 @@ public class HomeActivity extends AppCompatActivity
         switch (id) {
             case R.id.nav_connections:
                 loadFragment(new ConnectionsFragment());
+                mNumConnectionNotifacations = 0;
+                updateNotificationsUI();
                 break;
             case R.id.nav_chat:
                 loadChatActivity();
-                //loadFragment(new ChatFragment());
+                getSupportFragmentManager().popBackStack();
                 break;
             case R.id.nav_chatmanager:
                 loadFragment(new ChatManagerFragment());
+                mChatNotifacations = 0;
+                updateNotificationsUI();
                 break;
             case R.id.nav_weather:
                 loadFragment(new WeatherFragment());
                 break;
             case R.id.nav_home:
                 loadFragment(new HomeFragment());
+                mNotificationsBar = (TextView) findViewById(R.id.notifacationBar);
                 break;
             case R.id.nav_logout:
                 SharedPreferences prefs = getSharedPreferences(getString(R.string.keys_shared_prefs),
                         Context.MODE_PRIVATE);
                 prefs.edit().remove(getString(R.string.keys_prefs_username));
                 prefs.edit().putBoolean(getString(R.string.keys_prefs_stay_logged_in), false).apply();
+                PullService.stopServiceAlarm(this);
                 finishAndRemoveTask();
                 break;
             default:
@@ -191,30 +228,25 @@ public class HomeActivity extends AppCompatActivity
         SharedPreferences sharedPreferences =
                 getSharedPreferences(getString(R.string.keys_shared_prefs),
                         Context.MODE_PRIVATE);
-        // Check to see if the service should aleardy be running
+        // Check to see if the service should already be running
         if (sharedPreferences.getBoolean(getString(R.string.keys_sp_on), false)) {
             //stop the service from the background
             PullService.stopServiceAlarm(this);
             //restart but in the foreground
             PullService.startServiceAlarm(this, true);
+
+            String username = sharedPreferences.getString(getString(R.string.keys_prefs_username), "");
+            PullService.setUsername(username);
+
         }
 
         //Look to see if the intent has a result string for us.
         //If true, then this Activity was started fro the notification bar
         if (getIntent().hasExtra(getString(R.string.keys_extra_results))) {
 
-            //TextView text = (TextView)findViewById(R.id.notifacationBar);
-
-            LinearLayout layout = (LinearLayout )findViewById(R.id.resultsLayout);
-            TextView textView = new TextView(this);
-            //get a substring of the JSON
-            textView.setText(getIntent()
-                    .getStringExtra(getString(R.string.keys_extra_results))
-                    .substring(85, 115));
-            textView.setLayoutParams(new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT));
-            layout.addView(textView);
+            loadFragment(new HomeFragment());
+            mChatNotifacations = 0;
+            mNotificationsBar = (TextView) findViewById(R.id.notifacationBar);
         }
 
         if (mDataUpdateReceiver == null) {
@@ -223,7 +255,7 @@ public class HomeActivity extends AppCompatActivity
         IntentFilter iFilter = new IntentFilter(PullService.RECEIVED_UPDATE);
         registerReceiver(mDataUpdateReceiver, iFilter);
 
-
+        updateNotificationsUI();
     }
 
     @Override
@@ -282,24 +314,285 @@ public class HomeActivity extends AppCompatActivity
         return result;
     }
 
+    private void updateNotificationsUI (){
+        if (mTotalNotifacations % 2 == 0) {
+            mChatNotifacations++;
+        } else {
+            mNumConnectionNotifacations++;
+        }
+        //if (notification == chat) mChatNotifacations++;
+        //if (notification == connection) mConnectionNotifacations++;
+        mTotalNotifacations = mChatNotifacations + mNumConnectionNotifacations;
+
+        Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.homeFragmentContainer);
+
+        if (currentFragment instanceof HomeFragment) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("You have ");
+            sb.append(mTotalNotifacations);
+            if (mTotalNotifacations == 1) {
+                sb.append(" notification");
+            } else {
+                sb.append(" notifications");
+            }
+            mNotificationsBar = (TextView) findViewById(R.id.notifacationBar);
+            mNotificationsBar.setText(sb.toString());
+        }
+
+        if (mChatNotifacations > 0) {
+            chatNotifications.setGravity(Gravity.CENTER_VERTICAL);
+            chatNotifications.setTypeface(null, Typeface.BOLD);
+            chatNotifications.setTextColor(getResources().getColor(R.color.colorAccent));
+            chatNotifications.setText(String.valueOf(mChatNotifacations)); } else chatNotifications.setText("");
+        if (mNumConnectionNotifacations > 0) {
+            connectionNotifications.setGravity(Gravity.CENTER_VERTICAL);
+            connectionNotifications.setTypeface(null, Typeface.BOLD);
+            connectionNotifications.setTextColor(getResources().getColor(R.color.colorAccent));
+            connectionNotifications.setText(String.valueOf(mNumConnectionNotifacations)); } else connectionNotifications.setText("");
+
+    }
+
+    @Override
+    public void onConnectionsInteractionListener(String username) {
+
+    }
+
+    @Override
+    public void onRequestInteractionListener(String username, boolean accept) {
+        String endpoint;
+
+        if (accept) {
+            endpoint = getString(R.string.ep_verify_contact_request);
+        } else {
+           endpoint = getString(R.string.ep_decline_contact_request);
+        }
+
+        Uri uri = new Uri.Builder()
+                .scheme("https")
+                .appendPath(getString(R.string.ep_base_url))
+                .appendPath(endpoint)
+                .build();
+
+        SharedPreferences prefs = getSharedPreferences(getString(R.string.keys_shared_prefs),
+                Context.MODE_PRIVATE);
+        String myName = prefs.getString(getString(R.string.keys_prefs_username), "");
+
+        JSONObject msg = new JSONObject();
+        try {
+            msg.put("usernameA", username);
+            msg.put("usernameB", myName);
+        } catch (JSONException e) {
+            Log.wtf("Verify Contact", "Error reading JSON" + e.getMessage());
+        }
+
+
+        new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
+                .onPreExecute(this::handleRequestOnPre)
+                .onPostExecute(this::handleRequestOnPost)
+                .onCancelled(this::handleErrorsInTask)
+                .build().execute();
+
+    }
+
+    @Override
+    public void onSearchInteractionListener(String searchBy, String searchString,
+                                            ArrayList<String> contacts, ArrayList<String> requests,
+                                            ArrayList<String> pending) {
+        mContacts = contacts;
+        mRequests = requests;
+        mPending = pending;
+
+        searchString = searchString.toUpperCase();
+        String endpoint;
+
+        if (searchBy.equals("firstname")) {
+            endpoint = getString(R.string.ep_get_credentials_first);
+        } else if (searchBy.equals("lastname")) {
+            endpoint = getString(R.string.ep_get_credentials_last);
+        } else if (searchBy.equals("username")) {
+            endpoint = getString(R.string.ep_get_credentials_username);
+        } else {
+            endpoint = getString(R.string.ep_get_credentials_email);
+        }
+
+        Uri uri = new Uri.Builder()
+                .scheme("https")
+                .appendPath(getString(R.string.ep_base_url))
+                .appendPath(endpoint)
+                .build();
+
+        JSONObject msg = new JSONObject();
+        try {
+            msg.put(searchBy, searchString);
+        } catch (JSONException e) {
+            Log.wtf("Search Interaction", "Error reading JSON" + e.getMessage());
+        }
+
+        new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
+                .onPreExecute(this::handleRequestOnPre)
+                .onPostExecute(this::handleSearchOnPost)
+                .onCancelled(this::handleErrorsInTask)
+                .build().execute();
+
+    }
+
+    private void handleRequestOnPre() {
+        ConnectionsFragment frag = (ConnectionsFragment) getSupportFragmentManager()
+                .findFragmentByTag(getString(R.string.keys_fragment_connections));
+        frag.handleRequestOnPre();
+    }
+
+    private void handleRequestOnPost(String result) {
+        ConnectionsFragment frag = (ConnectionsFragment) getSupportFragmentManager()
+                .findFragmentByTag(getString(R.string.keys_fragment_connections));
+
+        try {
+            JSONObject resultsJSON = new JSONObject(result);
+            boolean success = resultsJSON.getBoolean("success");
+            String username = resultsJSON.getString("username");
+            boolean accept = resultsJSON.getBoolean("accept");
+
+            if (accept) {
+                frag.handleRequestOnPost(success, username, accept);
+            } else {
+                frag.handleRequestOnPost(success, username, accept);
+            }
+
+        } catch (JSONException e) {
+            frag.setError("Something strange happened");
+            frag.handleOnError(e.toString());
+        }
+    }
+
+    private void handleSearchOnPost(String result) {
+        ConnectionsFragment frag = (ConnectionsFragment) getSupportFragmentManager()
+                .findFragmentByTag(getString(R.string.keys_fragment_connections));
+
+        boolean inContacts;
+        boolean inRequests;
+        boolean inPending;
+
+        ArrayList<String> newPeople = new ArrayList<String>();
+        ArrayList<String> contactList = new ArrayList<String>();
+        ArrayList<String> requestList = new ArrayList<String>();
+        ArrayList<String> pendingList = new ArrayList<String>();
+
+        try {
+            JSONObject resultsJSON = new JSONObject(result);
+            boolean success = resultsJSON.getBoolean("success");
+
+            if (success) {
+                if (resultsJSON.has(getString(R.string.keys_json_results))) {
+                    try {
+                        JSONArray jRes = resultsJSON
+                                .getJSONArray(getString(R.string.keys_json_results));
+                        if (jRes.length() == 0) {
+                            frag.handleEmptySearch();
+                            return;
+                        } else {
+                            for (int i = 0; i < jRes.length(); i++) {
+                                JSONObject res = jRes.getJSONObject(i);
+                                String username = res.getString(getString(R.string.keys_json_username));
+                                String firstname = res.getString(getString(R.string.keys_json_requests_firstname));
+                                String lastname = res.getString(getString(R.string.keys_json_requests_lastname));
+                                String str = username + " (" + lastname + ", " + firstname + ")";
+
+                                inContacts = searchName(username, mContacts);
+                                inRequests = searchName(username, mRequests);
+                                inPending = searchName(username, mPending);
+
+                                if (!username.equals(mUsername))
+
+                                if (inContacts) {
+                                    contactList.add(str);
+                                } else if (inRequests) {
+                                    requestList.add(str);
+                                } else if (inPending) {
+                                    pendingList.add(str);
+                                } else {
+                                    newPeople.add(str);
+                                }
+
+                            }
+
+                            if (contactList.isEmpty() && requestList.isEmpty() &&
+                                    pendingList.isEmpty() && newPeople.isEmpty()) {
+                                frag.handleSearchForSelf();
+                                return;
+                            }
+
+                            frag.handleSearchOnPost();
+
+                            Bundle extras = new Bundle();
+                            extras.putStringArrayList("contacts", contactList);
+                            extras.putStringArrayList("requests", requestList);
+                            extras.putStringArrayList("pending", pendingList);
+                            extras.putStringArrayList("newPeople", newPeople);
+
+                            SearchContactsFragment fragment = new SearchContactsFragment();
+                            fragment.setArguments(extras);
+
+                            getSupportFragmentManager().beginTransaction()
+                                    .setCustomAnimations(R.anim.enter, R.anim.exit,
+                                            R.anim.pop_enter, R.anim.pop_exit)
+                                    .replace(R.id.homeFragmentContainer, fragment,
+                                            getString(R.string.keys_fragment_searchConnections))
+                                    .addToBackStack(null).commit();
+                            getSupportFragmentManager().executePendingTransactions();
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        frag.handleErrorsInTask(e.toString());
+                        frag.setError(e.toString());
+                    }
+                }
+            }
+        } catch (JSONException e) {
+            frag.setError("Something strange happened");
+            frag.handleOnError(e.toString());
+        }
+    }
+
+    private boolean searchName(String username, ArrayList<String> existingList) {
+        int low = 0;
+        int high = existingList.size() - 1;
+        int mid;
+
+        while (low <= high) {
+            mid = (low + high) / 2;
+            String name = existingList.get(mid);
+            String substr = name.substring(0, name.indexOf(" "));
+
+            if (substr.compareToIgnoreCase(username) < 0) {
+                low = mid + 1;
+            } else if (substr.compareToIgnoreCase(username) > 0) {
+                high = mid - 1;
+            } else {
+                return true;
+            }
+
+        }
+
+        return false;
+    }
+
     //**********DATA UPDATE RECEIVER************//
     private class DataUpdateReciever extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(PullService.RECEIVED_UPDATE)) {
-                StringBuilder sb = new StringBuilder();
-                sb.append("You have ");
                 Log.d("UpdateReceiver", "hey I just got your broadcast!");
-                mNumberOfResults++;
-                sb.append(mNumberOfResults);
-                sb.append(" new notifications");
-                TextView text = findViewById(R.id.notifacationBar);
-//                text.setText(sb.toString());
+                mNotificationsBar = (TextView) findViewById(R.id.notifacationBar);
+                updateNotificationsUI();
                 //mResultStrings.add(intent.getStringExtra(getString(R.string.keys_extra_results)));
 
                 //TO-DO handle notifacations properly (display red symbols on items?)
             }
         }
+    }
+
+    private void handleErrorsInTask(String result) {
+        Log.e("ASYNC_TASK_ERROR", result);
     }
 
 

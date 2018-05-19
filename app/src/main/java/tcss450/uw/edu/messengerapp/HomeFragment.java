@@ -4,6 +4,7 @@ package tcss450.uw.edu.messengerapp;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -21,8 +22,6 @@ import tcss450.uw.edu.messengerapp.model.PullService;
  * create an instance of this fragment.
  */
 public class HomeFragment extends Fragment {
-
-    public TextView mNotifacationsBar;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -69,10 +68,13 @@ public class HomeFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_home, container, false);
+        TextView tv = v.findViewById(R.id.homeWelcome);
 
-        mNotifacationsBar = v.findViewById(R.id.notifacationBar);
+        SharedPreferences prefs = getActivity().
+                getSharedPreferences(getString(R.string.keys_shared_prefs), Context.MODE_PRIVATE);
+        String username = prefs.getString(getString(R.string.keys_prefs_username), "");
 
-        // Inflate the layout for this fragment
+        tv.setText("Welcome " + username + "!");
         return v;
     }
 

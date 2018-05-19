@@ -10,10 +10,11 @@
     <string name="nav_header_title">Group 3 Messenger</string>
     <string name="nav_header_subtitle">TCSS 450</string>
     <string name="nav_header_desc">Navigation header</string>
-    <string name="action_colorScheme">Color Scheme</string>
-    <string name="action_color1">Default</string>
-    <string name="action_color2">Teal</string>
-    <string name="action_color3">Red</string>
+    <string name="action_colorScheme">Color Schemes:</string>
+    <string name="action_color_rugged">Rugged</string>
+    <string name="action_color_modern">Modern</string>
+    <string name="action_color_summer">Summer</string>
+    <string name="action_color_UW">UW</string>
 
     /**Strings for home activity Drawer**/
     <string name="drawer_login">LOGIN</string>
@@ -49,7 +50,7 @@
     <string name="home_text_connection3">Friend 3</string>
     <string name="home_text_connection4">Friend 4</string>
     <string name="home_text_connection5">Friend 5</string>
-    <string name="home_text_notifacationBar">Notifacation Bar</string>
+    <string name="home_text_notifacationBar">Waiting for new notifications...</string>
 
     /**Strings for Verify Fragment UI**/
     <string name="verify_code_hint">Enter Code</string>
@@ -72,6 +73,8 @@
     <string name="connections_verified_header_text">Connections</string>
     <string name="connections_verified_generic_text_view">verifiedTextView</string>
     <string name="connections_requests_resolve_button">Resolve Requests</string>
+    <string name="connections_accept_request_dialog_button">Accept</string>
+    <string name="connections_decline_request_diaglog_button">Decline</string>
 
     <string-array name="connections_search_filter">
         <item>Username</item>
@@ -79,6 +82,12 @@
         <item>Last Name</item>
         <item>Email</item>
     </string-array>
+
+    /**Strings for SearchConnections Fragment UI**/
+    <string name="searchConnections_header_text_view">Search Results</string>
+    <string name="searchConnections_current_connections_text">Current Connections</string>
+    <string name="searchConnections_requests_text">They\'ve Requested to Connect!</string>
+    <string name="searchConnections_pending_text">You\'re Waiting On Them...</string>
 
     /**Strings for Weather Fragment UI**/
     <string name="weather_button_start">Start Service</string>

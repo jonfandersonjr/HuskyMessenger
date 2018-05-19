@@ -12,6 +12,8 @@ import android.widget.CheckBox;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask;
+
 public class LoginActivity extends AppCompatActivity
         implements LoginFragment.OnLoginFragmentInteractionListener,
         RegisterFragment.OnRegisterFragmentInteractionListener,
@@ -63,7 +65,6 @@ public class LoginActivity extends AppCompatActivity
 
     private void loadHomePage() {
         Intent intent = new Intent(this, HomeActivity.class);
-//        intent.setFlags(intent.getFlags() | Intent.FLAG_ACTIVITY_NO_HISTORY);
         startActivity(intent);
     }
 
@@ -184,6 +185,12 @@ public class LoginActivity extends AppCompatActivity
 
             if (success) {
                 //checkStayLoggedIn();
+                SharedPreferences prefs =
+                        getSharedPreferences(getString(R.string.keys_shared_prefs),
+                                Context.MODE_PRIVATE);
+                prefs.edit().putString(getString(R.string.keys_prefs_username),
+                        mCredentials.getUsername()).apply();
+
                 loadHomePage();
             } else {
                 VerifyFragment frag = (VerifyFragment) getSupportFragmentManager()
