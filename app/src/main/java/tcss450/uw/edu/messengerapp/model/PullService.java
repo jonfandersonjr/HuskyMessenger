@@ -328,9 +328,7 @@ public class PullService extends IntentService {
                         String messageFrom = jReqs.getJSONObject(jReqs.length()-1).getString("username");
                         if (!messageFrom.equals(mUsername) && true)//chat came recently) {
                             if (isInForeground) {
-                                Log.e(TAG, "Inside app sending notification");
                                 Intent intent = new Intent(MESSAGE_UPDATE);
-                                Log.wtf("****TEST****", messageFrom);
                                 intent.putExtra(getString(R.string.keys_extra_results), messageFrom);
                                 sendBroadcast(intent);
                             } else {
