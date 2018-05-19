@@ -180,8 +180,6 @@ public class PullService extends IntentService {
      */
     public void handleGetConnectionRequestsOnPost(String result) {
 
-        Log.e(TAG, "Inside getNewMessages post");
-
         try {
             JSONObject resultsJSON = new JSONObject(result);
             boolean success = resultsJSON.getBoolean("success");
@@ -200,7 +198,6 @@ public class PullService extends IntentService {
                                 if (isInForeground) {
                                     newRequests.add(result);
                                 } else {
-                                    Log.e(TAG, "Building a connections request notification");
                                     buildNotification(request, 1);
                                 }
                             }
@@ -213,7 +210,6 @@ public class PullService extends IntentService {
                             for (String s : newRequests) {
                                 intent.putExtra(connectKeys[i], s);
                             }
-                            Log.e(TAG, "Sending an in-app notification");
                             sendBroadcast(intent);
                         }
 
@@ -258,7 +254,6 @@ public class PullService extends IntentService {
     }
 
     public void handleGetChatsOnPost(String result) {
-        Log.e(TAG, "Inside getAllChats request post");
 
         try {
             JSONObject resultsJSON = new JSONObject(result);
@@ -292,9 +287,6 @@ public class PullService extends IntentService {
                                 Log.wtf("JSON EXCEPTION", e.toString());
                             }
 
-
-                            Log.e(TAG, "Sending getAllNewMessages request");
-
                             new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
                                     .onPreExecute(this::handleGetMessagesOnPre)
                                     .onPostExecute(this::handleGetMessagesOnPost)
@@ -325,8 +317,6 @@ public class PullService extends IntentService {
      */
     public void handleGetMessagesOnPost(String result) {
 
-        Log.e(TAG, "Inside getNewMessages post");
-
         try {
             JSONObject resultsJSON = new JSONObject(result);
             boolean success = resultsJSON.getBoolean("success");
@@ -344,7 +334,6 @@ public class PullService extends IntentService {
                                 intent.putExtra(getString(R.string.keys_extra_results), messageFrom);
                                 sendBroadcast(intent);
                             } else {
-                                Log.e(TAG, "Out of app building notification");
                                 buildNotification(mChatName, 0);
                             }
                     } catch (JSONException e) {
