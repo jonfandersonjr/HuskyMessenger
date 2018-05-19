@@ -104,6 +104,7 @@ public class PullService extends IntentService {
      */
     private void buildNotification(String s, int notificationType) {
         NotificationCompat.Builder mBuilder = null;
+        Intent notifyIntent = null;
 
         //******Chat notification == 0, Connection notification == 1*****//
         if (notificationType == 0) {
@@ -111,18 +112,17 @@ public class PullService extends IntentService {
                         .setSmallIcon(R.drawable.ic_temp_icon)
                         .setContentTitle("New Message in " + s + "!")
                         .setContentText("Click to view!");
+            // Creates an Intent for the Activity
+            notifyIntent = new Intent(this, HomeActivity.class);
+            notifyIntent.putExtra(getString(R.string.keys_chat_notification), s);
         } else if (notificationType == 1) {
             mBuilder = new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.ic_temp_icon)
                         .setContentTitle(s + " sent you a new connection request!")
                         .setContentText("Click to view!");
+            notifyIntent = new Intent(this, HomeActivity.class);
+            notifyIntent.putExtra(getString(R.string.keys_connection_notification), s);
         }
-
-        // Creates an Intent for the Activity
-        Intent notifyIntent =
-                new Intent(this, HomeActivity.class);
-        Bundle bundle = new Bundle();
-        notifyIntent.putExtra(getString(R.string.keys_extra_results), s);
 
         // Sets the Activity to start in a new, empty task
         notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK

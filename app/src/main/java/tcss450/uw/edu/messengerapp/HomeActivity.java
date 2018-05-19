@@ -237,12 +237,15 @@ public class HomeActivity extends AppCompatActivity
         }
 
         //Look to see if the intent has a result string for us.
-        //If true, then this Activity was started fro the notification bar
-        if (getIntent().hasExtra(getString(R.string.keys_extra_results))) {
-
-            loadFragment(new HomeFragment());
-            mChatNotifacations = 0;
-            mNotificationsBar = (TextView) findViewById(R.id.notifacationBar);
+        //If true, then this Activity was started from the notification bar
+        if (getIntent().hasExtra(getString(R.string.keys_chat_notification))) {
+            //load new chat activity with this person
+            loadFragment(new ChatManagerFragment());
+            mChatNotifacations -= 1;
+            updateNotificationsUI(mChatNotifacations, mNumConnectionNotifacations);
+        } else if (getIntent().hasExtra(getString(R.string.keys_connection_notification))) {
+            loadFragment(new ConnectionsFragment());
+            updateNotificationsUI(mChatNotifacations, 0);
         }
 
         if (mMessagesUpdateReceiver == null) {
