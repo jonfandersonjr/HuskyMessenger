@@ -177,5 +177,7 @@ public class SearchContactsFragment extends Fragment {
         }
     }
 
+    public interface onSearchConnectionsFragmentInteraction
+
 
 }
