@@ -75,6 +75,7 @@ public class HomeActivity extends AppCompatActivity
                         Context.MODE_PRIVATE);
         final SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(getString(R.string.keys_sp_on), true);
+        editor.putString("chatid", "1"); //defeault chatid
         editor.apply();
 
         mUsername = sharedPreferences.getString("username", "");

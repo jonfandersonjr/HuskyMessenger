@@ -2,6 +2,7 @@ package tcss450.uw.edu.messengerapp;
 
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
@@ -130,9 +131,21 @@ public class StartChatFragment extends Fragment {
         }
 
 
+        Intent intent = new Intent(getActivity(), ChatActivity.class);
+        intent.putExtra("CHAT_ID",chatId2);
+        startActivity(intent);
 
+//        SharedPreferences prefs =
+//                getActivity().getSharedPreferences(
+//                        getString(R.string.keys_shared_prefs),
+//                        Context.MODE_PRIVATE);
+//        final SharedPreferences.Editor editor = prefs.edit();
+//
+//        editor.putString("chatid", chatId2);
+//        editor.apply();
 
-        //LOAD CHAT FRAGMENT HERE WITH CHATID
+//        Intent intent = new Intent(getActivity(), ChatActivity.class);
+//        intent.putExtra("CHAT_ID",mChatMap.get(b.getText()));
 
 
 

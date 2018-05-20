@@ -44,7 +44,7 @@ public class ChatManagerFragment extends Fragment {
     private Button chat1;
     private Button chat2;
     private int listSize = 0;
-    private ArrayList<String> mChatnames = new ArrayList<String>();
+    private ArrayList<String> chatIdList = new ArrayList<String>();
     private HashMap<String, String> mChatMap = new HashMap<>();
     private ArrayList<String> addedNames = new ArrayList<String>();
     private LinearLayout mChatManagerLayout;// = new LinearLayout(this.getContext());
@@ -94,7 +94,6 @@ public class ChatManagerFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
-
     }
     private void loadChats1(String result)  {
         // JSONObject res = new JSONObject(result);
@@ -201,38 +200,39 @@ public class ChatManagerFragment extends Fragment {
                             String chatid = req.get(getString(R.string.keys_json_chatid))
                                     .toString();
                             Log.e("THE CHAT NAMES", chatname);
-                            if (!(mChatnames.contains(chatname))) {
-                                mChatnames.add(chatname);
+                            if (!(chatIdList.contains(chatid))) {
+                                chatIdList.add(chatid);
                             }
-                            if(!(mChatMap.containsKey(chatname))){
-                                mChatMap.put(chatname,chatid);
+                            if(!(mChatMap.containsKey(chatid))){
+                                mChatMap.put(chatid,chatname);
                             }
                         }
 
-                        for(int i = 0; i < mChatnames.size(); i++) {
-                            if(!(addedNames.contains(mChatnames.get(i)))){
+                        for(int i = 0; i < chatIdList.size(); i++) {
+                        //    if(!(addedNames.contains(mChatnames.get(i)))){
                                 Button b = new Button(getActivity());
-                                b.setText(mChatnames.get(i));
-                                b.setOnClickListener(new View.OnClickListener() {
+                                b.setText(chatIdList.get(i)); //Get chat name here!
+                            int finalI = i;
+                            b.setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
-                                        Log.e("BUTTON","" + b .getText());
+                                        Log.e("BUTTON","" + b.getText());
                                         Intent intent = new Intent(getActivity(), ChatActivity.class);
-                                        intent.putExtra("CHAT_ID",mChatMap.get(b.getText()));
+                                        intent.putExtra("CHAT_ID",chatIdList.get(finalI));
                                         startActivity(intent);
                                     }
                                 });
                                 mChatManagerLayout.addView(b);
-                                listSize = mChatnames.size();
-                                addedNames.add(mChatnames.get(i));
-                            }
+                                listSize = chatIdList.size();
+                                addedNames.add(chatIdList.get(i));
+                     //       }
                         }
 
                     } catch (JSONException e) {
                         e.printStackTrace();
                         return;
                     }
-                    Log.e("HOW MANY CHATS", "" + mChatnames.size());
+                    Log.e("HOW MANY CHATS", "" + chatIdList.size());
                 }
             }
             } catch (JSONException e) {
@@ -250,7 +250,7 @@ public class ChatManagerFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        Log.e("HOW MANY CHATS", ""+mChatnames.size());
+        Log.e("HOW MANY CHATS", ""+chatIdList.size());
 
     }
     @Override
