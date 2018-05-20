@@ -203,11 +203,11 @@ public class ChatManagerFragment extends Fragment {
 
                         for(int i = 0; i < mChatnames.size(); i++) {
                             if(!(addedNames.contains(mChatnames.get(i)))){
-                                Button b = new Button(getActivity());
-                                b.setText(mChatnames.get(i));
-                                mChatManagerLayout.addView(b);
-                                listSize = mChatnames.size();
-                                addedNames.add(mChatnames.get(i));
+                                    Button b = new Button(getActivity());
+                                    b.setText(mChatnames.get(i));
+                                    mChatManagerLayout.addView(b);
+                                    listSize = mChatnames.size();
+                                    addedNames.add(mChatnames.get(i));
                             }
                         }
 
