@@ -22,7 +22,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import org.json.JSONArray;
@@ -39,15 +38,18 @@ public class HomeActivity extends AppCompatActivity
         SearchContactsFragment.OnSearchFragmentInteractionListener {
 
     private static final String TAG = "HomeActivity";
-    private DataUpdateReciever mDataUpdateReceiver;
+    private MessageUpdateReceiver mMessagesUpdateReceiver;
+    private ConnectionUpdateReceiver mConnectionsUpdateReceiver;
     private String mUsername;
-    public int mTotalNotifacations = 0;
-    public int mChatNotifacations = 0;
-    public int mNumConnectionNotifacations = 0;
+    public int mTotalNotifications = 0;
+    public int mChatNotifications = 0;
+    public int mNumConnectionNotifications = 0;
 
+    private ArrayList<String> mIncomingMessages = new ArrayList<>();
+    private ArrayList<String> mIncomingConnectionRequests = new ArrayList<>();
     private ArrayList<String> mContacts, mRequests, mPending;
 
-    TextView chatNotifications, connectionNotifications, mNotificationsBar;
+    private TextView chatNotifications, connectionNotifications, mNotificationsBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,15 +111,11 @@ public class HomeActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        } else if (!drawer.isDrawerOpen(GravityCompat.START) &&
-
-                (currentFragment instanceof HomeFragment) ||
-                (currentFragment instanceof ChatFragment) ||
-                (currentFragment instanceof SearchContactsFragment)) {
-
+        } else if (!drawer.isDrawerOpen(GravityCompat.START) &&(currentFragment instanceof HomeFragment)) {
             super.onBackPressed();
         } else {
             loadFragment(new HomeFragment());
+            updateNotificationsUI(mChatNotifications, mNumConnectionNotifications);
         }
 
     }
@@ -185,8 +183,7 @@ public class HomeActivity extends AppCompatActivity
         switch (id) {
             case R.id.nav_connections:
                 loadFragment(new ConnectionsFragment());
-                mNumConnectionNotifacations = 0;
-                updateNotificationsUI();
+                updateNotificationsUI(mChatNotifications, 0);
                 break;
             case R.id.nav_chat:
                 loadChatActivity();
@@ -194,8 +191,7 @@ public class HomeActivity extends AppCompatActivity
                 break;
             case R.id.nav_chatmanager:
                 loadFragment(new ChatManagerFragment());
-                mChatNotifacations = 0;
-                updateNotificationsUI();
+                updateNotificationsUI(0, mNumConnectionNotifications);
                 break;
             case R.id.nav_weather:
                 loadFragment(new WeatherFragment());
@@ -241,21 +237,30 @@ public class HomeActivity extends AppCompatActivity
         }
 
         //Look to see if the intent has a result string for us.
-        //If true, then this Activity was started fro the notification bar
-        if (getIntent().hasExtra(getString(R.string.keys_extra_results))) {
-
-            loadFragment(new HomeFragment());
-            mChatNotifacations = 0;
-            mNotificationsBar = (TextView) findViewById(R.id.notifacationBar);
+        //If true, then this Activity was started from the notification bar
+        if (getIntent().hasExtra(getString(R.string.keys_chat_notification))) {
+            //load new chat activity with this person
+            loadFragment(new ChatManagerFragment());
+            mChatNotifications -= 1;
+            updateNotificationsUI(mChatNotifications, mNumConnectionNotifications);
+        } else if (getIntent().hasExtra(getString(R.string.keys_connection_notification))) {
+            loadFragment(new ConnectionsFragment());
+            updateNotificationsUI(mChatNotifications, 0);
         }
 
-        if (mDataUpdateReceiver == null) {
-            mDataUpdateReceiver = new DataUpdateReciever();
+        if (mMessagesUpdateReceiver == null) {
+            mMessagesUpdateReceiver = new MessageUpdateReceiver();
         }
-        IntentFilter iFilter = new IntentFilter(PullService.RECEIVED_UPDATE);
-        registerReceiver(mDataUpdateReceiver, iFilter);
+        if (mConnectionsUpdateReceiver == null) {
+            mConnectionsUpdateReceiver = new ConnectionUpdateReceiver();
+        }
+        IntentFilter iFilter = new IntentFilter(PullService.MESSAGE_UPDATE);
+        registerReceiver(mMessagesUpdateReceiver, iFilter);
 
-        updateNotificationsUI();
+        IntentFilter iFilter2 = new IntentFilter(PullService.CONNECTION_UPDATE);
+        registerReceiver(mConnectionsUpdateReceiver, iFilter2);
+
+        updateNotificationsUI(mChatNotifications, mNumConnectionNotifications);
     }
 
     @Override
@@ -271,84 +276,12 @@ public class HomeActivity extends AppCompatActivity
             //restart but in the background
             PullService.startServiceAlarm(this, false);
         }
-        if (mDataUpdateReceiver != null){
-            unregisterReceiver(mDataUpdateReceiver);
+        if (mMessagesUpdateReceiver != null){
+            unregisterReceiver(mMessagesUpdateReceiver);
         }
-
-    }
-
-    /**
-     * Gets some information from all this data.
-     * The input is expected to use the format based on the documentation found :
-     * https://phishnet.api-docs.io/v3/setlists/get-a-random-phish-setlist
-     *
-     * @param jsonResult a JSON String
-     * @return the data and location of the show
-     */
-    private String parseJson(final String jsonResult) {
-        String result = "";
-
-        try {
-            JSONObject json = new JSONObject(jsonResult);
-            if (json.has("error_code") && json.getInt("error_code") == 0) {
-                if (json.has("response")) {
-                    JSONObject response = json.getJSONObject("response");
-                    if (response.has("data")) {
-                        JSONObject show = response.getJSONArray("data").getJSONObject(0);
-                        if (show.has("long_date")) {
-                            result = show.getString("long_date");
-                        }
-                        if (show.has("location")) {
-                            result += System.lineSeparator();
-                            result += show.getString("location");
-                            result += System.lineSeparator();
-                        }
-                    }
-                }
-            } else {
-                result = "Error from web service";
-            }
-        } catch (JSONException e) {
-            Log.e(TAG, e.toString());
+        if (mConnectionsUpdateReceiver != null) {
+            unregisterReceiver(mConnectionsUpdateReceiver);
         }
-        return result;
-    }
-
-    private void updateNotificationsUI (){
-        if (mTotalNotifacations % 2 == 0) {
-            mChatNotifacations++;
-        } else {
-            mNumConnectionNotifacations++;
-        }
-        //if (notification == chat) mChatNotifacations++;
-        //if (notification == connection) mConnectionNotifacations++;
-        mTotalNotifacations = mChatNotifacations + mNumConnectionNotifacations;
-
-        Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.homeFragmentContainer);
-
-        if (currentFragment instanceof HomeFragment) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("You have ");
-            sb.append(mTotalNotifacations);
-            if (mTotalNotifacations == 1) {
-                sb.append(" notification");
-            } else {
-                sb.append(" notifications");
-            }
-            mNotificationsBar = (TextView) findViewById(R.id.notifacationBar);
-            mNotificationsBar.setText(sb.toString());
-        }
-
-        if (mChatNotifacations > 0) {
-            chatNotifications.setGravity(Gravity.CENTER_VERTICAL);
-            chatNotifications.setTypeface(null, Typeface.BOLD);
-            chatNotifications.setTextColor(getResources().getColor(R.color.colorAccent));
-            chatNotifications.setText(String.valueOf(mChatNotifacations)); } else chatNotifications.setText("");
-        if (mNumConnectionNotifacations > 0) {
-            connectionNotifications.setGravity(Gravity.CENTER_VERTICAL);
-            connectionNotifications.setTypeface(null, Typeface.BOLD);
-            connectionNotifications.setTextColor(getResources().getColor(R.color.colorAccent));
-            connectionNotifications.setText(String.valueOf(mNumConnectionNotifacations)); } else connectionNotifications.setText("");
 
     }
 
@@ -553,6 +486,10 @@ public class HomeActivity extends AppCompatActivity
         }
     }
 
+    private void handleErrorsInTask(String result) {
+        Log.e("ASYNC_TASK_ERROR", result);
+    }
+
     private boolean searchName(String username, ArrayList<String> existingList) {
         int low = 0;
         int high = existingList.size() - 1;
@@ -576,24 +513,87 @@ public class HomeActivity extends AppCompatActivity
         return false;
     }
 
-    //**********DATA UPDATE RECEIVER************//
-    private class DataUpdateReciever extends BroadcastReceiver {
+
+    private void updateNotificationsUI (final int theChatNotifications, final int theConnectionNotifications){
+
+        mChatNotifications = theChatNotifications;
+        mNumConnectionNotifications = theConnectionNotifications;
+        mTotalNotifications = mChatNotifications + mNumConnectionNotifications;
+
+        Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.homeFragmentContainer);
+
+        if (currentFragment instanceof HomeFragment) {
+            StringBuilder sb = new StringBuilder();
+            if (!mIncomingMessages.isEmpty()) {
+                for (String s : mIncomingMessages) {
+                    sb.append(s);
+                    if (mIncomingMessages.indexOf(s) < mIncomingMessages.size() - 1)
+                        sb.append(", ");
+                    if (mIncomingMessages.indexOf(s) == mIncomingMessages.size() - 2)
+                        sb.append("and ");
+                    if (mIncomingMessages.indexOf(s) == mIncomingMessages.size() - 1)
+                        sb.append(" sent a new a message!");
+                }
+            } else if (!mIncomingConnectionRequests.isEmpty()) {
+                for (String s : mIncomingConnectionRequests) {
+                    sb.append(s);
+                    if (mIncomingConnectionRequests.indexOf(s) < mIncomingConnectionRequests.size() - 1)
+                        sb.append(", ");
+                    if (mIncomingConnectionRequests.indexOf(s) == mIncomingConnectionRequests.size() - 2)
+                        sb.append("and ");
+                    if (mIncomingConnectionRequests.indexOf(s) == mIncomingConnectionRequests.size() - 1)
+                        sb.append(" sent you a connections request!");
+                }
+            } else {
+                sb.append("You have no new notifications");
+            }
+
+            mNotificationsBar = (TextView) findViewById(R.id.notifacationBar);
+            mNotificationsBar.setText(sb.toString());
+        }
+
+        if (mChatNotifications > 0) {
+            chatNotifications.setGravity(Gravity.CENTER_VERTICAL);
+            chatNotifications.setTypeface(null, Typeface.BOLD);
+            chatNotifications.setTextColor(getResources().getColor(R.color.colorAccent));
+            chatNotifications.setText(String.valueOf(mChatNotifications)); } else chatNotifications.setText("");
+        if (mNumConnectionNotifications > 0) {
+            connectionNotifications.setGravity(Gravity.CENTER_VERTICAL);
+            connectionNotifications.setTypeface(null, Typeface.BOLD);
+            connectionNotifications.setTextColor(getResources().getColor(R.color.colorAccent));
+            connectionNotifications.setText(String.valueOf(mNumConnectionNotifications)); } else connectionNotifications.setText("");
+
+        mIncomingMessages.clear();
+        mIncomingConnectionRequests.clear();
+
+    }
+
+
+    //**********NOTIFICATION RECEIVERS************//
+    private class MessageUpdateReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(PullService.RECEIVED_UPDATE)) {
-                Log.d("UpdateReceiver", "hey I just got your broadcast!");
-                mNotificationsBar = (TextView) findViewById(R.id.notifacationBar);
-                updateNotificationsUI();
-                //mResultStrings.add(intent.getStringExtra(getString(R.string.keys_extra_results)));
-
-                //TO-DO handle notifacations properly (display red symbols on items?)
+            if (intent.getAction().equals(PullService.MESSAGE_UPDATE)) {
+                Log.d("MessageReceiver", "hey, we got a new message!");
+                mIncomingMessages.add(intent.getStringExtra(getString(R.string.keys_extra_results)));
+                updateNotificationsUI(mChatNotifications +1, mNumConnectionNotifications);
             }
         }
     }
-
-    private void handleErrorsInTask(String result) {
-        Log.e("ASYNC_TASK_ERROR", result);
+    private class ConnectionUpdateReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(PullService.CONNECTION_UPDATE)) {
+                Log.d("NotificationReceiver", "hey, we got a new connection request!");
+                int i = 0;
+                while (intent.getStringExtra(String.valueOf(i)) != null) {
+                    mIncomingConnectionRequests.add(intent.getStringExtra(String.valueOf(i)));
+                    mNumConnectionNotifications++;
+                    i++;
+                }
+                updateNotificationsUI(mChatNotifications, mNumConnectionNotifications);
+            }
+        }
     }
-
 
 }

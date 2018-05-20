@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -14,13 +15,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 
+import tcss450.uw.edu.messengerapp.utils.ListenManager;
 import tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask;
 
 
@@ -34,6 +38,16 @@ public class ChatManagerFragment extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+    private String mUsername;
+    private Button chat1;
+    private Button chat2;
+    private int listSize = 0;
+    private ArrayList<String> mChatnames = new ArrayList<String>();
+    private ArrayList<String> addedNames = new ArrayList<String>();
+    private LinearLayout mChatManagerLayout;// = new LinearLayout(this.getContext());
+
+
+    private ListenManager mListenerManager;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -64,12 +78,13 @@ public class ChatManagerFragment extends Fragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+
+        //mChatManagerLayout = getView().findViewById(R.id.chatButtons);
+
         SharedPreferences prefs =
                 getActivity().getSharedPreferences(
                         getString(R.string.keys_shared_prefs),
                         Context.MODE_PRIVATE);
-
-
 
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
@@ -77,31 +92,6 @@ public class ChatManagerFragment extends Fragment {
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
 
-        //Button chat1 = (Button)
-
-
-
-
-//        JSONObject messageJson = new JSONObject();
-//        try {
-//            messageJson.put("userId", 64);
-//
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
-//
-//        String mSendUrl = new Uri.Builder()
-//                .scheme("https")
-//                .appendPath(getString(R.string.ep_base_url))
-//                .appendPath(getString(R.string.ep_get_chats))
-//                .build()
-//                .toString();
-//
-//
-//
-//        new SendPostAsyncTask.Builder(mSendUrl, messageJson)
-//                .onPostExecute(this::loadChats1)
-//                .build().execute();
     }
     private void loadChats1(String result)  {
         // JSONObject res = new JSONObject(result);
@@ -123,14 +113,6 @@ public class ChatManagerFragment extends Fragment {
         catch (JSONException e) {
             e.printStackTrace();
         }
-
-        //System.out.println(res.toString(1));
-//            if(res.get(getString(R.string.keys_json_success)).toString()
-//                    .equals(getString(R.string.keys_json_success_value_true))) {
-//
-//                ((EditText) getView().findViewById(R.id.chatInput))
-//                        .setText("");
-//            }
     }
 
     private void loadChat() {
@@ -143,7 +125,115 @@ public class ChatManagerFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_chat_manager, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_chat_manager, container, false);
+        return rootView;
     }
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        mChatManagerLayout = (LinearLayout) view.findViewById(R.id.chatButtons);
+        getAllChats();
+    }
+
+
+    private void getAllChats() {
+        Log.e("CALL","Called get all chats");
+        SharedPreferences prefs = getActivity().getSharedPreferences(getString(R.string.keys_shared_prefs),
+                Context.MODE_PRIVATE);
+
+        if (!prefs.contains(getString(R.string.keys_prefs_username))) {
+            throw new IllegalStateException("No username in prefs!");
+        }
+
+        mUsername = "test1";
+        //prefs.getString(getString(R.string.keys_prefs_username), "");
+        JSONObject msg = new JSONObject();
+        try {
+            msg.put("username", mUsername);
+        } catch (JSONException e) {
+            Log.wtf("JSON EXCEPTION", e.toString());
+        }
+        Uri retrieveRequests = new Uri.Builder()
+                .scheme("https")
+                .appendPath(getString(R.string.ep_base_url))
+                .appendPath(getString(R.string.ep_get_all_chats))
+                .build();
+
+        Log.e("CONTENT",retrieveRequests.toString());
+
+        new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(retrieveRequests.toString(), msg)
+                .onPreExecute(this::handleGetChatsOnPre)
+                .onPostExecute(this::publishRequests)
+                .onCancelled(this::handleError)
+                .build().execute();
+
+
+
+    }
+    public void handleGetChatsOnPre() {
+
+    }
+    private void handleError(String e) {
+        Log.e("LISTEN ERROR!!!", e);
+    }
+
+    public void publishRequests(String result) {
+        try {
+            JSONObject requests = new JSONObject(result);
+            boolean success = requests.getBoolean("success");
+            if (success) {
+                Log.e("ChatManager", requests.toString());
+                final String[] reqs;
+                if (requests.has("chats")) {
+                    Log.e("INSIDE", "I got here!!!");
+
+                    try {
+                        JSONArray jReqs = requests.getJSONArray("chats");
+                        Log.e("SIZE", "" + jReqs.length());
+                        reqs = new String[jReqs.length()];
+                        for (int i = 0; i < jReqs.length(); i++) {
+                            JSONObject req = jReqs.getJSONObject(i);
+                            String chatname = req.get(getString(R.string.keys_json_chatname))
+                                    .toString();
+                            Log.e("THE CHAT NAMES", chatname);
+                            if (!(mChatnames.contains(chatname))) {
+                                mChatnames.add(chatname);
+                            }
+                        }
+
+                        for(int i = 0; i < mChatnames.size(); i++) {
+                            if(!(addedNames.contains(mChatnames.get(i)))){
+                                Button b = new Button(getActivity());
+                                b.setText(mChatnames.get(i));
+                                mChatManagerLayout.addView(b);
+                                listSize = mChatnames.size();
+                                addedNames.add(mChatnames.get(i));
+                            }
+                        }
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        return;
+                    }
+                    Log.e("HOW MANY CHATS", "" + mChatnames.size());
+                }
+            }
+            } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        //Log.e("HOW MANY CHATS", ""+mChatnames.size());
+    }
+    @Override
+    public void onStart() {
+        super.onStart();
+        Log.e("HOW MANY CHATS", ""+mChatnames.size());
+
+    }
+    @Override
+    public void onResume() {
+        super.onResume();
+        //mListenerManager.startListening();
+    }
+
 
 }

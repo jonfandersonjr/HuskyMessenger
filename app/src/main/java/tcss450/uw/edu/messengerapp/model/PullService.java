@@ -33,11 +33,12 @@ import tcss450.uw.edu.messengerapp.R;
 
 public class PullService extends IntentService {
 
-
-    public static final String RECEIVED_UPDATE = "New Message!";
+    public static final String UPDATE = "UPDATE!";
+    public static final String MESSAGE_UPDATE = "New Message!";
+    public static final String CONNECTION_UPDATE = "New Connection Request!";
 
     //60 seconds - 1 minute is the minimum...
-    private static final int POLL_INTERVAL = 60_000;
+    private static final int POLL_INTERVAL = 10_000;
 
     private static final String TAG = "PullService";
 
@@ -46,7 +47,7 @@ public class PullService extends IntentService {
 
     private boolean isInForeground;
 
-    private ListenManager mListenManager;
+    ArrayList<String> connectionRequests = new ArrayList<>();
 
     public PullService() {
         super("PullService");
@@ -91,30 +92,9 @@ public class PullService extends IntentService {
      * @return
      */
     private boolean checkWebservice(boolean inForeground) {
-
         isInForeground = inForeground;
-
-        //build the web service URL
-        Uri uri = new Uri.Builder()
-                .scheme("https")
-                .appendPath(getString(R.string.ep_base_url))
-                .appendPath(getString(R.string.ep_get_all_chats))
-                .build();
-
-        JSONObject msg = new JSONObject();
-        try {
-            msg.put("username", mUsername);
-        } catch (JSONException e) {
-            Log.wtf("JSON EXCEPTION", e.toString());
-        }
-
-        Log.e(TAG, "Sending getAllChats request");
-        new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
-                .onPreExecute(this::handleGetChatsOnPre)
-                .onPostExecute(this::handleGetChatsOnPost)
-                .onCancelled(this::handleErrorsInTask)
-                .build().execute();
-
+        //checkNewMessages();
+        checkNewConnectionRequests();
         return true;
     }
 
@@ -122,19 +102,27 @@ public class PullService extends IntentService {
      * Prepares a notification if the app is in the background.
      * @param s
      */
-    private void buildNotification(String s) {
-        //IMPORT V4 not V7
-        NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.ic_temp_icon)
-                        .setContentTitle("New Message in " + s + "!")
-                        .setContentText("Click to view!");
+    private void buildNotification(String s, int notificationType) {
+        NotificationCompat.Builder mBuilder = null;
+        Intent notifyIntent = null;
 
-        // Creates an Intent for the Activity
-        Intent notifyIntent =
-                new Intent(this, HomeActivity.class);
-        Bundle bundle = new Bundle();
-        notifyIntent.putExtra(getString(R.string.keys_extra_results), s);
+        //******Chat notification == 0, Connection notification == 1*****//
+        if (notificationType == 0) {
+            mBuilder = new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.ic_chat)
+                        .setContentTitle("New Message in " + s + "!")
+                        .setContentText("Click to chat!");
+            // Creates an Intent for the Activity
+            notifyIntent = new Intent(this, HomeActivity.class);
+            notifyIntent.putExtra(getString(R.string.keys_chat_notification), s);
+        } else if (notificationType == 1) {
+            mBuilder = new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.ic_person_add)
+                        .setContentTitle(s + " sent you a new connection request!")
+                        .setContentText("Click to view your requests!");
+            notifyIntent = new Intent(this, HomeActivity.class);
+            notifyIntent.putExtra(getString(R.string.keys_connection_notification), s);
+        }
 
         // Sets the Activity to start in a new, empty task
         notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
@@ -158,12 +146,112 @@ public class PullService extends IntentService {
         mNotificationManager.notify(1, mBuilder.build());
     }
 
+    private void checkNewConnectionRequests() {
+        //build the web service URL
+        Uri uri = new Uri.Builder()
+                .scheme("https")
+                .appendPath(getString(R.string.ep_base_url))
+                .appendPath(getString(R.string.ep_post_get_requests2))
+                .build();
+
+        JSONObject msg = new JSONObject();
+        try {
+            msg.put(getString(R.string.keys_json_username), mUsername);
+        } catch (JSONException e) {
+            Log.wtf("JSON EXCEPTION", e.toString());
+        }
+
+        new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
+                .onPreExecute(this::handleGetConnectionRequestsOnPre)
+                .onPostExecute(this::handleGetConnectionRequestsOnPost)
+                .onCancelled(this::handleErrorsInTask)
+                .build().execute();
+    }
+
+    public void handleGetConnectionRequestsOnPre() {
+
+    }
+
+    /**
+     * Read through the list of chats and see if the most recent is from
+     * somebody else and came recently.
+     * @param result of finding chats
+     */
+    public void handleGetConnectionRequestsOnPost(String result) {
+
+        try {
+            JSONObject resultsJSON = new JSONObject(result);
+            boolean success = resultsJSON.getBoolean("success");
+
+            if (success) {
+                if (resultsJSON.has(getString(R.string.keys_json_requests))) {
+                    try {
+
+                        JSONArray jReqs = resultsJSON.getJSONArray(getString(R.string.keys_json_requests));
+                        ArrayList<String> newRequests = new ArrayList<>();
+
+                        for (int i = 0; i < jReqs.length(); i++) {
+                            String request = jReqs.getJSONObject(i).getString("username");
+                            if (!connectionRequests.contains(request)) {
+                                connectionRequests.add(request);
+                                if (isInForeground) {
+                                    newRequests.add(request);
+                                } else {
+                                    buildNotification(request, 1);
+                                }
+                            }
+                        }
+
+                        if (isInForeground) {
+                            Intent intent = new Intent(CONNECTION_UPDATE);
+                            int i = 0;
+                            String[] connectKeys = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
+                            for (String s : newRequests) {
+                                intent.putExtra(connectKeys[i], s);
+                            }
+                            sendBroadcast(intent);
+                        }
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        } catch (JSONException e) {
+            Log.e("JSON_PARSE_ERROR", result + System.lineSeparator() + e.getMessage());
+        }
+    }
+
+
+
+    private void checkNewMessages() {
+        //build the web service URL
+        Uri uri = new Uri.Builder()
+                .scheme("https")
+                .appendPath(getString(R.string.ep_base_url))
+                .appendPath(getString(R.string.ep_get_all_chats))
+                .build();
+
+        JSONObject msg = new JSONObject();
+        try {
+            msg.put("username", mUsername);
+        } catch (JSONException e) {
+            Log.wtf("JSON EXCEPTION", e.toString());
+        }
+
+        new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
+                .onPreExecute(this::handleGetChatsOnPre)
+                .onPostExecute(this::handleGetChatsOnPost)
+                .onCancelled(this::handleErrorsInTask)
+                .build().execute();
+    }
+
+
     public void handleGetChatsOnPre() {
 
     }
 
     public void handleGetChatsOnPost(String result) {
-        Log.e(TAG, "Inside getAllChats request post");
 
         try {
             JSONObject resultsJSON = new JSONObject(result);
@@ -197,9 +285,6 @@ public class PullService extends IntentService {
                                 Log.wtf("JSON EXCEPTION", e.toString());
                             }
 
-
-                            Log.e(TAG, "Sending getAllNewMessages request");
-
                             new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
                                     .onPreExecute(this::handleGetMessagesOnPre)
                                     .onPostExecute(this::handleGetMessagesOnPost)
@@ -223,23 +308,27 @@ public class PullService extends IntentService {
 
     }
 
+    /**
+     * Read through the list of chats and see if the most recent is from
+     * somebody else and came recently.
+     * @param result of finding chats
+     */
     public void handleGetMessagesOnPost(String result) {
-
-        Log.e(TAG, "Inside getNewMessages post");
 
         try {
             JSONObject resultsJSON = new JSONObject(result);
             boolean success = resultsJSON.getBoolean("success");
-            ArrayList<String> results = new ArrayList<String>();
 
             if (success) {
                 if (resultsJSON.has(getString(R.string.keys_json_messages))) {
                     try {
                         JSONArray jReqs = resultsJSON.getJSONArray(getString(R.string.keys_json_messages));
+<<<<<<< HEAD
                         for (int i = 0; i < jReqs.length(); i++) {
                             String messageFrom = jReqs.getJSONObject(i).getString("username");
+                            String time = jReqs.getJSONObject(i).getString("timestamp");
 
-                            if (messageFrom != mUsername) {
+                            if (messageFrom != mUsername && isMessageWithinLastMinute(time)) {
                                 if (isInForeground) {
                                     Log.e(TAG, "Inside app sending notification");
                                     Intent intent = new Intent(RECEIVED_UPDATE);
@@ -252,8 +341,17 @@ public class PullService extends IntentService {
                                     buildNotification(mChatName);
                                 }
                                 break;
+=======
+                        String messageFrom = jReqs.getJSONObject(jReqs.length()-1).getString("username");
+                        if (!messageFrom.equals(mUsername) && true)//chat came recently) {
+                            if (isInForeground) {
+                                Intent intent = new Intent(MESSAGE_UPDATE);
+                                intent.putExtra(getString(R.string.keys_extra_results), messageFrom);
+                                sendBroadcast(intent);
+                            } else {
+                                buildNotification(mChatName, 0);
+>>>>>>> f41a7ad11edc831905f1a747842c92956cc4ae88
                             }
-                        }
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -263,6 +361,36 @@ public class PullService extends IntentService {
             Log.e("JSON_PARSE_ERROR", result + System.lineSeparator() + e.getMessage());
         }
     }
+
+<<<<<<< HEAD
+    public boolean isMessageWithinLastMinute(String time) {
+       String[] date = time.split("\n");
+        Log.i("DATEEEEEEE",date[0]);
+        Log.i("Hour",date[1].substring(3,5));
+        Log.i("Mintue",date[1].substring(6,8));
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date date1 = new Date();
+        date1.setMinutes(date1.getMinutes());
+        String currentDateTime = dateFormat.format(date1);
+        //Log.i("CHECKTIMER",currentDateTime);
+        int currentMinute = Integer.parseInt(currentDateTime.substring(14,16));
+        int messageMinute = Integer.parseInt(date[1].substring(6,8));
+
+        Log.i("Cur",currentDateTime.substring(14,16));
+        Log.i("Cur",date[1].substring(6,8));
+        String dateCheck = currentDateTime.substring(0,10);
+        if(dateCheck.equals(date) && date[1].substring(3,5).equals(currentDateTime.substring(11,13)) ) {
+            Log.i("MESSAGE IN THIS HOUR","MESSAGE IN THIS HOUR");
+            if(currentMinute ==messageMinute || currentMinute-1 == messageMinute ) {
+                return true;
+            }
+            }
+        return false;
+    }
+=======
+>>>>>>> f41a7ad11edc831905f1a747842c92956cc4ae88
+
 
     public void handleErrorsInTask(String result) {
         Log.e("ASYNC_TASK_ERROR", result);

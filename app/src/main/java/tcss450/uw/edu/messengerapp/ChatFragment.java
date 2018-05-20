@@ -32,7 +32,10 @@ public class ChatFragment extends Fragment {
     private TextView mOutputTextView;
     private ListenManager mListenManager;
     private int currentMessages = 0;
+    private int mUserchatID;
     public ChatFragment() {
+
+
         // Required empty public constructor
     }
 
@@ -80,7 +83,7 @@ public class ChatFragment extends Fragment {
                 .appendPath(getString(R.string.ep_get_message))
                 .appendQueryParameter("chatId", "1")
                 .build();
-                Log.i("A",retrieve.toString());
+        Log.i("A",retrieve.toString());
 
 
         if (prefs.contains(getString(R.string.keys_prefs_time_stamp))) {
@@ -133,7 +136,7 @@ public class ChatFragment extends Fragment {
         try {
             messageJson.put(getString(R.string.keys_json_username), mUsername);
             messageJson.put(getString(R.string.keys_json_message), msg);
-            messageJson.put(getString(R.string.keys_json_chatid), 1);
+            messageJson.put(getString(R.string.keys_json_chat_id), 1);
         } catch (JSONException e) {
             e.printStackTrace();
         }
