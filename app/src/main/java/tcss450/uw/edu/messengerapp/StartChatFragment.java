@@ -103,12 +103,12 @@ public class StartChatFragment extends Fragment {
         }
         mUsername = prefs.getString(getString(R.string.keys_prefs_username), "");
 
-        mSendUrl = new Uri.Builder()
-                .scheme("https")
-                .appendPath(getString(R.string.ep_base_url))
-                .appendPath(getString(R.string.ep_create_chat))
-                .build()
-                .toString();
+//        mSendUrl = new Uri.Builder()
+//                .scheme("https")
+//                .appendPath(getString(R.string.ep_base_url))
+//                .appendPath(getString(R.string.ep_post_createChat))
+//                .build()
+//                .toString();
 
 
 //        Uri retrieve = new Uri.Builder()
