@@ -32,7 +32,7 @@ public class ChatFragment extends Fragment {
     private TextView mOutputTextView;
     private ListenManager mListenManager;
     private int currentMessages = 0;
-    private int mUserchatID;
+    private String mUserchatID = "1";
     public ChatFragment() {
 
 
@@ -42,6 +42,10 @@ public class ChatFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        if (getArguments() != null) {
+            mUserchatID = getArguments().getString("CHAT_ID");
+            Log.e("IN CHAT FRAGMENT", mUserchatID);
+        }
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_chat, container, false);
 
@@ -81,7 +85,7 @@ public class ChatFragment extends Fragment {
                 .scheme("https")
                 .appendPath(getString(R.string.ep_base_url))
                 .appendPath(getString(R.string.ep_get_message))
-                .appendQueryParameter("chatId", "1")
+                .appendQueryParameter("chatId", mUserchatID)
                 .build();
         Log.i("A",retrieve.toString());
 

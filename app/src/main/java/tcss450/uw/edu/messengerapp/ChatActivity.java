@@ -26,11 +26,17 @@ import tcss450.uw.edu.messengerapp.R;
 import tcss450.uw.edu.messengerapp.WeatherFragment;
 
 public class ChatActivity extends AppCompatActivity {
+    Bundle extras;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+        extras = getIntent().getExtras();
+        if (extras != null) {
+            String value = extras.getString("CHAT_ID");
+            Log.e("VALUE", value);
+        }
 
         if(savedInstanceState == null) {
             if (findViewById(R.id.chatContainer) != null) {
@@ -44,6 +50,7 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     public void loadFragment(Fragment theFragment) {
+        theFragment.setArguments(extras);
         FragmentTransaction transaction = getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.chatContainer, theFragment);

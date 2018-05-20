@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,6 +23,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 
 import tcss450.uw.edu.messengerapp.utils.ListenManager;
@@ -43,6 +45,7 @@ public class ChatManagerFragment extends Fragment {
     private Button chat2;
     private int listSize = 0;
     private ArrayList<String> mChatnames = new ArrayList<String>();
+    private HashMap<String, String> mChatMap = new HashMap<>();
     private ArrayList<String> addedNames = new ArrayList<String>();
     private LinearLayout mChatManagerLayout;// = new LinearLayout(this.getContext());
 
@@ -195,9 +198,14 @@ public class ChatManagerFragment extends Fragment {
                             JSONObject req = jReqs.getJSONObject(i);
                             String chatname = req.get(getString(R.string.keys_json_chatname))
                                     .toString();
+                            String chatid = req.get(getString(R.string.keys_json_chatid))
+                                    .toString();
                             Log.e("THE CHAT NAMES", chatname);
                             if (!(mChatnames.contains(chatname))) {
                                 mChatnames.add(chatname);
+                            }
+                            if(!(mChatMap.containsKey(chatname))){
+                                mChatMap.put(chatname,chatid);
                             }
                         }
 
@@ -205,6 +213,15 @@ public class ChatManagerFragment extends Fragment {
                             if(!(addedNames.contains(mChatnames.get(i)))){
                                 Button b = new Button(getActivity());
                                 b.setText(mChatnames.get(i));
+                                b.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        Log.e("BUTTON","" + b .getText());
+                                        Intent intent = new Intent(getActivity(), ChatActivity.class);
+                                        intent.putExtra("CHAT_ID",mChatMap.get(b.getText()));
+                                        startActivity(intent);
+                                    }
+                                });
                                 mChatManagerLayout.addView(b);
                                 listSize = mChatnames.size();
                                 addedNames.add(mChatnames.get(i));
@@ -222,6 +239,13 @@ public class ChatManagerFragment extends Fragment {
             e.printStackTrace();
         }
         //Log.e("HOW MANY CHATS", ""+mChatnames.size());
+    }
+    public void loadFragment(Fragment theFragment) {
+        FragmentTransaction transaction = getActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.chatContainer, theFragment);
+        // Commit the transaction
+        transaction.commit();
     }
     @Override
     public void onStart() {
