@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import tcss450.uw.edu.messengerapp.model.PullService;
@@ -22,6 +23,8 @@ import tcss450.uw.edu.messengerapp.model.PullService;
  * create an instance of this fragment.
  */
 public class HomeFragment extends Fragment {
+
+    String mUsername;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -72,10 +75,30 @@ public class HomeFragment extends Fragment {
 
         SharedPreferences prefs = getActivity().
                 getSharedPreferences(getString(R.string.keys_shared_prefs), Context.MODE_PRIVATE);
-        String username = prefs.getString(getString(R.string.keys_prefs_username), "");
+        mUsername = prefs.getString(getString(R.string.keys_prefs_username), "");
 
-        tv.setText("Welcome " + username + "!");
+        tv.setText("Welcome " + mUsername + "!");
+
+        createButtons(v);
+
         return v;
+    }
+
+    private void createButtons(View v) {
+        Button a = v.findViewById(R.id.chat0);
+        setButtonFunctionality(a, v);
+        Button b = v.findViewById(R.id.chat1);
+        setButtonFunctionality(b, v);
+        Button c = v.findViewById(R.id.chat2);
+        setButtonFunctionality(c, v);
+        Button d = v.findViewById(R.id.chat3);
+        setButtonFunctionality(d, v);
+        Button e = v.findViewById(R.id.chat4);
+        setButtonFunctionality(e, v);
+    }
+
+    private void setButton0Listener() {Button button} {
+
     }
 
 
