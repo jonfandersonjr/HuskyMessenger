@@ -135,22 +135,19 @@ public class ChatManagerFragment extends Fragment {
 
 
     private void getAllChats() {
-        Log.e("CALL","Called get all chats");
         SharedPreferences prefs = getActivity().getSharedPreferences(getString(R.string.keys_shared_prefs),
                 Context.MODE_PRIVATE);
 
         if (!prefs.contains(getString(R.string.keys_prefs_username))) {
             throw new IllegalStateException("No username in prefs!");
         }
-
-        mUsername = "test1";
-        //prefs.getString(getString(R.string.keys_prefs_username), "");
         JSONObject msg = new JSONObject();
         try {
-            msg.put("username", mUsername);
+            msg.put("username", prefs.getString(getString(R.string.keys_prefs_username), ""));
         } catch (JSONException e) {
             Log.wtf("JSON EXCEPTION", e.toString());
         }
+
         Uri retrieveRequests = new Uri.Builder()
                 .scheme("https")
                 .appendPath(getString(R.string.ep_base_url))
@@ -183,11 +180,8 @@ public class ChatManagerFragment extends Fragment {
                 Log.e("ChatManager", requests.toString());
                 final String[] reqs;
                 if (requests.has("chats")) {
-                    Log.e("INSIDE", "I got here!!!");
-
                     try {
                         JSONArray jReqs = requests.getJSONArray("chats");
-                        Log.e("SIZE", "" + jReqs.length());
                         reqs = new String[jReqs.length()];
                         for (int i = 0; i < jReqs.length(); i++) {
                             JSONObject req = jReqs.getJSONObject(i);
@@ -195,7 +189,6 @@ public class ChatManagerFragment extends Fragment {
                                     .toString();
                             String chatid = req.get(getString(R.string.keys_json_chatid))
                                     .toString();
-                            Log.e("THE CHAT NAMES", chatname);
                             if (!(chatIdList.contains(chatid))) {
                                 chatIdList.add(chatid);
                             }
@@ -228,7 +221,6 @@ public class ChatManagerFragment extends Fragment {
                         e.printStackTrace();
                         return;
                     }
-                    Log.e("HOW MANY CHATS", "" + chatIdList.size());
                 }
             }
         } catch (JSONException e) {
@@ -246,7 +238,6 @@ public class ChatManagerFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        Log.e("HOW MANY CHATS", ""+chatIdList.size());
 
     }
     @Override
