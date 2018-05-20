@@ -75,6 +75,7 @@ public class HomeActivity extends AppCompatActivity
                         Context.MODE_PRIVATE);
         final SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(getString(R.string.keys_sp_on), true);
+        editor.putString("chatid", "1"); //defeault chatid
         editor.apply();
 
         mUsername = sharedPreferences.getString("username", "");
@@ -83,10 +84,17 @@ public class HomeActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+//        fab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                loadFragment(new ChatManagerFragment());
+//            }
+//        });
+
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                loadFragment(new ChatManagerFragment());
+                loadFragment(new StartChatFragment());
             }
         });
 
@@ -189,10 +197,6 @@ public class HomeActivity extends AppCompatActivity
             case R.id.nav_connections:
                 loadFragment(new ConnectionsFragment());
                 updateNotificationsUI(mChatNotifications, 0);
-                break;
-            case R.id.nav_chat:
-                loadChatActivity();
-                getSupportFragmentManager().popBackStack();
                 break;
             case R.id.nav_chatmanager:
                 loadFragment(new ChatManagerFragment());

@@ -23,7 +23,7 @@
     <string name="keys_json_messages">messages</string>
     <string name="keys_json_success">success</string>
     <string name="keys_json_chats">chats</string>
-    <string name="keys_json_chatid">chatId</string>
+    <string name="keys_json_chatid">chatid</string>
     <string name="keys_json_after">after</string>
     <string name="keys_json_request_memberid">memberid_a</string>
     <string name="keys_json_requests">requests</string>

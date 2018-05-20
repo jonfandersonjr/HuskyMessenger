@@ -74,6 +74,14 @@ public class PullService extends IntentService {
                 , startAfter
                 , POLL_INTERVAL, pendingIntent);
         Log.e(TAG, "starting service");
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date date = new Date();
+        date.setMinutes(date.getMinutes()-1);
+        String currentDateTime = dateFormat.format(date);
+        Log.e(TAG, currentDateTime);
+
+
     }
 
     public static void stopServiceAlarm(Context context) {
@@ -109,17 +117,17 @@ public class PullService extends IntentService {
         //******Chat notification == 0, Connection notification == 1*****//
         if (notificationType == 0) {
             mBuilder = new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.ic_chat)
-                        .setContentTitle("New Message in " + s + "!")
-                        .setContentText("Click to chat!");
+                    .setSmallIcon(R.drawable.ic_chat)
+                    .setContentTitle("New Message in " + s + "!")
+                    .setContentText("Click to chat!");
             // Creates an Intent for the Activity
             notifyIntent = new Intent(this, HomeActivity.class);
             notifyIntent.putExtra(getString(R.string.keys_chat_notification), s);
         } else if (notificationType == 1) {
             mBuilder = new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.ic_person_add)
-                        .setContentTitle(s + " sent you a new connection request!")
-                        .setContentText("Click to view your requests!");
+                    .setSmallIcon(R.drawable.ic_person_add)
+                    .setContentTitle(s + " sent you a new connection request!")
+                    .setContentText("Click to view your requests!");
             notifyIntent = new Intent(this, HomeActivity.class);
             notifyIntent.putExtra(getString(R.string.keys_connection_notification), s);
         }
@@ -252,6 +260,7 @@ public class PullService extends IntentService {
     }
 
     public void handleGetChatsOnPost(String result) {
+        Log.i("HERE","GETMESSAGESPOST");
 
         try {
             JSONObject resultsJSON = new JSONObject(result);
@@ -262,6 +271,8 @@ public class PullService extends IntentService {
                     try {
                         JSONArray jReqs = resultsJSON.getJSONArray(getString(R.string.keys_json_chats));
                         for (int i = 0; i < jReqs.length(); i++) {
+
+
                             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                             Date date = new Date();
                             date.setMinutes(date.getMinutes()-1);
@@ -324,7 +335,14 @@ public class PullService extends IntentService {
                     try {
                         JSONArray jReqs = resultsJSON.getJSONArray(getString(R.string.keys_json_messages));
                         String messageFrom = jReqs.getJSONObject(jReqs.length()-1).getString("username");
-                        if (!messageFrom.equals(mUsername) && true)//chat came recently) {
+                        String messageTime = jReqs.getJSONObject(jReqs.length()-1).getString("timestamp");
+
+                        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        Date date = new Date();
+                        date.setMinutes(date.getMinutes()-1);
+                        String currentDateTime = dateFormat.format(date);
+
+                        if (!messageFrom.equals(mUsername) && inLastMinute(messageTime,currentDateTime))//chat came recently) {
                             if (isInForeground) {
                                 Intent intent = new Intent(MESSAGE_UPDATE);
                                 intent.putExtra(getString(R.string.keys_extra_results), messageFrom);
@@ -353,5 +371,24 @@ public class PullService extends IntentService {
         mUsername = theString;
     }
 
+    public boolean inLastMinute(String time, String currentTime) {
+
+        String date = time.substring(0,10);
+        String hour = time.substring(14,16);
+        String minute = time.substring(17,19);
+
+        String date1 = currentTime.substring(0,10);
+        String hour1 = currentTime.substring(11,13);
+        String minute1 = currentTime.substring(14,16);
+
+        if(date.equals(date1) && hour.equals(hour1)) {
+            int currentMinute = Integer.valueOf(minute1);
+            int msgMinute = Integer.valueOf(minute);
+            if (currentMinute == msgMinute || (currentMinute == (msgMinute + 1)) ) {
+                return true;
+            }
+        }
+        return false;
+    }
 
 }

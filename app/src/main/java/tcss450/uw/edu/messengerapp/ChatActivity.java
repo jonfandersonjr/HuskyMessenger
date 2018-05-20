@@ -26,15 +26,34 @@ import tcss450.uw.edu.messengerapp.R;
 import tcss450.uw.edu.messengerapp.WeatherFragment;
 
 public class ChatActivity extends AppCompatActivity {
-
+    Bundle extras;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
+        //FIX WHERE IT GETS CHAT ID FROM
+
+        extras = getIntent().getExtras();
+        String value = "1";
+        if (extras != null) {
+             value = extras.getString("CHAT_ID");
+            Log.e("VALUE", value);
+        } else {
+            SharedPreferences prefs = getSharedPreferences(
+                    getString(R.string.keys_shared_prefs),
+                    Context.MODE_PRIVATE);
+            if (!prefs.contains("chatid")) {
+                throw new IllegalStateException("No chatid in prefs!");
+            }
+            String chatid;
+            chatid = prefs.getString("chatid", "");
+            Log.i("THE CHAT" , "ID IS "+ chatid);
+        }
+
         if(savedInstanceState == null) {
             if (findViewById(R.id.chatContainer) != null) {
-                loadFragment(new ChatFragment());
+                loadFragment(new ChatFragment(value));
             }
         }
 
@@ -44,6 +63,7 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     public void loadFragment(Fragment theFragment) {
+        theFragment.setArguments(extras);
         FragmentTransaction transaction = getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.chatContainer, theFragment);
@@ -54,10 +74,6 @@ public class ChatActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        Intent intent = new Intent(this, HomeActivity.class);
-        intent.putExtra("flag", "flag");
-        startActivity(intent);
-
     }
 
 
