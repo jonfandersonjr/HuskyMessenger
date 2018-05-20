@@ -11,7 +11,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.TextView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -28,72 +27,53 @@ public class StartChatFragment extends Fragment {
 
     private String mUsername;
     private String mSendUrl;
-    private TextView mOutputTextView;
+    private EditText mOutputTextView;
     private ListenManager mListenManager;
     private int currentMessages = 0;
     private int mUserchatID;
     private int chatId;
-
-
-    public StartChatFragment() {
-        // Required empty public constructor
-    }
+    EditText usernames;
+    EditText chatName;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View v = inflater.inflate(R.layout.fragment_chat, container, false);
-        v.findViewById(R.id.createChat).setOnClickListener(this::createChat);
+        View v = inflater.inflate(R.layout.fragment_start_chat, container, false);
+        usernames = (EditText) v.findViewById(R.id.enterUsernames);
+        chatName = (EditText) v.findViewById(R.id.chatName);
+        v.findViewById(R.id.createChat).setOnClickListener(this::sendMessage);
         return v;
     }
 
-    private void createChat(View view) {
+    private void sendMessage(View view) {
+        String newChatName = (String) chatName.getText().toString();
 
-        JSONObject messageJson = new JSONObject();
-        String msg = ((EditText) getView().findViewById(R.id.chatInput))
-                .getText().toString();
+        Uri uri = new Uri.Builder()
+                .scheme("https")
+                .appendPath(getString(R.string.ep_base_url))
+                .appendPath(getString(R.string.ep_post_add_new_chat))
+                .build();
 
+        JSONObject msg = new JSONObject();
         try {
-            messageJson.put(getString(R.string.keys_json_username), mUsername);
-            messageJson.put(getString(R.string.keys_json_message), msg);
-            messageJson.put(getString(R.string.keys_json_chat_id), chatId);
+            if(chatName.equals("")) {
+                msg.put("nameOfChat", "Default ChatName");
+            }
+            else {
+                msg.put("nameOfChat", newChatName);
+            }
         } catch (JSONException e) {
-            e.printStackTrace();
+            Log.wtf("JSON EXCEPTION", e.toString());
         }
-        new SendPostAsyncTask.Builder(mSendUrl, messageJson)
-                .onPostExecute(this::endOfSendMsgTask)
-                .onCancelled(this::handleError)
-                .build().execute();
+        new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
+           .onPostExecute(this::addPeopleToChatroom)
+           .build().execute();
 
     }
 
-    private void handleError(String s) {
-    }
+    private void addPeopleToChatroom(String result) {
 
-    private void endOfSendMsgTask(String messages)  {
-        //S is chatID returned
-
-        String newChatId = "";
-//        try {
-//             //newChatId = messages.get("chatid").toString();
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
-
-
-
-        String msg = ((EditText) getView().findViewById(R.id.userNames))
-                .getText().toString();
-
-        //Split into usernames array
-
-    }
-
-
-    @Override
-    public void onStart() {
-        super.onStart();
         SharedPreferences prefs =
                 getActivity().getSharedPreferences(
                         getString(R.string.keys_shared_prefs),
@@ -102,24 +82,64 @@ public class StartChatFragment extends Fragment {
             throw new IllegalStateException("No username in prefs!");
         }
         mUsername = prefs.getString(getString(R.string.keys_prefs_username), "");
+        String usersToAdd = (String) usernames.getText().toString() + "," + mUsername;
+        usersToAdd = usersToAdd.replaceAll("\\s","");
+        usernames.setText("");
+        chatName.setText("");
+        JSONObject resultsJSON = null;
+        JSONObject resultsJSON1 = null;
 
-//        mSendUrl = new Uri.Builder()
-//                .scheme("https")
-//                .appendPath(getString(R.string.ep_base_url))
-//                .appendPath(getString(R.string.ep_post_createChat))
-//                .build()
-//                .toString();
+        try {
+            resultsJSON = new JSONObject(result);
+            String chatId=  resultsJSON.getString("messages");
+            resultsJSON1 = new JSONObject(chatId);
+            String chatId2=  resultsJSON1.getString("chatid");
+            addMembersToChat(usersToAdd,chatId2);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
 
 
-//        Uri retrieve = new Uri.Builder()
-//                .scheme("https")
-//                .appendPath(getString(R.string.ep_base_url))
-//                .appendPath(getString(R.string.ep_get_message))
-//                .appendQueryParameter("chatId", chatId+"")
-//                .build();
-//        Log.i("A",retrieve.toString());
-//
-//
+
+    private void addMembersToChat(String usernames, String chatId2) {
+        //get usernames from text box
+
+        String users[] = usernames.split(",");
+        // add user mUsername;
+
+        for(int i = 0; i < users.length; i++) {
+            Log.i("USERNAME STRING",users[i]);
+
+            JSONObject msg = new JSONObject();
+            try {
+                //Set chat name here
+                msg.put("username", users[i]);
+                msg.put("chatId", chatId2);
+            } catch (JSONException e) {
+                Log.wtf("JSON EXCEPTION", e.toString());
+            }
+            Uri uri = new Uri.Builder()
+                    .scheme("https")
+                    .appendPath(getString(R.string.ep_base_url))
+                    .appendPath(getString(R.string.ep_post_add_user_to_chat))
+                    .build();
+            new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
+                    .onPostExecute(this::temp)
+                    .build().execute();
+        }
+
+
+
+
+        //LOAD CHAT FRAGMENT HERE WITH CHATID
+
+
+
+    }
+
+    private void temp(String s) {
+        Log.i("Add user to chatid",s);
     }
 
 }
