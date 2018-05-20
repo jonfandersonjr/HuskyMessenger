@@ -26,7 +26,7 @@
     <string name="temp_weather">WEATHER</string>
 
     /**Strings for login fragment UI**/
-    <string name="login_text">Login to Messenger</string>
+    <string name="login_text">Log into Messenger</string>
     <string name="login_button_login">Login</string>
     <string name="login_button_register">Register</string>
     <string name="login_username_hint">Username</string>
@@ -88,6 +88,10 @@
     <string name="searchConnections_current_connections_text">Current Connections</string>
     <string name="searchConnections_requests_text">They\'ve Requested to Connect!</string>
     <string name="searchConnections_pending_text">You\'re Waiting On Them...</string>
+    <string name="searchConnections_remove_pending">Remove</string>
+    <string name="searchConnections_nevermind">Nevermind</string>
+    <string name="searchConnections_Yes">Yes</string>
+    <string name="searchConnections_Nah">Mmm... Nah</string>
 
     /**Strings for Weather Fragment UI**/
     <string name="weather_button_start">Start Service</string>

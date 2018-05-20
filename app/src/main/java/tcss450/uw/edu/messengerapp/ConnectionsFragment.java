@@ -197,6 +197,7 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
     }
 
     public void onItemClickRequests(View v, int position) {
+        String connections = "connections";
         String str = mRecyclerAdapter.getItem(position);
         final String username = str.substring(0, str.indexOf(" "));
 
@@ -209,7 +210,7 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         boolean accept = false;
-                        mInteractionListener.onRequestInteractionListener(username, accept);
+                        mInteractionListener.onRequestInteractionListener(username, accept, connections);
                     }
                 })
                 .setNegativeButton(getString(R.string.connections_accept_request_dialog_button),
@@ -217,14 +218,60 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 boolean accept = true;
-                                mInteractionListener.onRequestInteractionListener(username, accept);
+                                mInteractionListener.onRequestInteractionListener(username, accept, connections);
                             }
                         })
                 .setIcon(R.drawable.ic_person_add)
                 .show();
 
+    }
 
-        //mInteractionListener.onRequestInteractionListener(str);
+    public void onItemClickPending(View v, int position) {
+        String str = mPendingAdapter.getItem(position);
+        final String username = str.substring(0, str.indexOf(" "));
+
+        AlertDialog.Builder builder;
+        builder = new AlertDialog
+                .Builder(getActivity(), android.R.style.Theme_Material_Dialog_Alert);
+        builder.setTitle("Remove Pending Request")
+                .setMessage("Would you like to cancel your connection request to " +
+                        username + "?")
+                .setPositiveButton(getString(R.string.searchConnections_remove_pending),
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                builder.setTitle("Confirm Cancellation")
+                                        .setMessage("Are you sure you want to cancel your connection request to " +
+                                                username + "?")
+                                        .setPositiveButton(getString(R.string.searchConnections_Yes),
+                                                new DialogInterface.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                                        boolean accept = false;
+                                                        final String frag = "connectionsPending";
+                                                        mInteractionListener.onRequestInteractionListener(username, accept, frag);
+                                                    }
+                                                })
+                                        .setNegativeButton(getString(R.string.searchConnections_Nah),
+                                                new DialogInterface.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                                                    }
+                                                })
+                                        .setIcon(R.drawable.ic_exclaimation)
+                                        .show();
+                            }
+                        })
+                .setNegativeButton(getString(R.string.searchConnections_nevermind),
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+
+                            }
+                        })
+                .setIcon(R.drawable.delete)
+                .show();
     }
 
     public void onSearchButtonClick() {
@@ -389,8 +436,7 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
                                     .toString();
                             String lastName = req.get(getString(R.string.keys_json_requests_lastname))
                                     .toString();
-                            String str = "Waiting on " + username + "'s " +
-                                    " (" + lastName + ", " + firstName + ") response...";
+                            String str = username + " (" + lastName + ", " + firstName + ")";
 
                             if (!mPending.contains(str)) {
                                 mPending.add(str);
@@ -410,12 +456,21 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
                 mPendingList.setLayoutManager(layoutManager);
 
                 mPendingAdapter = new MyRecyclerViewAdapter(getActivity(), mPending);
+                mPendingAdapter.setClickListener(this::onItemClickPending);
                 mPendingList.setAdapter(mPendingAdapter);
 
                 DividerItemDecoration dividerItemDecoration =
                         new DividerItemDecoration(mPendingList.getContext(),
                                 layoutManager.getOrientation());
                 mVerifiedList.addItemDecoration(dividerItemDecoration);
+
+                if (!mPending.isEmpty()) {
+                    TextView tv = getView().findViewById(R.id.connectionsPendingHeaderTextView);
+                    tv.setVisibility(TextView.VISIBLE);
+
+                    View v = getView().findViewById(R.id.connectionsDividerThree);
+                    v.setVisibility(View.VISIBLE);
+                }
 
                 ViewGroup vg = (ViewGroup) getView().findViewById(R.id.connectionsFrameLayout);
 
@@ -459,9 +514,18 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
 
                     if (!mRequests.contains(str)) {
                         mRequests.add(str);
+
+                        TextView tv = getView().findViewById(R.id.connectionsRequestsHeaderTextView);
+
                         mRequests.sort(String::compareToIgnoreCase);
                         getActivity().runOnUiThread(() -> {
                             mRecyclerAdapter.notifyDataSetChanged();
+                            if (tv.getVisibility() == View.GONE) {
+                                tv.setVisibility(TextView.VISIBLE);
+
+                                View v = getView().findViewById(R.id.connectionsDividerTwo);
+                                v.setVisibility(View.VISIBLE);
+                            }
                         });
                     }
                 }
@@ -501,12 +565,50 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
                     break;
                 }
             }
+
+            if (mRequests.isEmpty()) {
+                TextView tv = getView().findViewById(R.id.connectionsRequestsHeaderTextView);
+                tv.setVisibility(TextView.GONE);
+
+                View v = getView().findViewById(R.id.connectionsDividerTwo);
+                v.setVisibility(View.GONE);
+            }
+
         } else {
             setError("Something happened on the back end I think...");
         }
 
         enableDisableViewGroup(vg, true);
 
+    }
+
+    public void handlePendingOnPost(boolean success, String username) {
+        ViewGroup vg = (ViewGroup) getView().findViewById(R.id.connectionsFrameLayout);
+
+        if (success) {
+            for (int i = 0; i < mPending.size(); i++) {
+                String str = mPending.get(i);
+                String subStr = str.substring(0, str.indexOf(" "));
+
+                if (username.equals(subStr)) {
+                    mPending.remove(i);
+                    mPendingAdapter.notifyDataSetChanged();
+                    break;
+                }
+            }
+
+            if (mPending.isEmpty()) {
+                TextView tv = getView().findViewById(R.id.connectionsPendingHeaderTextView);
+                tv.setVisibility(TextView.GONE);
+
+                View v = getView().findViewById(R.id.connectionsDividerThree);
+                v.setVisibility(View.GONE);
+            }
+        } else {
+            setError("Something happened on the back end I think...");
+        }
+
+        enableDisableViewGroup(vg, true);
     }
 
     public void handleSearchOnPost() {
@@ -564,7 +666,7 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
 
     public interface OnConnectionsInteractionListener {
         void onConnectionsInteractionListener(String username);
-        void onRequestInteractionListener(String username, boolean accept);
+        void onRequestInteractionListener(String username, boolean accept, String fragment);
         void onSearchInteractionListener(String searchBy, String searchString,
                                          ArrayList<String> contacts, ArrayList<String> requests,
                                          ArrayList<String> pending);

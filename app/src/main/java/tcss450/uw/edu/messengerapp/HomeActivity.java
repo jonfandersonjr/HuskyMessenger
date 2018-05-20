@@ -23,6 +23,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -111,7 +112,11 @@ public class HomeActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        } else if (!drawer.isDrawerOpen(GravityCompat.START) &&(currentFragment instanceof HomeFragment)) {
+        } else if (!drawer.isDrawerOpen(GravityCompat.START) &&
+                (currentFragment instanceof HomeFragment)) {
+            super.onBackPressed();
+        } else if (!drawer.isDrawerOpen(GravityCompat.START) &&
+                (currentFragment instanceof SearchContactsFragment)) {
             super.onBackPressed();
         } else {
             loadFragment(new HomeFragment());
@@ -291,7 +296,7 @@ public class HomeActivity extends AppCompatActivity
     }
 
     @Override
-    public void onRequestInteractionListener(String username, boolean accept) {
+    public void onRequestInteractionListener(String username, boolean accept, String fragment) {
         String endpoint;
 
         if (accept) {
@@ -311,20 +316,53 @@ public class HomeActivity extends AppCompatActivity
         String myName = prefs.getString(getString(R.string.keys_prefs_username), "");
 
         JSONObject msg = new JSONObject();
-        try {
-            msg.put("usernameA", username);
-            msg.put("usernameB", myName);
-        } catch (JSONException e) {
-            Log.wtf("Verify Contact", "Error reading JSON" + e.getMessage());
+        if (!fragment.equals("searchPending") && !fragment.equals("connectionsPending")) {
+            try {
+                msg.put("usernameA", username);
+                msg.put("usernameB", myName);
+            } catch (JSONException e) {
+                Log.wtf("Verify Contact", "Error reading JSON" + e.getMessage());
+            }
+        } else {
+            try {
+                msg.put("usernameB", username);
+                msg.put("usernameA", myName);
+            } catch (JSONException e) {
+                Log.wtf("Verify Contact", "Error reading JSON" + e.getMessage());
+            }
         }
 
+        if (fragment.equals("connections")) {
+            new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
+                    .onPreExecute(this::handleRequestOnPre)
+                    .onPostExecute(this::handleRequestOnPost)
+                    .onCancelled(this::handleErrorsInTask)
+                    .build().execute();
+        } else if (fragment.equals("search")) {
+            new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
+                    .onPreExecute(this::handleSearchRequestOnPre)
+                    .onPostExecute(this::handleSearchRequestOnPost)
+                    .onCancelled(this::handleErrorsInTask)
+                    .build().execute();
+        } else if (fragment.equals("searchPending")) {
+            new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
+                    .onPreExecute(this::handleSearchRequestOnPre)
+                    .onPostExecute(this::handleSearchPendingOnPost)
+                    .onCancelled(this::handleErrorsInTask)
+                    .build().execute();
+        } else if (fragment.equals("connectionsPending")) {
+            new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
+                    .onPreExecute(this::handleRequestOnPre)
+                    .onPostExecute(this::handlePendingOnPost)
+                    .onCancelled(this::handleErrorsInTask)
+                    .build().execute();
+        }
 
-        new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
-                .onPreExecute(this::handleRequestOnPre)
-                .onPostExecute(this::handleRequestOnPost)
-                .onCancelled(this::handleErrorsInTask)
-                .build().execute();
+    }
 
+    @Override
+    public void onSearchRequestInteraction(String username, boolean accept, String fragment) {
+        onRequestInteractionListener(username, accept, fragment);
     }
 
     @Override
@@ -375,6 +413,12 @@ public class HomeActivity extends AppCompatActivity
         frag.handleRequestOnPre();
     }
 
+    private void handleSearchRequestOnPre() {
+        SearchContactsFragment frag = (SearchContactsFragment) getSupportFragmentManager()
+                .findFragmentByTag(getString(R.string.keys_fragment_searchConnections));
+        frag.handleRequestOnPre();
+    }
+
     private void handleRequestOnPost(String result) {
         ConnectionsFragment frag = (ConnectionsFragment) getSupportFragmentManager()
                 .findFragmentByTag(getString(R.string.keys_fragment_connections));
@@ -384,11 +428,78 @@ public class HomeActivity extends AppCompatActivity
             boolean success = resultsJSON.getBoolean("success");
             String username = resultsJSON.getString("username");
             boolean accept = resultsJSON.getBoolean("accept");
-
-            if (accept) {
+            if (success) {
                 frag.handleRequestOnPost(success, username, accept);
             } else {
+                Toast.makeText(this, "Your action for contact request was not valid",
+                        Toast.LENGTH_SHORT).show();
+            }
+
+        } catch (JSONException e) {
+            frag.setError("Something strange happened");
+            frag.handleOnError(e.toString());
+        }
+    }
+
+    private void handlePendingOnPost(String result) {
+        ConnectionsFragment frag = (ConnectionsFragment) getSupportFragmentManager()
+                .findFragmentByTag(getString(R.string.keys_fragment_connections));
+
+        try {
+            JSONObject resultsJSON = new JSONObject(result);
+            boolean success = resultsJSON.getBoolean("success");
+            String username = resultsJSON.getString("usernameB");
+
+            if (success) {
+                frag.handlePendingOnPost(success, username);
+            } else {
+                Toast.makeText(this, "Your action for contact request was not valid",
+                        Toast.LENGTH_SHORT).show();
+            }
+
+        } catch (JSONException e) {
+            frag.setError("Something strange happened");
+            frag.handleOnError(e.toString());
+        }
+    }
+
+    private void handleSearchRequestOnPost(String result) {
+        SearchContactsFragment frag = (SearchContactsFragment) getSupportFragmentManager()
+                .findFragmentByTag(getString(R.string.keys_fragment_searchConnections));
+
+        try {
+            JSONObject resultsJSON = new JSONObject(result);
+            boolean success = resultsJSON.getBoolean("success");
+            String username = resultsJSON.getString("username");
+            boolean accept = resultsJSON.getBoolean("accept");
+
+            if (success) {
                 frag.handleRequestOnPost(success, username, accept);
+            } else {
+                Toast.makeText(this, "Your action for contact request was not valid",
+                        Toast.LENGTH_SHORT).show();
+            }
+
+        } catch (JSONException e) {
+            frag.setError("Something strange happened");
+            frag.handleOnError(e.toString());
+        }
+    }
+
+    private void handleSearchPendingOnPost(String result) {
+        SearchContactsFragment frag = (SearchContactsFragment) getSupportFragmentManager()
+                .findFragmentByTag(getString(R.string.keys_fragment_searchConnections));
+
+        try {
+            JSONObject resultsJSON = new JSONObject(result);
+            boolean success = resultsJSON.getBoolean("success");
+            String username = resultsJSON.getString("usernameB");
+
+            if (success) {
+                frag.handlePendingOnPost(success, username);
+            } else {
+                Toast.makeText(this, "Your action for contact request was not valid",
+                        Toast.LENGTH_SHORT).show();
             }
 
         } catch (JSONException e) {
@@ -434,16 +545,18 @@ public class HomeActivity extends AppCompatActivity
                                 inRequests = searchName(username, mRequests);
                                 inPending = searchName(username, mPending);
 
-                                if (!username.equals(mUsername))
+                                if (!username.equals(mUsername)) {
 
-                                if (inContacts) {
-                                    contactList.add(str);
-                                } else if (inRequests) {
-                                    requestList.add(str);
-                                } else if (inPending) {
-                                    pendingList.add(str);
-                                } else {
-                                    newPeople.add(str);
+                                    if (inContacts) {
+                                        contactList.add(str);
+                                    } else if (inRequests) {
+                                        requestList.add(str);
+                                    } else if (inPending) {
+                                        Toast.makeText(this, "inPending", Toast.LENGTH_LONG);
+                                        pendingList.add(str);
+                                    } else {
+                                        newPeople.add(str);
+                                    }
                                 }
 
                             }

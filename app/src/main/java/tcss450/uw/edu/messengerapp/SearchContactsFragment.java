@@ -1,5 +1,7 @@
 package tcss450.uw.edu.messengerapp;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
@@ -9,11 +11,11 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 import tcss450.uw.edu.messengerapp.model.MyRecyclerViewAdapter;
 
@@ -97,12 +99,88 @@ public class SearchContactsFragment extends Fragment {
         mListener = null;
     }
 
-    public interface OnSearchFragmentInteractionListener {
-
-    }
 
     private void onItemClickNewPeople(View v, int position) {
 
+    }
+
+    private void onItemClickRequests(View v, int position) {
+        String str = mRequestsAdapter.getItem(position);
+        String fragment = "search";
+        final String username = str.substring(0, str.indexOf(" "));
+
+        AlertDialog.Builder builder;
+        builder = new AlertDialog.Builder(getActivity(), android.R.style.Theme_Material_Dialog_Alert);
+        builder.setTitle("Resolve Request").setMessage("Would you like to accept " + username
+                + "'s connection request?")
+                .setPositiveButton(getString(R.string.connections_decline_request_diaglog_button),
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        boolean accept = false;
+                        mListener.onSearchRequestInteraction(username, accept, fragment);
+                    }
+                })
+                .setNegativeButton(getString(R.string.connections_accept_request_dialog_button),
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                boolean accept = true;
+                                mListener.onSearchRequestInteraction(username, accept, fragment);
+                            }
+                        })
+                .setIcon(R.drawable.ic_person_add)
+                .show();
+
+    }
+
+    private void onItemClickPending(View v, int position) {
+        String str = mPendingAdapter.getItem(position);
+        String fragment = "connectionsPending";
+        final String username = str.substring(0, str.indexOf(" "));
+
+        AlertDialog.Builder builder;
+        builder = new AlertDialog
+                .Builder(getActivity(), android.R.style.Theme_Material_Dialog_Alert);
+        builder.setTitle("Remove Pending Request")
+                .setMessage("Would you like to cancel your connection request to " +
+                        username + "?")
+                .setPositiveButton(getString(R.string.searchConnections_remove_pending),
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        builder.setTitle("Confirm Cancellation")
+                                .setMessage("Are you sure you want to cancel your connection request to " +
+                                        username + "?")
+                                .setPositiveButton(getString(R.string.searchConnections_Yes),
+                                        new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        boolean accept = false;
+                                        final String frag = "searchPending";
+                                        mListener.onSearchRequestInteraction(username, accept, frag);
+                                    }
+                                })
+                                .setNegativeButton(getString(R.string.searchConnections_Nah),
+                                        new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialogInterface, int i) {
+
+                                            }
+                                        })
+                                .setIcon(R.drawable.ic_exclaimation)
+                                .show();
+                    }
+                })
+                .setNegativeButton(getString(R.string.searchConnections_nevermind),
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+
+                            }
+                        })
+                .setIcon(R.drawable.delete)
+                .show();
     }
 
     private void setUpNewPeople() {
@@ -153,7 +231,7 @@ public class SearchContactsFragment extends Fragment {
             mRequestsRecycler.setLayoutManager(layoutManager);
 
             mRequestsAdapter = new MyRecyclerViewAdapter(getActivity(), mRequests);
-            mRequestsAdapter.setClickListener(this::onItemClickNewPeople);
+            mRequestsAdapter.setClickListener(this::onItemClickRequests);
             mRequestsRecycler.setAdapter(mRequestsAdapter);
         }
     }
@@ -172,9 +250,118 @@ public class SearchContactsFragment extends Fragment {
             mPendingRecycler.setLayoutManager(layoutManager);
 
             mPendingAdapter = new MyRecyclerViewAdapter(getActivity(), mPending);
-            mPendingAdapter.setClickListener(this::onItemClickNewPeople);
+            mPendingAdapter.setClickListener(this::onItemClickPending);
             mPendingRecycler.setAdapter(mPendingAdapter);
         }
+    }
+
+    public void handleRequestOnPre() {
+        ViewGroup vg = (ViewGroup) getView().findViewById(R.id.searchFrameLayout);
+        enableDisableViewGroup(vg, false);
+    }
+
+    public void handleRequestOnPost(boolean success, String username, boolean accept) {
+        ViewGroup vg = (ViewGroup) getView().findViewById(R.id.searchFrameLayout);
+
+        if (success) {
+            for (int i = 0; i < mRequests.size(); i++) {
+                String str = mRequests.get(i);
+                String subStr = str.substring(0, str.indexOf(" "));
+
+                if (username.equals(subStr)) {
+                    String[] arr = str.split(" ");
+                    String verified = arr[0] + " " + arr[1] + " " + arr[2];
+
+                    if (accept) {
+                        mContacts.add(verified);
+                        mContacts.sort(String::compareToIgnoreCase);
+                        mContactsAdapter.notifyDataSetChanged();
+                    }
+                    mRequests.remove(i);
+                    mRequestsAdapter.notifyDataSetChanged();
+                    break;
+                }
+            }
+
+            if (mRequests.isEmpty()) {
+                TextView tv = getView().findViewById(R.id.searchConnectionsRequestHeaderText);
+                tv.setVisibility(TextView.GONE);
+
+                View v = getView().findViewById(R.id.searchConnectionsDivider3);
+                v.setVisibility(View.GONE);
+            }
+        } else {
+            setError("Something happened on the back end I think...");
+        }
+
+        enableDisableViewGroup(vg, true);
+
+    }
+
+    public void handlePendingOnPost(boolean success, String username) {
+        ViewGroup vg = (ViewGroup) getView().findViewById(R.id.searchFrameLayout);
+
+        if (success) {
+            for (int i = 0; i < mPending.size(); i++) {
+                String str = mPending.get(i);
+                String subStr = str.substring(0, str.indexOf(" "));
+
+                if (username.equals(subStr)) {
+                    mPending.remove(i);
+                    mPendingAdapter.notifyDataSetChanged();
+                    break;
+                }
+            }
+
+            if (mPending.isEmpty()) {
+                TextView tv = getView().findViewById(R.id.searchConnectionsPendingHeaderText);
+                tv.setVisibility(TextView.GONE);
+
+                View v = getView().findViewById(R.id.searchConnectionsDivider4);
+                v.setVisibility(View.GONE);
+            }
+        } else {
+            setError("Something happened on the back end I think...");
+        }
+
+        enableDisableViewGroup(vg, true);
+    }
+
+    public void setError(String err) {
+        Toast.makeText(getActivity(), "Request unsuccessful for reason: " + err,
+                Toast.LENGTH_SHORT).show();
+    }
+
+    public void handleOnError(String e) {
+        ViewGroup vg = (ViewGroup) getView().findViewById(R.id.searchFrameLayout);
+
+        Toast.makeText(getActivity(), "Request unsuccessful for reason: " + e,
+                Toast.LENGTH_SHORT).show();
+
+        enableDisableViewGroup(vg, true);
+    }
+
+    private void enableDisableViewGroup(ViewGroup vg, boolean enabled) {
+        int children = vg.getChildCount();
+        for (int i = 0; i < children; i++) {
+            View v = vg.getChildAt(i);
+            v.setEnabled(enabled);
+            if (v instanceof ViewGroup) {
+                enableDisableViewGroup((ViewGroup) v, enabled);
+            }
+        }
+
+        if (enabled) {
+            ProgressBar pg = getView().findViewById(R.id.searchConnectionsProgressBar);
+            pg.setVisibility(ProgressBar.GONE);
+        } else {
+            ProgressBar pg = getView().findViewById(R.id.searchConnectionsProgressBar);
+            pg.setVisibility(ProgressBar.VISIBLE);
+        }
+    }
+
+    public interface OnSearchFragmentInteractionListener {
+        void onSearchRequestInteraction(String username, boolean accept, String fragment);
     }
 
 
