@@ -64,6 +64,7 @@
 
     /**Strings for Chat Fragment UI**/
     <string name="chat_textbar_hint">Write a message</string>
+    <string name="chat_messages">Messages</string>
 
     /**Strings for Connections Fragment UI**/
     <string name="connections_request_text_view">Connection Requests</string>
