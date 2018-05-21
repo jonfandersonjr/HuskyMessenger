@@ -101,7 +101,7 @@ public class PullService extends IntentService {
      */
     private boolean checkWebservice(boolean inForeground) {
         isInForeground = inForeground;
-        //checkNewMessages();
+        checkNewMessages();
         checkNewConnectionRequests();
         return true;
     }
@@ -345,7 +345,7 @@ public class PullService extends IntentService {
                         date.setMinutes(date.getMinutes()-1);
                         String currentDateTime = dateFormat.format(date);
 
-                        if (!messageFrom.equals(mUsername) && true) {//inLastMinute(messageTime,currentDateTime))//chat came recently) {
+                        if (!messageFrom.equals(mUsername) && inLastMinute(messageTime,currentDateTime)) {
                             if (isInForeground) {
                                 Intent intent = new Intent(MESSAGE_UPDATE);
                                 intent.putExtra(getString(R.string.keys_extra_results), messageFrom);
