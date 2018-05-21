@@ -101,7 +101,7 @@ public class PullService extends IntentService {
      */
     private boolean checkWebservice(boolean inForeground) {
         isInForeground = inForeground;
-        //checkNewMessages();
+        checkNewMessages();
         checkNewConnectionRequests();
         return true;
     }
@@ -333,16 +333,17 @@ public class PullService extends IntentService {
             if (success) {
                 if (resultsJSON.has(getString(R.string.keys_json_messages))) {
                     try {
-                        JSONArray jReqs = resultsJSON.getJSONArray(getString(R.string.keys_json_messages));
-                        String messageFrom = jReqs.getJSONObject(jReqs.length()-1).getString("username");
-                        String messageTime = jReqs.getJSONObject(jReqs.length()-1).getString("timestamp");
+                        JSONArray jReqs2 = resultsJSON.getJSONArray(getString(R.string.keys_json_messages));
+
+                        String messageFrom = jReqs2.getJSONObject(jReqs2.length()-1).getString("username");
+                        String messageTime = jReqs2.getJSONObject(jReqs2.length()-1).getString("timestamp");
 
                         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                         Date date = new Date();
                         date.setMinutes(date.getMinutes()-1);
                         String currentDateTime = dateFormat.format(date);
 
-                        if (!messageFrom.equals(mUsername) && inLastMinute(messageTime,currentDateTime))//chat came recently) {
+                        if (!messageFrom.equals(mUsername) && true) {//inLastMinute(messageTime,currentDateTime))//chat came recently) {
                             if (isInForeground) {
                                 Intent intent = new Intent(MESSAGE_UPDATE);
                                 intent.putExtra(getString(R.string.keys_extra_results), messageFrom);
@@ -350,6 +351,8 @@ public class PullService extends IntentService {
                             } else {
                                 buildNotification(mChatName, 0);
                             }
+                        }
+
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }

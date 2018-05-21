@@ -126,6 +126,7 @@ public class ChatManagerFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_chat_manager, container, false);
         return rootView;
     }
+
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);

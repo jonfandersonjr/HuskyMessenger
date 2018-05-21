@@ -1,9 +1,7 @@
 package tcss450.uw.edu.messengerapp;
 
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
@@ -19,7 +17,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import tcss450.uw.edu.messengerapp.model.PullService;
+import java.util.ArrayList;
 
 
 /**
@@ -28,8 +26,6 @@ import tcss450.uw.edu.messengerapp.model.PullService;
  * create an instance of this fragment.
  */
 public class HomeFragment extends Fragment {
-
-    String mUsername;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -40,6 +36,11 @@ public class HomeFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
+    private String mUsername;
+    private ArrayList<String> mChatTimes = new ArrayList<>();
+    private ArrayList<String> mChatNames = new ArrayList<>();
+
+    private Button[] mButtons = new Button[5];
 
     public HomeFragment() {
         // Required empty public constructor
@@ -80,48 +81,31 @@ public class HomeFragment extends Fragment {
 
         SharedPreferences prefs = getActivity().
                 getSharedPreferences(getString(R.string.keys_shared_prefs), Context.MODE_PRIVATE);
+
         mUsername = prefs.getString(getString(R.string.keys_prefs_username), "");
+        tv.setText("Welcome, " + mUsername + "!");
 
-        tv.setText("Welcome " + mUsername + "!");
+        initButtons(v);
 
-        getRecentChats();
-
-     //   createButtons(v);
+        //getRecentChats();
 
         return v;
     }
-/*
-    private void createButtons(View v) {
-        Button a = v.findViewById(R.id.chat0);
-        setButtonFunctionality(a, v);
-        Button b = v.findViewById(R.id.chat1);
-        setButtonFunctionality(b, v);
-        Button c = v.findViewById(R.id.chat2);
-        setButtonFunctionality(c, v);
-        Button d = v.findViewById(R.id.chat3);
-        setButtonFunctionality(d, v);
-        Button e = v.findViewById(R.id.chat4);
-        setButtonFunctionality(e, v);
-    }
 
-    private void setButton0Listener() {Button button} {
-
+    private void initButtons(View v) {
+        mButtons[0] = v.findViewById(R.id.chat0);
+        mButtons[1] = v.findViewById(R.id.chat1);
+        mButtons[2] = v.findViewById(R.id.chat2);
+        mButtons[3] = v.findViewById(R.id.chat3);
+        mButtons[4] = v.findViewById(R.id.chat4);
     }
-    */
 
 
     private void getRecentChats() {
-        SharedPreferences prefs = getActivity().getSharedPreferences(getString(R.string.keys_shared_prefs),
-                Context.MODE_PRIVATE);
 
-        if (!prefs.contains(getString(R.string.keys_prefs_username))) {
-            throw new IllegalStateException("No username in prefs!");
-        }
-
-        //mUsername = "test1";
         JSONObject msg = new JSONObject();
         try {
-            msg.put("username", prefs.getString(getString(R.string.keys_prefs_username), ""));
+            msg.put("username", mUsername);
         } catch (JSONException e) {
             Log.wtf("JSON EXCEPTION", e.toString());
         }
@@ -135,7 +119,7 @@ public class HomeFragment extends Fragment {
 
         new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(retrieveRequests.toString(), msg)
                 .onPreExecute(this::getRecentChatsOnPre)
-                .onPostExecute(this::getRecenthatsOnPost)
+                .onPostExecute(this::getRecentChatsOnPost)
                 .onCancelled(this::handleError)
                 .build().execute();
     }
@@ -144,66 +128,121 @@ public class HomeFragment extends Fragment {
 
     }
 
-    private void getRecenthatsOnPost(String result) {
-        /*
+    private void getRecentChatsOnPost(String result) {
+
         try {
-            JSONObject requests = new JSONObject(result);
-            boolean success = requests.getBoolean("success");
+            JSONObject resultsJSON = new JSONObject(result);
+            boolean success = resultsJSON.getBoolean("success");
+
             if (success) {
-                final String[] reqs;
-                if (requests.has("chats")) {
+                if (resultsJSON.has(getString(R.string.keys_json_chats))) {
                     try {
-                        JSONArray jReqs = requests.getJSONArray("chats");
-                        Log.e("SIZE", "" + jReqs.length());
-                        reqs = new String[jReqs.length()];
+                        JSONArray jReqs = resultsJSON.getJSONArray(getString(R.string.keys_json_chats));
                         for (int i = 0; i < jReqs.length(); i++) {
-                            JSONObject req = jReqs.getJSONObject(i);
-                            String chatname = req.get(getString(R.string.keys_json_chatname))
-                                    .toString();
-                            String chatid = req.get(getString(R.string.keys_json_chatid))
-                                    .toString();
-                            Log.e("THE CHAT NAMES", chatname);
-                            if (!(chatIdList.contains(chatid))) {
-                                chatIdList.add(chatid);
+
+                            String time = "1970-01-01 00:00:00";
+
+                            int chatid = jReqs.getJSONObject(i).getInt("chatid");
+                            mChatNames.add(jReqs.getJSONObject(i).getString("name"));
+
+                            //build the web service URL
+                            Uri uri = new Uri.Builder()
+                                    .scheme("https")
+                                    .appendPath(getString(R.string.ep_base_url))
+                                    .appendPath(getString(R.string.ep_post_get_messages))
+                                    .build();
+
+                            JSONObject msg = new JSONObject();
+                            try {
+                                msg.put("chatId", chatid);
+                                msg.put("after", time);
+                            } catch (JSONException e) {
+                                Log.wtf("JSON EXCEPTION", e.toString());
                             }
-                            if(!(mChatMap.containsKey(chatid))){
-                                mChatMap.put(chatid,chatname);
-                            }
+
+                            new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
+                                    .onPreExecute(this::handleGetMessagesOnPre)
+                                    .onPostExecute(this::handleGetMessagesOnPost)
+                                    .onCancelled(this::handleError)
+                                    .build().execute();
                         }
 
-                        for(int i = 0; i < chatIdList.size(); i++) {
-                            //    if(!(addedNames.contains(mChatnames.get(i)))){
-                            Button b = new Button(getActivity());
-                            b.setText(chatIdList.get(i)); //Get chat name here!
-                            int finalI = i;
-                            b.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    Log.e("BUTTON","" + b.getText());
-                                    Intent intent = new Intent(getActivity(), ChatActivity.class);
-                                    intent.putExtra("CHAT_ID",chatIdList.get(finalI));
-                                    startActivity(intent);
-                                }
-                            });
-                            mChatManagerLayout.addView(b);
-                            listSize = chatIdList.size();
-                            addedNames.add(chatIdList.get(i));
-                            //       }
-                        }
 
                     } catch (JSONException e) {
                         e.printStackTrace();
-                        return;
                     }
-                    Log.e("HOW MANY CHATS", "" + chatIdList.size());
+
+                }
+
+            }
+        } catch (JSONException e) {
+            Log.e("JSON_PARSE_ERROR", result + System.lineSeparator() + e.getMessage());
+        }
+
+    }
+
+
+    public void handleGetMessagesOnPre() {
+
+    }
+
+    /**
+     * Read through the list of chats and see if the most recent is from
+     * somebody else and came recently.
+     * @param result of finding chats
+     */
+    public void handleGetMessagesOnPost(String result) {
+
+        try {
+            JSONObject resultsJSON = new JSONObject(result);
+            boolean success = resultsJSON.getBoolean("success");
+
+            if (success) {
+                if (resultsJSON.has(getString(R.string.keys_json_messages))) {
+                    try {
+                        JSONArray jReqs = resultsJSON.getJSONArray(getString(R.string.keys_json_messages));
+                        String messageTime = jReqs.getJSONObject(jReqs.length()-1).getString("timestamp");
+                        mChatTimes.add(messageTime);
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         } catch (JSONException e) {
-            e.printStackTrace();
+            Log.e("JSON_PARSE_ERROR", result + System.lineSeparator() + e.getMessage());
         }
-        */
     }
 
+    private String getMinChats() {
+        int i = 0;
+        int index = 0;
+        for (String s: mChatTimes) {
+            //mChatTimes.i
+        }
+        return "";
+    }
+
+
+    public boolean inLastMinute(String time, String currentTime) {
+
+        String date = time.substring(0,10);
+        String hour = time.substring(14,16);
+        String minute = time.substring(17,19);
+
+        String date1 = currentTime.substring(0,10);
+        String hour1 = currentTime.substring(11,13);
+        String minute1 = currentTime.substring(14,16);
+
+        if(date.equals(date1) && hour.equals(hour1)) {
+            int currentMinute = Integer.valueOf(minute1);
+            int msgMinute = Integer.valueOf(minute);
+            if (currentMinute == msgMinute || (currentMinute == (msgMinute + 1)) ) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     private void handleError(String e) {
         Log.e("LISTEN ERROR!!!", e);

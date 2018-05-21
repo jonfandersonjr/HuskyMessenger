@@ -62,10 +62,10 @@ public class HomeActivity extends AppCompatActivity
         if (savedInstanceState == null) {
             if (findViewById(R.id.homeFragmentContainer) != null) {
                 if (bundle != null) {
-                    loadFragment(new ChatManagerFragment());
+                    //loadFragment(new ChatManagerFragment());
                 } else {
                     loadFragment(new HomeFragment());
-                }
+            }
             }
         }
 
@@ -84,12 +84,6 @@ public class HomeActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                loadFragment(new ChatManagerFragment());
-//            }
-//        });
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -249,7 +243,7 @@ public class HomeActivity extends AppCompatActivity
         //If true, then this Activity was started from the notification bar
         if (getIntent().hasExtra(getString(R.string.keys_chat_notification))) {
             //load new chat activity with this person
-            loadFragment(new ChatManagerFragment());
+            //loadFragment(new ChatManagerFragment());
             mChatNotifications -= 1;
             updateNotificationsUI(mChatNotifications, mNumConnectionNotifications);
         } else if (getIntent().hasExtra(getString(R.string.keys_connection_notification))) {
@@ -701,7 +695,7 @@ public class HomeActivity extends AppCompatActivity
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(PullService.CONNECTION_UPDATE)) {
-                Log.d("NotificationReceiver", "hey, we got a new connection request!");
+                Log.e("*******NotificationReceiver*****", "hey, we got a new connection request!");
                 int i = 0;
                 while (intent.getStringExtra(String.valueOf(i)) != null) {
                     mIncomingConnectionRequests.add(intent.getStringExtra(String.valueOf(i)));
