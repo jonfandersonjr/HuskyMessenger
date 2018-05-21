@@ -73,7 +73,7 @@ public class PullService extends IntentService {
         alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP
                 , startAfter
                 , POLL_INTERVAL, pendingIntent);
-        Log.e(TAG, "starting service");
+        Log.e(TAG, "starting chats service");
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date date = new Date();
@@ -101,7 +101,7 @@ public class PullService extends IntentService {
      */
     private boolean checkWebservice(boolean inForeground) {
         isInForeground = inForeground;
-        checkNewMessages();
+        //checkNewMessages();
         checkNewConnectionRequests();
         return true;
     }
@@ -281,6 +281,8 @@ public class PullService extends IntentService {
                             int chatid = jReqs.getJSONObject(i).getInt("chatid");
                             mChatName = jReqs.getJSONObject(i).getString("name");
 
+                            Log.e(TAG, "***My Chat name is: " + mChatName + " when set");
+
                             //build the web service URL
                             Uri uri = new Uri.Builder()
                                     .scheme("https")
@@ -349,6 +351,7 @@ public class PullService extends IntentService {
                                 intent.putExtra(getString(R.string.keys_extra_results), messageFrom);
                                 sendBroadcast(intent);
                             } else {
+                                Log.e(TAG, "***My Chat name is: " + mChatName + " when used");
                                 buildNotification(mChatName, 0);
                             }
                         }

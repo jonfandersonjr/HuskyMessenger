@@ -8,8 +8,6 @@
     tools:context=".ChatFragment">
 
 
-
-
     <ImageButton
         android:id="@+id/chatSendButton"
         android:layout_width="wrap_content"
@@ -34,26 +32,15 @@
         app:layout_constraintEnd_toStartOf="@+id/chatSendButton"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <TextView
-        android:id="@+id/chatOutput"
-        android:layout_width="332dp"
-        android:layout_height="407dp"
-        android:layout_marginBottom="25dp"
-        android:layout_marginTop="36dp"
-        android:maxLines="1000"
-        android:scrollbars="vertical"
-        app:layout_constraintBottom_toTopOf="@+id/chatSendButton"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <ScrollView
         android:id="@+id/messagesView"
-        android:layout_width="368dp"
-        android:layout_height="427dp"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="48dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/chatInput"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -66,6 +53,20 @@
             android:orientation="vertical">
 
 
+            <TextView
+                android:id="@+id/chatOutput"
+                android:layout_width="match_parent"
+                android:layout_height="407dp"
+                android:layout_marginBottom="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                android:maxLines="1000"
+                android:scrollbars="vertical"
+                app:layout_constraintBottom_toTopOf="@+id/chatInput"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
         </LinearLayout>
     </ScrollView>
 
