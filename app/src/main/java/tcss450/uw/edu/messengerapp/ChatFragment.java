@@ -3,15 +3,22 @@ package tcss450.uw.edu.messengerapp;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
+import android.text.Layout;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.json.JSONArray;
@@ -34,6 +41,7 @@ public class ChatFragment extends Fragment {
     private String mSendUrl;
     private TextView mOutputTextView;
     private ListenManager mListenManager;
+    private LinearLayout mFragment;
     private int currentMessages;
     private String mUserchatID = "1";
     private String chatID;
@@ -60,7 +68,16 @@ public class ChatFragment extends Fragment {
         mOutputTextView.setMovementMethod(new ScrollingMovementMethod());
 
 
+
         return v;
+    }
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        mFragment = (LinearLayout) view.findViewById(R.id.chatLayout);
+//        Button b = new Button(getActivity());
+//        b.setText("HI!!!!!");
+//        mFragment.addView(b);
     }
 
     @Override
@@ -218,11 +235,32 @@ public class ChatFragment extends Fragment {
 
                 if(msgs.length !=  0 && currentMessages!= msgs.length) {
                     Log.e("CHANGE","CHANGE");
-                    mOutputTextView.setText("");
+                   // mOutputTextView.setText("");
                     currentMessages = msgs.length;
                     for(int i = 0; i <msgs.length;i++) {
-                        mOutputTextView.append(msgs[i]);
-                        mOutputTextView.append(System.lineSeparator());
+                        Button b = new Button(getActivity());
+                        b.setText(msgs[i]);
+                        b.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                        //smFragment.addView(b);
+//                        ConstraintLayout c = (ConstraintLayout) getView().findViewById(R.id.chatFragment);
+//                        TextView t = new TextView(getContext());
+//                        ConstraintLayout.LayoutParams lp = new ConstraintLayout.LayoutParams(
+//                                ConstraintLayout.LayoutParams.WRAP_CONTENT, // Width of TextView
+//                                ConstraintLayout.LayoutParams.WRAP_CONTENT);
+//                        t.setLayoutParams(lp);
+//                        t.setGravity(Gravity.CENTER);
+//
+//                        Log.e("MESSAGES", "ADDED");
+//                        t.setText("HELLO");
+                        b.setTextColor(Color.parseColor("#ffffff"));
+                        b.setBackgroundResource(R.drawable.message_box);
+                        b.setPadding(8,8,8,8);
+                        mFragment.addView(b);
+//
+//                        c.addView(t);
+
+//                        mOutputTextView.append(msgs[i]);
+//                        mOutputTextView.append(System.lineSeparator());
                     }
                 }
 
