@@ -644,7 +644,7 @@ public class HomeActivity extends AppCompatActivity
                     if (mIncomingConnectionRequests.indexOf(s) == mIncomingConnectionRequests.size() - 2)
                         sb.append("and ");
                     if (mIncomingConnectionRequests.indexOf(s) == mIncomingConnectionRequests.size() - 1)
-                        sb.append(" sent you a connections request!");
+                        sb.append(" sent you a connection request!");
                 }
             } else if (mIncomingMessages.isEmpty() && mIncomingConnectionRequests.isEmpty()) {
                 sb.append("You have no new notifications");
