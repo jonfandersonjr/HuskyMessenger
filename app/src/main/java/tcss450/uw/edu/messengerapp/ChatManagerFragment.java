@@ -16,12 +16,15 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+
 import tcss450.uw.edu.messengerapp.utils.ListenManager;
 import tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask;
 
@@ -126,7 +129,6 @@ public class ChatManagerFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_chat_manager, container, false);
         return rootView;
     }
-
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -142,13 +144,14 @@ public class ChatManagerFragment extends Fragment {
         if (!prefs.contains(getString(R.string.keys_prefs_username))) {
             throw new IllegalStateException("No username in prefs!");
         }
+
+        //mUsername = "test1";
         JSONObject msg = new JSONObject();
         try {
             msg.put("username", prefs.getString(getString(R.string.keys_prefs_username), ""));
         } catch (JSONException e) {
             Log.wtf("JSON EXCEPTION", e.toString());
         }
-
         Uri retrieveRequests = new Uri.Builder()
                 .scheme("https")
                 .appendPath(getString(R.string.ep_base_url))
@@ -178,11 +181,11 @@ public class ChatManagerFragment extends Fragment {
             JSONObject requests = new JSONObject(result);
             boolean success = requests.getBoolean("success");
             if (success) {
-                Log.e("ChatManager", requests.toString());
                 final String[] reqs;
                 if (requests.has("chats")) {
                     try {
                         JSONArray jReqs = requests.getJSONArray("chats");
+                        Log.e("SIZE", "" + jReqs.length());
                         reqs = new String[jReqs.length()];
                         for (int i = 0; i < jReqs.length(); i++) {
                             JSONObject req = jReqs.getJSONObject(i);
@@ -190,6 +193,7 @@ public class ChatManagerFragment extends Fragment {
                                     .toString();
                             String chatid = req.get(getString(R.string.keys_json_chatid))
                                     .toString();
+                            Log.e("THE CHAT NAMES", chatname);
                             if (!(chatIdList.contains(chatid))) {
                                 chatIdList.add(chatid);
                             }
@@ -199,34 +203,33 @@ public class ChatManagerFragment extends Fragment {
                         }
 
                         for(int i = 0; i < chatIdList.size(); i++) {
-                            //    if(!(addedNames.contains(mChatnames.get(i)))){
-                            Button b = new Button(getActivity());
-
-                            b.setText(mChatMap.get(chatIdList.get(i))); //Get chat name here!
+                        //    if(!(addedNames.contains(mChatnames.get(i)))){
+                                Button b = new Button(getActivity());
+                                b.setText(chatIdList.get(i)); //Get chat name here!
                             int finalI = i;
                             b.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    b.setBackgroundResource(R.drawable.chat_button_background);
-                                    Log.e("BUTTON","" + b.getText());
-                                    Intent intent = new Intent(getActivity(), ChatActivity.class);
-                                    intent.putExtra("CHAT_ID",chatIdList.get(finalI));
-                                    startActivity(intent);
-                                }
-                            });
-                            mChatManagerLayout.addView(b);
-                            listSize = chatIdList.size();
-                            addedNames.add(chatIdList.get(i));
-                            //       }
+                                    @Override
+                                    public void onClick(View v) {
+                                        Log.e("BUTTON","" + b.getText());
+                                        Intent intent = new Intent(getActivity(), ChatActivity.class);
+                                        intent.putExtra("CHAT_ID",chatIdList.get(finalI));
+                                        startActivity(intent);
+                                    }
+                                });
+                                mChatManagerLayout.addView(b);
+                                listSize = chatIdList.size();
+                                addedNames.add(chatIdList.get(i));
+                     //       }
                         }
 
                     } catch (JSONException e) {
                         e.printStackTrace();
                         return;
                     }
+                    Log.e("HOW MANY CHATS", "" + chatIdList.size());
                 }
             }
-        } catch (JSONException e) {
+            } catch (JSONException e) {
             e.printStackTrace();
         }
         //Log.e("HOW MANY CHATS", ""+mChatnames.size());
@@ -241,6 +244,7 @@ public class ChatManagerFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+        Log.e("HOW MANY CHATS", ""+chatIdList.size());
 
     }
     @Override

@@ -64,7 +64,8 @@ public class PullService extends IntentService {
     public static void startServiceAlarm(Context context, boolean isInForeground) {
         Intent i = new Intent(context, PullService.class);
         i.putExtra(context.getString(R.string.keys_is_foreground), isInForeground);
-        PendingIntent pendingIntent = PendingIntent.getService(context, 0, i, 0);
+        PendingIntent pendingIntent = PendingIntent.getService(context, 1, i, 0);
+        PendingIntent pendingIntent2 = PendingIntent.getService(context, 2, i, 0);
 
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
@@ -73,24 +74,24 @@ public class PullService extends IntentService {
         alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP
                 , startAfter
                 , POLL_INTERVAL, pendingIntent);
-        Log.e(TAG, "starting chats service");
+        alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP
+                , startAfter
+                , POLL_INTERVAL, pendingIntent2);
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Date date = new Date();
-        date.setMinutes(date.getMinutes()-1);
-        String currentDateTime = dateFormat.format(date);
-        Log.e(TAG, currentDateTime);
-
+        Log.e(TAG, "starting service");
 
     }
 
     public static void stopServiceAlarm(Context context) {
         Intent i = new Intent(context, PullService.class);
-        PendingIntent pendingIntent = PendingIntent.getService(context, 0, i, 0);
+        PendingIntent pendingIntent = PendingIntent.getService(context, 1, i, 0);
+        PendingIntent pendingIntent2 = PendingIntent.getService(context, 2, i, 0);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
         alarmManager.cancel(pendingIntent);
+        alarmManager.cancel(pendingIntent2);
         pendingIntent.cancel();
+        pendingIntent2.cancel();
         Log.e(TAG, "stopping service");
     }
 
@@ -112,10 +113,12 @@ public class PullService extends IntentService {
      */
     private void buildNotification(String s, int notificationType) {
         NotificationCompat.Builder mBuilder = null;
+        NotificationCompat.Builder mBuilder2 = null;
         Intent notifyIntent = null;
 
         //******Chat notification == 0, Connection notification == 1*****//
         if (notificationType == 0) {
+
             mBuilder = new NotificationCompat.Builder(this)
                     .setSmallIcon(R.drawable.ic_chat)
                     .setContentTitle("New Message in " + s + "!")
@@ -123,35 +126,58 @@ public class PullService extends IntentService {
             // Creates an Intent for the Activity
             notifyIntent = new Intent(this, HomeActivity.class);
             notifyIntent.putExtra(getString(R.string.keys_chat_notification), s);
+            // Sets the Activity to start in a new, empty task
+            notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                    | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            // Creates the PendingIntent
+            PendingIntent notifyPendingIntent =
+                    PendingIntent.getActivity(
+                            this,
+                            1,
+                            notifyIntent,
+                            PendingIntent.FLAG_UPDATE_CURRENT
+                    );
+
+            // Puts the PendingIntent into the notification builder
+            mBuilder.setContentIntent(notifyPendingIntent);
+            mBuilder.setAutoCancel(true);
+
+            NotificationManager mNotificationManager =
+                    (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            // mId allows you to update the notification later on.
+            mNotificationManager.notify(1, mBuilder.build());
+
         } else if (notificationType == 1) {
-            mBuilder = new NotificationCompat.Builder(this)
+
+            mBuilder2 = new NotificationCompat.Builder(this)
                     .setSmallIcon(R.drawable.ic_person_add)
                     .setContentTitle(s + " sent you a new connection request!")
                     .setContentText("Click to view your requests!");
             notifyIntent = new Intent(this, HomeActivity.class);
             notifyIntent.putExtra(getString(R.string.keys_connection_notification), s);
+            // Sets the Activity to start in a new, empty task
+            notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                    | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            // Creates the PendingIntent
+            PendingIntent notifyPendingIntent =
+                    PendingIntent.getActivity(
+                            this,
+                            2,
+                            notifyIntent,
+                            PendingIntent.FLAG_UPDATE_CURRENT
+                    );
+
+            // Puts the PendingIntent into the notification builder
+            mBuilder2.setContentIntent(notifyPendingIntent);
+            mBuilder2.setAutoCancel(true);
+
+            NotificationManager mNotificationManager =
+                    (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            // mId allows you to update the notification later on.
+            mNotificationManager.notify(2, mBuilder2.build());
         }
 
-        // Sets the Activity to start in a new, empty task
-        notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        // Creates the PendingIntent
-        PendingIntent notifyPendingIntent =
-                PendingIntent.getActivity(
-                        this,
-                        0,
-                        notifyIntent,
-                        PendingIntent.FLAG_UPDATE_CURRENT
-                );
 
-        // Puts the PendingIntent into the notification builder
-        mBuilder.setContentIntent(notifyPendingIntent);
-        mBuilder.setAutoCancel(true);
-
-        NotificationManager mNotificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        // mId allows you to update the notification later on.
-        mNotificationManager.notify(1, mBuilder.build());
     }
 
     private void checkNewConnectionRequests() {
