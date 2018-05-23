@@ -3,6 +3,7 @@ package tcss450.uw.edu.messengerapp;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Context;
+import android.graphics.drawable.Icon;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -101,18 +102,57 @@ public class SearchContactsFragment extends Fragment {
 
 
     private void onItemClickNewPeople(View v, int position) {
+        String str = mNewPeopleAdapter.getItem(position);
+        final String username = str.substring(0, str.indexOf(" "));
+        String[] arr = str.split(" ");
+        boolean ryan = false;
+        String msg = "Would you like to add " + username + " as a connection?";
+        if (arr[1].equals("(Ryan,") && arr[2].equals("Haylee)")) {
+            ryan = true;
+            msg = "Would you like to add Haylee Ryan as a connection?";
+        }
 
+        AlertDialog.Builder builder;
+        builder = new AlertDialog.Builder(getActivity(), android.R.style.Theme_Material_Dialog_Alert);
+        builder.setTitle("Add as Connection").setMessage(msg)
+                .setNegativeButton(getString(R.string.searchConnections_Yes),
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                mListener.onSearchAddInteraction(username);
+                            }
+                        })
+                .setPositiveButton(getString(R.string.searchConnections_Nah),
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+
+                            }
+                        });
+        if (ryan) {
+            builder.setIcon(R.drawable.ryan);
+        } else {
+            builder.setIcon(R.drawable.contact);
+        }
+        builder.show();
     }
 
     private void onItemClickRequests(View v, int position) {
         String str = mRequestsAdapter.getItem(position);
         String fragment = "search";
         final String username = str.substring(0, str.indexOf(" "));
+        String[] arr = str.split(" ");
+        boolean ryan = false;
+        String msg = "Would you like to accept " + username
+                + "'s connection request?";
+        if (arr[1].equals("(Ryan,") && arr[2].equals("Haylee)")) {
+            ryan = true;
+            msg = "Would you like to accept Haylee Ryan's connection request?";
+        }
 
         AlertDialog.Builder builder;
         builder = new AlertDialog.Builder(getActivity(), android.R.style.Theme_Material_Dialog_Alert);
-        builder.setTitle("Resolve Request").setMessage("Would you like to accept " + username
-                + "'s connection request?")
+        builder.setTitle("Resolve Request").setMessage(msg)
                 .setPositiveButton(getString(R.string.connections_decline_request_diaglog_button),
                 new DialogInterface.OnClickListener() {
                     @Override
@@ -128,31 +168,41 @@ public class SearchContactsFragment extends Fragment {
                                 boolean accept = true;
                                 mListener.onSearchRequestInteraction(username, accept, fragment);
                             }
-                        })
-                .setIcon(R.drawable.ic_person_add)
-                .show();
+                        });
+        if (ryan) {
+            builder.setIcon(R.drawable.ryan);
+        } else {
+            builder.setIcon(R.drawable.contactrequest);
+        }
+        builder.show();
 
     }
 
     private void onItemClickPending(View v, int position) {
         String str = mPendingAdapter.getItem(position);
-        String fragment = "connectionsPending";
         final String username = str.substring(0, str.indexOf(" "));
+        String[] arr = str.split(" ");
+        boolean ryan = false;
+        String msg = "Would you like to cancel your connection request to " +
+                username + "?";
+        if (arr[1].equals("(Ryan,") && arr[2].equals("Haylee)")) {
+            ryan = true;
+            msg = "Would you like to cancel your connection request to Haylee Ryan?";
+        }
 
         AlertDialog.Builder builder;
         builder = new AlertDialog
                 .Builder(getActivity(), android.R.style.Theme_Material_Dialog_Alert);
         builder.setTitle("Remove Pending Request")
-                .setMessage("Would you like to cancel your connection request to " +
-                        username + "?")
-                .setPositiveButton(getString(R.string.searchConnections_remove_pending),
+                .setMessage(msg)
+                .setNegativeButton(getString(R.string.searchConnections_remove_pending),
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         builder.setTitle("Confirm Cancellation")
                                 .setMessage("Are you sure you want to cancel your connection request to " +
                                         username + "?")
-                                .setPositiveButton(getString(R.string.searchConnections_Yes),
+                                .setNegativeButton(getString(R.string.searchConnections_Yes),
                                         new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialogInterface, int i) {
@@ -161,41 +211,46 @@ public class SearchContactsFragment extends Fragment {
                                         mListener.onSearchRequestInteraction(username, accept, frag);
                                     }
                                 })
-                                .setNegativeButton(getString(R.string.searchConnections_Nah),
+                                .setPositiveButton(getString(R.string.searchConnections_Nah),
                                         new DialogInterface.OnClickListener() {
                                             @Override
                                             public void onClick(DialogInterface dialogInterface, int i) {
 
                                             }
                                         })
-                                .setIcon(R.drawable.ic_exclaimation)
+                                .setIcon(R.drawable.alert)
                                 .show();
                     }
                 })
-                .setNegativeButton(getString(R.string.searchConnections_nevermind),
+                .setPositiveButton(getString(R.string.searchConnections_nevermind),
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
 
                             }
-                        })
-                .setIcon(R.drawable.delete)
-                .show();
+                        });
+        if (ryan) {
+            builder.setIcon(R.drawable.ryan);
+        } else {
+            builder.setIcon(R.drawable.delete);
+        }
+        builder.show();
     }
 
     private void setUpNewPeople() {
         if (mNewPeople.isEmpty()) {
             return;
-        } else {
-            LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
-
-            mNewPeopleRecycler = getView().findViewById(R.id.searchConnectionsNewPeopleRecycler);
-            mNewPeopleRecycler.setLayoutManager(layoutManager);
-
-            mNewPeopleAdapter = new MyRecyclerViewAdapter(getActivity(), mNewPeople);
-            mNewPeopleAdapter.setClickListener(this::onItemClickNewPeople);
-            mNewPeopleRecycler.setAdapter(mNewPeopleAdapter);
         }
+
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
+
+        mNewPeopleRecycler = getView().findViewById(R.id.searchConnectionsNewPeopleRecycler);
+        mNewPeopleRecycler.setLayoutManager(layoutManager);
+
+        mNewPeopleAdapter = new MyRecyclerViewAdapter(getActivity(), mNewPeople);
+        mNewPeopleAdapter.setClickListener(this::onItemClickNewPeople);
+        mNewPeopleRecycler.setAdapter(mNewPeopleAdapter);
+
     }
 
     private void setUpContacts() {
@@ -205,16 +260,17 @@ public class SearchContactsFragment extends Fragment {
 
             View v = getView().findViewById(R.id.searchConnectionsDivider2);
             v.setVisibility(View.GONE);
-        } else {
-            LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
-
-            mContactsRecycler = getView().findViewById(R.id.searchConnectionsConnectionsRecycler);
-            mContactsRecycler.setLayoutManager(layoutManager);
-
-            mContactsAdapter = new MyRecyclerViewAdapter(getActivity(), mContacts);
-            mContactsAdapter.setClickListener(this::onItemClickNewPeople);
-            mContactsRecycler.setAdapter(mContactsAdapter);
         }
+
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
+
+        mContactsRecycler = getView().findViewById(R.id.searchConnectionsConnectionsRecycler);
+        mContactsRecycler.setLayoutManager(layoutManager);
+
+        mContactsAdapter = new MyRecyclerViewAdapter(getActivity(), mContacts);
+        //mContactsAdapter.setClickListener(this::onItemClickNewPeople);
+        mContactsRecycler.setAdapter(mContactsAdapter);
+
     }
 
     private void setUpRequests() {
@@ -224,16 +280,17 @@ public class SearchContactsFragment extends Fragment {
 
             View v = getView().findViewById(R.id.searchConnectionsDivider3);
             v.setVisibility(View.GONE);
-        } else {
-            LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
-
-            mRequestsRecycler = getView().findViewById(R.id.searchConnectionsRequestsRecycler);
-            mRequestsRecycler.setLayoutManager(layoutManager);
-
-            mRequestsAdapter = new MyRecyclerViewAdapter(getActivity(), mRequests);
-            mRequestsAdapter.setClickListener(this::onItemClickRequests);
-            mRequestsRecycler.setAdapter(mRequestsAdapter);
         }
+
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
+
+        mRequestsRecycler = getView().findViewById(R.id.searchConnectionsRequestsRecycler);
+        mRequestsRecycler.setLayoutManager(layoutManager);
+
+        mRequestsAdapter = new MyRecyclerViewAdapter(getActivity(), mRequests);
+        mRequestsAdapter.setClickListener(this::onItemClickRequests);
+        mRequestsRecycler.setAdapter(mRequestsAdapter);
+
     }
 
     private void setUpPending() {
@@ -243,16 +300,17 @@ public class SearchContactsFragment extends Fragment {
 
             View v = getView().findViewById(R.id.searchConnectionsDivider4);
             v.setVisibility(View.GONE);
-        } else {
-            LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
-
-            mPendingRecycler = getView().findViewById(R.id.searchConnectionsPendingRecycler);
-            mPendingRecycler.setLayoutManager(layoutManager);
-
-            mPendingAdapter = new MyRecyclerViewAdapter(getActivity(), mPending);
-            mPendingAdapter.setClickListener(this::onItemClickPending);
-            mPendingRecycler.setAdapter(mPendingAdapter);
         }
+
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
+
+        mPendingRecycler = getView().findViewById(R.id.searchConnectionsPendingRecycler);
+        mPendingRecycler.setLayoutManager(layoutManager);
+
+        mPendingAdapter = new MyRecyclerViewAdapter(getActivity(), mPending);
+        mPendingAdapter.setClickListener(this::onItemClickPending);
+        mPendingRecycler.setAdapter(mPendingAdapter);
+
     }
 
     public void handleRequestOnPre() {
@@ -327,6 +385,40 @@ public class SearchContactsFragment extends Fragment {
         enableDisableViewGroup(vg, true);
     }
 
+    public void handleAddOnPost(String username) {
+        ViewGroup vg = (ViewGroup) getView().findViewById(R.id.searchFrameLayout);
+
+        for (int i = 0; i < mNewPeople.size(); i++) {
+            String str = mNewPeople.get(i);
+            String subStr = str.substring(0, str.indexOf(" "));
+
+            if (username.equals(subStr)) {
+                String[] arr = str.split(" ");
+                String verified = arr[0] + " " + arr[1] + " " + arr[2];
+
+                mPending.add(verified);
+                mPending.sort(String::compareToIgnoreCase);
+
+                TextView tv = getView().findViewById(R.id.searchConnectionsPendingHeaderText);
+                View v = getView().findViewById(R.id.searchConnectionsDivider4);
+
+                if (tv.getVisibility() == View.GONE) {
+                    tv.setVisibility(TextView.VISIBLE);
+                    v.setVisibility(View.VISIBLE);
+                }
+
+                mPendingAdapter.notifyDataSetChanged();
+
+                mNewPeople.remove(i);
+                mNewPeopleAdapter.notifyDataSetChanged();
+                break;
+            }
+        }
+
+        enableDisableViewGroup(vg, true);
+
+    }
+
     public void setError(String err) {
         Toast.makeText(getActivity(), "Request unsuccessful for reason: " + err,
                 Toast.LENGTH_SHORT).show();
@@ -362,6 +454,7 @@ public class SearchContactsFragment extends Fragment {
 
     public interface OnSearchFragmentInteractionListener {
         void onSearchRequestInteraction(String username, boolean accept, String fragment);
+        void onSearchAddInteraction(String username);
     }
 
 
