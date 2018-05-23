@@ -12,14 +12,10 @@
                 android:title="Home"
                 />
             <item
-                android:id="@+id/nav_chat"
-                android:icon="@drawable/ic_chat"
-                android:title="Chat" />
-            <item
                 android:id="@+id/nav_chatmanager"
-                android:icon="@drawable/ic_chat_manager"
+                android:icon="@drawable/ic_chat"
                 app:actionViewClass="android.widget.TextView"
-                android:title="Chat Manager" />
+                android:title="Chat" />
             <item
                 android:id="@+id/nav_connections"
                 android:icon="@drawable/ic_connections"

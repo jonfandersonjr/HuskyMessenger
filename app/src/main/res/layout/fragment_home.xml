@@ -27,50 +27,50 @@
             android:showDividers="middle">
 
             <Button
-                android:id="@+id/friend1"
+                android:id="@+id/chat0"
                 style="@android:style/Widget.Button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@drawable/button_bg_stroke"
                 android:text="@string/home_text_connection1"
-                android:background="@drawable/button_bg_stroke"
                 android:textSize="18sp" />
 
             <Button
-                android:id="@+id/friend2"
+                android:id="@+id/chat1"
                 style="@android:style/Widget.Button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@drawable/button_bg_stroke"
                 android:text="@string/home_text_connection2"
-                android:background="@drawable/button_bg_stroke"
                 android:textSize="18sp" />
 
             <Button
-                android:id="@+id/friend3"
+                android:id="@+id/chat2"
                 style="@android:style/Widget.Button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@drawable/button_bg_stroke"
                 android:text="@string/home_text_connection3"
-                android:background="@drawable/button_bg_stroke"
                 android:textSize="18sp" />
 
             <Button
-                android:id="@+id/friend4"
+                android:id="@+id/chat3"
                 style="@android:style/Widget.Button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:background="@drawable/button_bg_stroke"
                 android:text="@string/home_text_connection4"
-                android:background="@drawable/button_bg_stroke"
                 android:textSize="18sp" />
 
             <Button
-                android:id="@+id/friend5"
+                android:id="@+id/chat4"
                 style="@android:style/Widget.Button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/home_text_connection5"
                 android:background="@drawable/button_bg_stroke"
+                android:text="@string/home_text_connection5"
                 android:textSize="18sp" />
         </LinearLayout>
     </ScrollView>

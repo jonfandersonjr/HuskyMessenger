@@ -1,19 +1,23 @@
 package tcss450.uw.edu.messengerapp;
 
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
-import tcss450.uw.edu.messengerapp.model.PullService;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 
 /**
@@ -32,6 +36,11 @@ public class HomeFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
+    private String mUsername;
+    private ArrayList<String> mChatTimes = new ArrayList<>();
+    private ArrayList<String> mChatNames = new ArrayList<>();
+
+    private Button[] mButtons = new Button[5];
 
     public HomeFragment() {
         // Required empty public constructor
@@ -72,13 +81,171 @@ public class HomeFragment extends Fragment {
 
         SharedPreferences prefs = getActivity().
                 getSharedPreferences(getString(R.string.keys_shared_prefs), Context.MODE_PRIVATE);
-        String username = prefs.getString(getString(R.string.keys_prefs_username), "");
 
-        tv.setText("Welcome " + username + "!");
+        mUsername = prefs.getString(getString(R.string.keys_prefs_username), "");
+        tv.setText("Welcome, " + mUsername + "!");
+
+        initButtons(v);
+
+        //getRecentChats();
+
         return v;
     }
 
+    private void initButtons(View v) {
+        mButtons[0] = v.findViewById(R.id.chat0);
+        mButtons[1] = v.findViewById(R.id.chat1);
+        mButtons[2] = v.findViewById(R.id.chat2);
+        mButtons[3] = v.findViewById(R.id.chat3);
+        mButtons[4] = v.findViewById(R.id.chat4);
+    }
 
 
+    private void getRecentChats() {
+
+        JSONObject msg = new JSONObject();
+        try {
+            msg.put("username", mUsername);
+        } catch (JSONException e) {
+            Log.wtf("JSON EXCEPTION", e.toString());
+        }
+        Uri retrieveRequests = new Uri.Builder()
+                .scheme("https")
+                .appendPath(getString(R.string.ep_base_url))
+                .appendPath(getString(R.string.ep_get_all_chats))
+                .build();
+
+        Log.e("CONTENT",retrieveRequests.toString());
+
+        new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(retrieveRequests.toString(), msg)
+                .onPreExecute(this::getRecentChatsOnPre)
+                .onPostExecute(this::getRecentChatsOnPost)
+                .onCancelled(this::handleError)
+                .build().execute();
+    }
+
+    private void getRecentChatsOnPre() {
+
+    }
+
+    private void getRecentChatsOnPost(String result) {
+
+        try {
+            JSONObject resultsJSON = new JSONObject(result);
+            boolean success = resultsJSON.getBoolean("success");
+
+            if (success) {
+                if (resultsJSON.has(getString(R.string.keys_json_chats))) {
+                    try {
+                        JSONArray jReqs = resultsJSON.getJSONArray(getString(R.string.keys_json_chats));
+                        for (int i = 0; i < jReqs.length(); i++) {
+
+                            String time = "1970-01-01 00:00:00";
+
+                            int chatid = jReqs.getJSONObject(i).getInt("chatid");
+                            mChatNames.add(jReqs.getJSONObject(i).getString("name"));
+
+                            //build the web service URL
+                            Uri uri = new Uri.Builder()
+                                    .scheme("https")
+                                    .appendPath(getString(R.string.ep_base_url))
+                                    .appendPath(getString(R.string.ep_post_get_messages))
+                                    .build();
+
+                            JSONObject msg = new JSONObject();
+                            try {
+                                msg.put("chatId", chatid);
+                                msg.put("after", time);
+                            } catch (JSONException e) {
+                                Log.wtf("JSON EXCEPTION", e.toString());
+                            }
+
+                            new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
+                                    .onPreExecute(this::handleGetMessagesOnPre)
+                                    .onPostExecute(this::handleGetMessagesOnPost)
+                                    .onCancelled(this::handleError)
+                                    .build().execute();
+                        }
+
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+
+            }
+        } catch (JSONException e) {
+            Log.e("JSON_PARSE_ERROR", result + System.lineSeparator() + e.getMessage());
+        }
+
+    }
+
+
+    public void handleGetMessagesOnPre() {
+
+    }
+
+    /**
+     * Read through the list of chats and see if the most recent is from
+     * somebody else and came recently.
+     * @param result of finding chats
+     */
+    public void handleGetMessagesOnPost(String result) {
+
+        try {
+            JSONObject resultsJSON = new JSONObject(result);
+            boolean success = resultsJSON.getBoolean("success");
+
+            if (success) {
+                if (resultsJSON.has(getString(R.string.keys_json_messages))) {
+                    try {
+                        JSONArray jReqs = resultsJSON.getJSONArray(getString(R.string.keys_json_messages));
+                        String messageTime = jReqs.getJSONObject(jReqs.length()-1).getString("timestamp");
+                        mChatTimes.add(messageTime);
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        } catch (JSONException e) {
+            Log.e("JSON_PARSE_ERROR", result + System.lineSeparator() + e.getMessage());
+        }
+    }
+
+    private String getMinChats() {
+        int i = 0;
+        int index = 0;
+        for (String s: mChatTimes) {
+            //mChatTimes.i
+        }
+        return "";
+    }
+
+
+    public boolean inLastMinute(String time, String currentTime) {
+
+        String date = time.substring(0,10);
+        String hour = time.substring(14,16);
+        String minute = time.substring(17,19);
+
+        String date1 = currentTime.substring(0,10);
+        String hour1 = currentTime.substring(11,13);
+        String minute1 = currentTime.substring(14,16);
+
+        if(date.equals(date1) && hour.equals(hour1)) {
+            int currentMinute = Integer.valueOf(minute1);
+            int msgMinute = Integer.valueOf(minute);
+            if (currentMinute == msgMinute || (currentMinute == (msgMinute + 1)) ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void handleError(String e) {
+        Log.e("LISTEN ERROR!!!", e);
+    }
 
 }

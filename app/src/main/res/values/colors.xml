@@ -12,15 +12,14 @@
     <color name="colorAccent1">#448AFF</color>
 
     /**Grey-Pink Modern**/
-    <color name="colorPrimary2">#607d8b</color>
-    <color name="colorPrimaryDark2">#455a64</color>
-    <color name="colorAccent2">#FF4081</color>
-
+    <color name="colorPrimary3">#607d8b</color>
+    <color name="colorPrimaryDark3">#455a64</color>
+    <color name="colorAccent3">#FF4081</color>
 
     /**Cyan-Green Light Summer**/
-    <color name="colorPrimary3">#00BCD4</color>
-    <color name="colorPrimaryDark3">#0097A7</color>
-    <color name="colorAccent3">#8BC34A</color>
+    <color name="colorPrimary2">#00BCD4</color>
+    <color name="colorPrimaryDark2">#0097A7</color>
+    <color name="colorAccent2">#8BC34A</color>
 
     /**UW**/
     <color name="colorPrimary4">#673AB7</color>

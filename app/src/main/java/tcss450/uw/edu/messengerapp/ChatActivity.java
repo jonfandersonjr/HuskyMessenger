@@ -30,6 +30,7 @@ public class ChatActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_chat);
 
         //FIX WHERE IT GETS CHAT ID FROM
@@ -74,9 +75,6 @@ public class ChatActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        Intent intent = new Intent(this, HomeActivity.class);
-        intent.putExtra("flag", "flag");
-        startActivity(intent);
     }
 
 

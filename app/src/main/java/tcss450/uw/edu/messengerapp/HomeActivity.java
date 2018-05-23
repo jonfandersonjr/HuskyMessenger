@@ -61,12 +61,8 @@ public class HomeActivity extends AppCompatActivity
         Bundle bundle = getIntent().getExtras();
 
         if (savedInstanceState == null) {
-            if (findViewById(R.id.homeFragmentContainer) != null) {
-                if (bundle != null) {
-                    loadFragment(new ChatManagerFragment());
-                } else {
-                    loadFragment(new HomeFragment());
-                }
+            if (findViewById(R.id.homeFragmentContainer) != null && bundle == null) {
+                loadFragment(new HomeFragment());
             }
         }
 
@@ -85,12 +81,6 @@ public class HomeActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                loadFragment(new ChatManagerFragment());
-//            }
-//        });
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -182,12 +172,6 @@ public class HomeActivity extends AppCompatActivity
         }
     }
 
-    public void loadChatActivity() {
-        super.onBackPressed();
-        Intent intent = new Intent(this, ChatActivity.class);
-        startActivity(intent);
-    }
-
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
@@ -198,10 +182,6 @@ public class HomeActivity extends AppCompatActivity
             case R.id.nav_connections:
                 loadFragment(new ConnectionsFragment());
                 updateNotificationsUI(mChatNotifications, 0);
-                break;
-            case R.id.nav_chat:
-                loadChatActivity();
-                getSupportFragmentManager().popBackStack();
                 break;
             case R.id.nav_chatmanager:
                 loadFragment(new ChatManagerFragment());
@@ -245,8 +225,7 @@ public class HomeActivity extends AppCompatActivity
             //restart but in the foreground
             PullService.startServiceAlarm(this, true);
 
-            String username = sharedPreferences.getString(getString(R.string.keys_prefs_username), "");
-            PullService.setUsername(username);
+            PullService.setUsername(mUsername);
 
         }
 
@@ -703,7 +682,9 @@ public class HomeActivity extends AppCompatActivity
                     if (mIncomingMessages.indexOf(s) == mIncomingMessages.size() - 1)
                         sb.append(" sent a new a message!");
                 }
-            } else if (!mIncomingConnectionRequests.isEmpty()) {
+            }
+            if (!mIncomingConnectionRequests.isEmpty()) {
+                sb.append(" ");
                 for (String s : mIncomingConnectionRequests) {
                     sb.append(s);
                     if (mIncomingConnectionRequests.indexOf(s) < mIncomingConnectionRequests.size() - 1)
@@ -711,9 +692,9 @@ public class HomeActivity extends AppCompatActivity
                     if (mIncomingConnectionRequests.indexOf(s) == mIncomingConnectionRequests.size() - 2)
                         sb.append("and ");
                     if (mIncomingConnectionRequests.indexOf(s) == mIncomingConnectionRequests.size() - 1)
-                        sb.append(" sent you a connections request!");
+                        sb.append(" sent you a connection request!");
                 }
-            } else {
+            } else if (mIncomingMessages.isEmpty() && mIncomingConnectionRequests.isEmpty()) {
                 sb.append("You have no new notifications");
             }
 
@@ -753,7 +734,8 @@ public class HomeActivity extends AppCompatActivity
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(PullService.CONNECTION_UPDATE)) {
-                Log.d("NotificationReceiver", "hey, we got a new connection request!");
+                Log.e("*******NotificationReceiver*****", "hey, we got a new connection request!");
+                mNumConnectionNotifications = 0;
                 int i = 0;
                 while (intent.getStringExtra(String.valueOf(i)) != null) {
                     mIncomingConnectionRequests.add(intent.getStringExtra(String.valueOf(i)));

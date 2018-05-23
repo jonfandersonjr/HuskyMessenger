@@ -1,7 +1,5 @@
 <resources>
-    <string name="app_name">MessengerApp</string>
-
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="app_name">Husky Messenger</string>
 
     /**Strings for general purpose within app**/
     <string name="title_activity_home">HomeActivity</string>
@@ -65,6 +63,7 @@
 
     /**Strings for Chat Fragment UI**/
     <string name="chat_textbar_hint">Write a message</string>
+    <string name="chat_messages">Messages</string>
 
     /**Strings for Connections Fragment UI**/
     <string name="connections_request_text_view">Connection Requests</string>

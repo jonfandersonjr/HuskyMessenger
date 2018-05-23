@@ -1,6 +1,5 @@
 package tcss450.uw.edu.messengerapp;
 
-
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -139,7 +138,6 @@ public class ChatManagerFragment extends Fragment {
 
 
     private void getAllChats() {
-        Log.e("CALL","Called get all chats");
         SharedPreferences prefs = getActivity().getSharedPreferences(getString(R.string.keys_shared_prefs),
                 Context.MODE_PRIVATE);
 
@@ -147,11 +145,10 @@ public class ChatManagerFragment extends Fragment {
             throw new IllegalStateException("No username in prefs!");
         }
 
-        mUsername = "test1";
-        //prefs.getString(getString(R.string.keys_prefs_username), "");
+        //mUsername = "test1";
         JSONObject msg = new JSONObject();
         try {
-            msg.put("username", mUsername);
+            msg.put("username", prefs.getString(getString(R.string.keys_prefs_username), ""));
         } catch (JSONException e) {
             Log.wtf("JSON EXCEPTION", e.toString());
         }
@@ -184,11 +181,8 @@ public class ChatManagerFragment extends Fragment {
             JSONObject requests = new JSONObject(result);
             boolean success = requests.getBoolean("success");
             if (success) {
-                Log.e("ChatManager", requests.toString());
                 final String[] reqs;
                 if (requests.has("chats")) {
-                    Log.e("INSIDE", "I got here!!!");
-
                     try {
                         JSONArray jReqs = requests.getJSONArray("chats");
                         Log.e("SIZE", "" + jReqs.length());
