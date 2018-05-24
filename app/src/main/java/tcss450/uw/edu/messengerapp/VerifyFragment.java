@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -43,6 +44,11 @@ public class VerifyFragment extends Fragment {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_verify, container, false);
 
+        final TextView TEXT = v.findViewById(R.id.verifyDoWhatTextView);
+        final ImageView IMAGE = v.findViewById(R.id.verifyThumbsUp);
+        final Button IGETITB = (Button) v.findViewById(R.id.verifyIGetItButton);
+        final Button DOWHATB = (Button) v.findViewById(R.id.doWhatButton);
+
         Button b = (Button) v.findViewById(R.id.verifyButton);
         b.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -51,12 +57,25 @@ public class VerifyFragment extends Fragment {
             }
         });
 
-        b = (Button) v.findViewById(R.id.doWhatButton);
-        b.setOnClickListener(new View.OnClickListener() {
+        DOWHATB.setVisibility(Button.VISIBLE);
+
+        DOWHATB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                TextView text = v.findViewById(R.id.verifyDoWhatTextView);
-                text.setVisibility(TextView.VISIBLE);
+                TEXT.setVisibility(TextView.VISIBLE);
+                IMAGE.setVisibility(ImageView.GONE);
+                DOWHATB.setVisibility(Button.GONE);
+                IGETITB.setVisibility(Button.VISIBLE);
+            }
+        });
+
+        IGETITB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                TEXT.setVisibility(TextView.GONE);
+                IMAGE.setVisibility(ImageView.VISIBLE);
+                IGETITB.setVisibility(Button.GONE);
+                DOWHATB.setVisibility(Button.VISIBLE);
             }
         });
 

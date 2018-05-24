@@ -22,6 +22,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -281,6 +282,33 @@ public class HomeActivity extends AppCompatActivity
     }
 
     @Override
+    public void onSearchAddInteraction(String username) {
+        Uri uri = new Uri.Builder()
+                .scheme("https")
+                .appendPath(getString(R.string.ep_base_url))
+                .appendPath(getString(R.string.ep_request_contact))
+                .build();
+
+        SharedPreferences prefs = getSharedPreferences(getString(R.string.keys_shared_prefs),
+                Context.MODE_PRIVATE);
+        String myName = prefs.getString(getString(R.string.keys_prefs_username), "");
+
+        JSONObject msg = new JSONObject();
+        try {
+            msg.put("username", myName);
+            msg.put("usernameB", username);
+        } catch (JSONException e) {
+            Log.wtf("SearchAddInteraction", "Error reading JSON" + e.getMessage());
+        }
+
+        new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
+                .onPreExecute(this::handleSearchRequestOnPre)
+                .onPostExecute(this::handleSearchAddOnPost)
+                .onCancelled(this::handleErrorsInTask)
+                .build().execute();
+    }
+
+    @Override
     public void onRequestInteractionListener(String username, boolean accept, String fragment) {
         String endpoint;
 
@@ -487,6 +515,26 @@ public class HomeActivity extends AppCompatActivity
                         Toast.LENGTH_SHORT).show();
             }
 
+        } catch (JSONException e) {
+            frag.setError("Something strange happened");
+            frag.handleOnError(e.toString());
+        }
+    }
+
+    private void handleSearchAddOnPost(String result) {
+        SearchContactsFragment frag = (SearchContactsFragment) getSupportFragmentManager()
+                .findFragmentByTag(getString(R.string.keys_fragment_searchConnections));
+
+        try {
+            JSONObject resultsJSON = new JSONObject(result);
+            boolean success = resultsJSON.getBoolean("success");
+            String username = resultsJSON.getString("username");
+
+            if (success) {
+                frag.handleAddOnPost(username);
+            } else {
+                frag.handleOnError("WTF!");
+            }
         } catch (JSONException e) {
             frag.setError("Something strange happened");
             frag.handleOnError(e.toString());

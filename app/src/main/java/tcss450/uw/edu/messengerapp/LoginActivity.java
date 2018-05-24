@@ -251,6 +251,10 @@ public class LoginActivity extends AppCompatActivity
             //It appears that the web service didn't return a JSON formatted string
             //or it didn't have what we expected in it
             Log.e("JSON_PARSE_ERROR", result + System.lineSeparator() + e.getMessage());
+            LoginFragment frag = (LoginFragment) getSupportFragmentManager()
+                    .findFragmentByTag(getString(R.string.keys_fragment_login));
+            frag.setError("Incorrect credentials");
+            frag.handleOnError();
         }
     }
 }

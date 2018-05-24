@@ -20,12 +20,14 @@
     <EditText
         android:id="@+id/register_fname"
         android:layout_width="match_parent"
-        android:layout_height="44dp"
+        android:layout_height="46dp"
         android:layout_marginEnd="16dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="100dp"
+        android:background="@drawable/edit_text_style"
         android:hint="@string/register_fname_hint"
         android:inputType="text"
+        android:textAlignment="viewStart"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -34,10 +36,11 @@
     <EditText
         android:id="@+id/register_lname"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="46dp"
         android:layout_marginEnd="16dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
+        android:background="@drawable/edit_text_style"
         android:hint="@string/register_lname_hint"
         android:inputType="text"
         app:layout_constraintEnd_toEndOf="parent"
@@ -47,12 +50,13 @@
     <EditText
         android:id="@+id/register_nickname"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="46dp"
         android:layout_marginEnd="16dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:hint="@string/register_nickname_hint"
         android:inputType="text"
+        android:background="@drawable/edit_text_style"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/register_lname" />
@@ -60,12 +64,13 @@
     <EditText
         android:id="@+id/register_email"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="46dp"
         android:layout_marginEnd="16dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:hint="@string/register_email_hint"
-        android:inputType="text"
+        android:inputType="textEmailAddress"
+        android:background="@drawable/edit_text_style"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -74,12 +79,13 @@
     <EditText
         android:id="@+id/register_password"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="46dp"
         android:layout_marginEnd="16dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:hint="@string/login_password_hint"
         android:inputType="textPassword"
+        android:background="@drawable/edit_text_style"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/register_email" />
@@ -87,12 +93,13 @@
     <EditText
         android:id="@+id/register_confirm_password"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="46dp"
         android:layout_marginEnd="16dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:hint="@string/register_confirmpass_hint"
         android:inputType="textPassword"
+        android:background="@drawable/edit_text_style"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/register_password" />
@@ -104,6 +111,7 @@
         android:layout_marginTop="16dp"
         android:fontFamily="serif-monospace"
         android:text="@string/register_text_view"
+        android:textAllCaps="true"
         android:textColor="#53007d"
         android:textSize="24sp"
         android:textStyle="bold"
@@ -113,13 +121,27 @@
 
     <ProgressBar
         android:id="@+id/registerProgressBar"
-        style="@style/MyProgressBarRectangle"
-        android:layout_width="220dp"
-        android:layout_height="180dp"
+        android:layout_width="65dp"
+        android:layout_height="47dp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.046"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.975" />
+
+    <ImageView
+        android:id="@+id/imageView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp"
+        android:src="@drawable/registerman"
+        app:layout_constraintBottom_toTopOf="@+id/register_fname"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/registerTextView" />
 
 </android.support.constraint.ConstraintLayout>

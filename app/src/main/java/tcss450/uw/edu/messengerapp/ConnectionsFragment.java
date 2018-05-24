@@ -196,15 +196,67 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
 
     }
 
+    public void onItemClickContacts(View v, int position) {
+        String connections = "connections";
+        String str = mVerifiedRecyclerAdapter.getItem(position);
+        final String username = str.substring(0, str.indexOf(" "));
+        String[] arr = str.split(" ");
+        boolean ryan = false;
+        String msg = "What do you want to do with " + username + "?";
+        if (arr[1].equals("(Ryan,") && arr[2].equals("Haylee)")) {
+            ryan = true;
+            msg = "What do you want to do with Haylee Ryan?";
+        }
+
+        AlertDialog.Builder builder;
+        builder = new AlertDialog.Builder(getActivity(), android.R.style.Theme_Material_Dialog_Alert);
+        builder.setTitle("").setMessage(msg)
+                .setNeutralButton(getString(R.string.connections_delete_connection),
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+
+                            }
+                        })
+                .setNegativeButton(getString(R.string.connections_start_groupchat_dialog_button),
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+
+                            }
+                        })
+                .setPositiveButton(getString(R.string.connections_start_chat_dialog_button),
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+
+                            }
+                        });
+        if (ryan) {
+            builder.setIcon(R.drawable.ryan);
+        } else {
+            builder.setIcon(R.drawable.contactrequest);
+        }
+        builder.show();
+
+    }
+
     public void onItemClickRequests(View v, int position) {
         String connections = "connections";
         String str = mRecyclerAdapter.getItem(position);
         final String username = str.substring(0, str.indexOf(" "));
+        String[] arr = str.split(" ");
+        boolean ryan = false;
+        String msg = "Would you like to accept " + username
+                + "'s connection request?";
+        if (arr[1].equals("(Ryan,") && arr[2].equals("Haylee)")) {
+            ryan = true;
+            msg = "Would you like to accept Haylee Ryan's connection request?";
+        }
 
         AlertDialog.Builder builder;
         builder = new AlertDialog.Builder(getActivity(), android.R.style.Theme_Material_Dialog_Alert);
-        builder.setTitle("Resolve Request").setMessage("Would you like to accept " + username
-                + "'s connection request?")
+        builder.setTitle("Resolve Request").setMessage(msg)
                 .setPositiveButton(getString(R.string.connections_decline_request_diaglog_button),
                 new DialogInterface.OnClickListener() {
                     @Override
@@ -220,23 +272,34 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
                                 boolean accept = true;
                                 mInteractionListener.onRequestInteractionListener(username, accept, connections);
                             }
-                        })
-                .setIcon(R.drawable.ic_person_add)
-                .show();
+                        });
+        if (ryan) {
+            builder.setIcon(R.drawable.ryan);
+        } else {
+            builder.setIcon(R.drawable.contactrequest);
+        }
+        builder.show();
 
     }
 
     public void onItemClickPending(View v, int position) {
         String str = mPendingAdapter.getItem(position);
         final String username = str.substring(0, str.indexOf(" "));
+        String[] arr = str.split(" ");
+        boolean ryan = false;
+        String msg = "Would you like to cancel your connection request to " +
+                username + "?";
+        if (arr[1].equals("(Ryan,") && arr[2].equals("Haylee)")) {
+            ryan = true;
+            msg = "Would you like to canel your connection request to Haylee Ryan?";
+        }
 
         AlertDialog.Builder builder;
         builder = new AlertDialog
                 .Builder(getActivity(), android.R.style.Theme_Material_Dialog_Alert);
         builder.setTitle("Remove Pending Request")
-                .setMessage("Would you like to cancel your connection request to " +
-                        username + "?")
-                .setPositiveButton(getString(R.string.searchConnections_remove_pending),
+                .setMessage(msg)
+                .setNegativeButton(getString(R.string.searchConnections_remove_pending),
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
@@ -259,19 +322,23 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
 
                                                     }
                                                 })
-                                        .setIcon(R.drawable.ic_exclaimation)
+                                        .setIcon(R.drawable.alert)
                                         .show();
                             }
                         })
-                .setNegativeButton(getString(R.string.searchConnections_nevermind),
+                .setPositiveButton(getString(R.string.searchConnections_nevermind),
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
 
                             }
-                        })
-                .setIcon(R.drawable.delete)
-                .show();
+                        });
+        if (ryan) {
+            builder.setIcon(R.drawable.ryan);
+        } else {
+            builder.setIcon(R.drawable.delete);
+        }
+        builder.show();
     }
 
     public void onSearchButtonClick() {
@@ -399,7 +466,7 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
                 mVerifiedList.setLayoutManager(layoutManager2);
 
                 mVerifiedRecyclerAdapter = new MyRecyclerViewAdapter(getActivity(), mVerified);
-                mVerifiedRecyclerAdapter.setClickListener(this);
+                mVerifiedRecyclerAdapter.setClickListener(this::onItemClickContacts);
                 mVerifiedList.setAdapter(mVerifiedRecyclerAdapter);
 
                 DividerItemDecoration dividerItemDecoration2 =

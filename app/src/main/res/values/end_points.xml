@@ -16,6 +16,7 @@
     <string name="ep_get_credentials_id">getCredentialsFromId</string>
     <string name="ep_verify_contact_request">verifyContactRequest</string>
     <string name="ep_decline_contact_request">declineContactRequest</string>
+    <string name="ep_request_contact">requestContact</string>
 
     /**Messages Endpoints**/
     <string name="ep_get_all_chats">getAllChats</string>
