@@ -43,6 +43,7 @@ public class HomeActivity extends AppCompatActivity
     private MessageUpdateReceiver mMessagesUpdateReceiver;
     private ConnectionUpdateReceiver mConnectionsUpdateReceiver;
     private String mUsername;
+    private String mDeleteConnectionUsername;
     public int mTotalNotifications = 0;
     public int mChatNotifications = 0;
     public int mNumConnectionNotifications = 0;
@@ -279,11 +280,6 @@ public class HomeActivity extends AppCompatActivity
     }
 
     @Override
-    public void onConnectionsInteractionListener(String username) {
-
-    }
-
-    @Override
     public void onSearchAddInteraction(String username) {
         Uri uri = new Uri.Builder()
                 .scheme("https")
@@ -420,6 +416,31 @@ public class HomeActivity extends AppCompatActivity
                 .onCancelled(this::handleErrorsInTask)
                 .build().execute();
 
+    }
+
+    public void onConnectionsDeleteInteractionListener(String username) {
+
+        mDeleteConnectionUsername = username;
+
+        Uri uri = new Uri.Builder()
+                .scheme("https")
+                .appendPath(getString(R.string.ep_base_url))
+                .appendPath(getString(R.string.ep_get_contacts))
+                .build();
+
+        JSONObject msg = new JSONObject();
+        try {
+            msg.put("username", mUsername);
+        } catch (JSONException e) {
+            Log.wtf("Connections Delete json message", "Error reading JSON" +
+                    e.getMessage());
+        }
+
+        new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
+                .onPreExecute(this::handleRequestOnPre)
+                .onPostExecute(this::handleContactsOnPost)
+                .onCancelled(this::handleErrorsInTask)
+                .build().execute();
     }
 
     private void handleRequestOnPre() {
@@ -628,6 +649,115 @@ public class HomeActivity extends AppCompatActivity
                     }
                 }
             }
+        } catch (JSONException e) {
+            frag.setError("Something strange happened");
+            frag.handleOnError(e.toString());
+        }
+    }
+
+    private void handleContactsOnPost(String result) {
+        boolean listA = false;
+
+        try {
+            JSONObject resultsJSON = new JSONObject(result);
+            boolean success = resultsJSON.getBoolean("success");
+
+            if (success) {
+                if (resultsJSON.has(getString(R.string.keys_json_connections_a))) {
+                    try {
+                        JSONArray jReqs = resultsJSON.getJSONArray(getString(R.string.keys_json_connections_a));
+                        for (int i = 0; i < jReqs.length(); i++) {
+                            JSONObject obj = jReqs.getJSONObject(i);
+                            String username = obj.get(getString(R.string.keys_json_username))
+                                    .toString();
+                            if (username.equals(mDeleteConnectionUsername)) {
+                                listA = true;
+                                break;
+                            }
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+                if (resultsJSON.has(getString(R.string.keys_json_connections_b))) {
+                    try {
+                        JSONArray jReqs = resultsJSON.getJSONArray(getString(R.string.keys_json_connections_b));
+                        for (int i = 0; i < jReqs.length(); i++) {
+                            JSONObject obj = jReqs.getJSONObject(i);
+                            String username = obj.get(getString(R.string.keys_json_username))
+                                    .toString();
+                            if (username.equals(mDeleteConnectionUsername)) {
+                                listA = false;
+                                break;
+                            }
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } else {
+                Log.wtf("Get Contacts in handleContactsOnPost", "Back end screw up");
+            }
+        } catch (JSONException e) {
+            Log.e("JSON PARSE ERROR", e.getMessage());
+        }
+
+        Uri uri = new Uri.Builder()
+                .scheme("https")
+                .appendPath(getString(R.string.ep_base_url))
+                .appendPath(getString(R.string.ep_decline_contact_request))
+                .build();
+
+        JSONObject msg = new JSONObject();
+        if (listA) {
+            try {
+                msg.put("usernameA", mDeleteConnectionUsername);
+                msg.put("usernameB", mUsername);
+            } catch (JSONException e) {
+                Log.e("JSON put message error", e.getMessage());
+            }
+        } else {
+            try {
+                msg.put("usernameA", mUsername);
+                msg.put("usernameB", mDeleteConnectionUsername);
+            } catch (JSONException e) {
+                Log.e("JSON put message error", e.getMessage());
+            }
+        }
+
+        new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
+                .onPreExecute(this::handleRequestOnPre)
+                .onPostExecute(this::handleContactDeletedOnPost)
+                .onCancelled(this::handleErrorsInTask)
+                .build().execute();
+
+    }
+
+    private void handleContactDeletedOnPost(String result) {
+        ConnectionsFragment frag = (ConnectionsFragment) getSupportFragmentManager()
+                .findFragmentByTag(getString(R.string.keys_fragment_connections));
+        String username;
+
+        try {
+            JSONObject resultsJSON = new JSONObject(result);
+            boolean success = resultsJSON.getBoolean("success");
+            String usernameA = resultsJSON.getString("username");
+            String usernameB = resultsJSON.getString("usernameB");
+
+
+            if (usernameA.equals(mUsername)) {
+                username = usernameB;
+            } else {
+                username = usernameA;
+            }
+
+            if (success) {
+                frag.handleContactDeletedOnPost(success, username);
+            } else {
+                Toast.makeText(this, "Your action for contact request was not valid",
+                        Toast.LENGTH_SHORT).show();
+            }
+
         } catch (JSONException e) {
             frag.setError("Something strange happened");
             frag.handleOnError(e.toString());
