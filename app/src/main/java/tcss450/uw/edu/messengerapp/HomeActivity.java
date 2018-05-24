@@ -42,9 +42,6 @@ public class HomeActivity extends AppCompatActivity
     private MessageUpdateReceiver mMessagesUpdateReceiver;
     private ConnectionUpdateReceiver mConnectionsUpdateReceiver;
     private String mUsername;
-    public int mTotalNotifications = 0;
-    public int mChatNotifications = 0;
-    public int mNumConnectionNotifications = 0;
 
     private ArrayList<String> mIncomingMessages = new ArrayList<>();
     private ArrayList<String> mIncomingConnectionRequests = new ArrayList<>();
@@ -110,15 +107,13 @@ public class HomeActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        } else if (!drawer.isDrawerOpen(GravityCompat.START) &&
-                (currentFragment instanceof HomeFragment)) {
-            super.onBackPressed();
-        } else if (!drawer.isDrawerOpen(GravityCompat.START) &&
-                (currentFragment instanceof SearchContactsFragment)) {
+        } else if (!drawer.isDrawerOpen(GravityCompat.START)
+                    && ((currentFragment instanceof HomeFragment)
+                    || currentFragment instanceof SearchContactsFragment)) {
             super.onBackPressed();
         } else {
             loadFragment(new HomeFragment());
-            updateNotificationsUI(mChatNotifications, mNumConnectionNotifications);
+            updateNotificationsUI();
         }
 
     }
@@ -180,11 +175,13 @@ public class HomeActivity extends AppCompatActivity
         switch (id) {
             case R.id.nav_connections:
                 loadFragment(new ConnectionsFragment());
-                updateNotificationsUI(mChatNotifications, 0);
+                mIncomingConnectionRequests.clear();
+                updateNotificationsUI();
                 break;
             case R.id.nav_chatmanager:
                 loadFragment(new ChatManagerFragment());
-                updateNotificationsUI(0, mNumConnectionNotifications);
+                mIncomingMessages.clear();
+                updateNotificationsUI();
                 break;
             case R.id.nav_weather:
                 loadFragment(new WeatherFragment());
@@ -233,11 +230,12 @@ public class HomeActivity extends AppCompatActivity
         if (getIntent().hasExtra(getString(R.string.keys_chat_notification))) {
             //load new chat activity with this person
             loadFragment(new ChatManagerFragment());
-            mChatNotifications -= 1;
-            updateNotificationsUI(mChatNotifications, mNumConnectionNotifications);
+            mIncomingMessages.clear();
+            updateNotificationsUI();
         } else if (getIntent().hasExtra(getString(R.string.keys_connection_notification))) {
             loadFragment(new ConnectionsFragment());
-            updateNotificationsUI(mChatNotifications, 0);
+            mIncomingConnectionRequests.clear();
+            updateNotificationsUI();
         }
 
         if (mMessagesUpdateReceiver == null) {
@@ -252,7 +250,7 @@ public class HomeActivity extends AppCompatActivity
         IntentFilter iFilter2 = new IntentFilter(PullService.CONNECTION_UPDATE);
         registerReceiver(mConnectionsUpdateReceiver, iFilter2);
 
-        updateNotificationsUI(mChatNotifications, mNumConnectionNotifications);
+        updateNotificationsUI();
     }
 
     @Override
@@ -614,11 +612,7 @@ public class HomeActivity extends AppCompatActivity
     }
 
 
-    private void updateNotificationsUI (final int theChatNotifications, final int theConnectionNotifications){
-
-        mChatNotifications = theChatNotifications;
-        mNumConnectionNotifications = theConnectionNotifications;
-        mTotalNotifications = mChatNotifications + mNumConnectionNotifications;
+    private void updateNotificationsUI (){
 
         Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.homeFragmentContainer);
 
@@ -654,19 +648,19 @@ public class HomeActivity extends AppCompatActivity
             mNotificationsBar.setText(sb.toString());
         }
 
-        if (mChatNotifications > 0) {
+        if (!mIncomingMessages.isEmpty()) {
             chatNotifications.setGravity(Gravity.CENTER_VERTICAL);
             chatNotifications.setTypeface(null, Typeface.BOLD);
             chatNotifications.setTextColor(getResources().getColor(R.color.colorAccent));
-            chatNotifications.setText(String.valueOf(mChatNotifications)); } else chatNotifications.setText("");
-        if (mNumConnectionNotifications > 0) {
+            chatNotifications.setText(String.valueOf(mIncomingMessages.size())); } else chatNotifications.setText("");
+        if (!mIncomingConnectionRequests.isEmpty()) {
             connectionNotifications.setGravity(Gravity.CENTER_VERTICAL);
             connectionNotifications.setTypeface(null, Typeface.BOLD);
             connectionNotifications.setTextColor(getResources().getColor(R.color.colorAccent));
-            connectionNotifications.setText(String.valueOf(mNumConnectionNotifications)); } else connectionNotifications.setText("");
+            connectionNotifications.setText(String.valueOf(mIncomingConnectionRequests.size())); } else connectionNotifications.setText("");
 
-        mIncomingMessages.clear();
-        mIncomingConnectionRequests.clear();
+        //mIncomingMessages.clear();
+        //mIncomingConnectionRequests.clear();
 
     }
 
@@ -676,25 +670,23 @@ public class HomeActivity extends AppCompatActivity
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(PullService.MESSAGE_UPDATE)) {
-                Log.d("MessageReceiver", "hey, we got a new message!");
-                mIncomingMessages.add(intent.getStringExtra(getString(R.string.keys_extra_results)));
-                updateNotificationsUI(mChatNotifications +1, mNumConnectionNotifications);
+                String s = intent.getStringExtra(getString(R.string.keys_extra_results));
+                if (!mIncomingMessages.contains(s)) {
+                    mIncomingMessages.add(s);
+                }
+                updateNotificationsUI();
             }
         }
     }
     private class ConnectionUpdateReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
+            String s = intent.getStringExtra("newConnect");
             if (intent.getAction().equals(PullService.CONNECTION_UPDATE)) {
-                Log.e("*******NotificationReceiver*****", "hey, we got a new connection request!");
-                mNumConnectionNotifications = 0;
-                int i = 0;
-                while (intent.getStringExtra(String.valueOf(i)) != null) {
-                    mIncomingConnectionRequests.add(intent.getStringExtra(String.valueOf(i)));
-                    mNumConnectionNotifications++;
-                    i++;
+                if (!mIncomingConnectionRequests.contains(s)) {
+                    mIncomingConnectionRequests.add(s);
                 }
-                updateNotificationsUI(mChatNotifications, mNumConnectionNotifications);
+                updateNotificationsUI();
             }
         }
     }

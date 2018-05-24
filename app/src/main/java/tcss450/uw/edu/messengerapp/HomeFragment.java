@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,6 +19,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.GregorianCalendar;
 
 
 /**
@@ -39,6 +41,7 @@ public class HomeFragment extends Fragment {
     private String mUsername;
     private ArrayList<String> mChatTimes = new ArrayList<>();
     private ArrayList<String> mChatNames = new ArrayList<>();
+    private ArrayList<Message> mChatInfo = new ArrayList<>();
 
     private Button[] mButtons = new Button[5];
 
@@ -77,6 +80,8 @@ public class HomeFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_home, container, false);
+
+        getRecentChats();
         TextView tv = v.findViewById(R.id.homeWelcome);
 
         SharedPreferences prefs = getActivity().
@@ -86,9 +91,7 @@ public class HomeFragment extends Fragment {
         tv.setText("Welcome, " + mUsername + "!");
 
         initButtons(v);
-
-        //getRecentChats();
-
+        setButtonListeners();
         return v;
     }
 
@@ -98,6 +101,17 @@ public class HomeFragment extends Fragment {
         mButtons[2] = v.findViewById(R.id.chat2);
         mButtons[3] = v.findViewById(R.id.chat3);
         mButtons[4] = v.findViewById(R.id.chat4);
+    }
+
+
+    private void setButtonListeners() {
+        for (int i = 0; i < mButtons.length; i++) {
+            //mButtons[i].setOnClickListener(this::onButtonClick);// = getMinChat();
+        }
+    }
+
+    private void onButtonClick() {
+
     }
 
 
@@ -202,8 +216,10 @@ public class HomeFragment extends Fragment {
                     try {
                         JSONArray jReqs = resultsJSON.getJSONArray(getString(R.string.keys_json_messages));
                         String messageTime = jReqs.getJSONObject(jReqs.length()-1).getString("timestamp");
-                        mChatTimes.add(messageTime);
-
+                        String chatid = jReqs.getJSONObject(jReqs.length()-1).getString("chatid");
+                        String message = jReqs.getJSONObject(jReqs.length()-1).getString("message");
+                        String username = jReqs.getJSONObject(jReqs.length()-1).getString("username");
+                        mChatInfo.add(new Message(messageTime, chatid, message, username));
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -214,38 +230,34 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    private String getMinChats() {
-        int i = 0;
-        int index = 0;
-        for (String s: mChatTimes) {
-            //mChatTimes.i
-        }
-        return "";
-    }
-
-
-    public boolean inLastMinute(String time, String currentTime) {
-
-        String date = time.substring(0,10);
-        String hour = time.substring(14,16);
-        String minute = time.substring(17,19);
-
-        String date1 = currentTime.substring(0,10);
-        String hour1 = currentTime.substring(11,13);
-        String minute1 = currentTime.substring(14,16);
-
-        if(date.equals(date1) && hour.equals(hour1)) {
-            int currentMinute = Integer.valueOf(minute1);
-            int msgMinute = Integer.valueOf(minute);
-            if (currentMinute == msgMinute || (currentMinute == (msgMinute + 1)) ) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private void handleError(String e) {
         Log.e("LISTEN ERROR!!!", e);
+    }
+
+    private class Message implements Comparable<Message> {
+
+        GregorianCalendar mMessageTime;
+        String mId;
+        String mContent;
+        String mAuthor;
+
+        public Message(String theTimestamp, String theID, String theContent, String theAuthor) {
+            String year = theTimestamp.substring(0,4);
+            String month = theTimestamp.substring(5, 7);
+            String day = theTimestamp.substring(8, 10);
+            String hour = theTimestamp.substring(14,16);
+            String minute = theTimestamp.substring(17,19);
+            mMessageTime = new GregorianCalendar();
+            mId = theID;
+            mContent = theContent;
+            mAuthor = theAuthor;
+        }
+
+
+        @Override
+        public int compareTo(@NonNull Message o) {
+            return this.mMessageTime.compareTo(o.mMessageTime);
+        }
     }
 
 }
