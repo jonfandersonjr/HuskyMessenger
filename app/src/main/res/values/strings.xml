@@ -55,6 +55,7 @@
     <string name="verify_text_view">Verify Email With Code</string>
     <string name="verify_button">Verify</string>
     <string name="verify_dowhat_button">Do What?</string>
+    <string name="verify_igetit_button">I Get It</string>
     <string name="verify_dowhat_text">We sent you a verification code to the email that you provided.
         Please enter that code in the box above.</string>
 
@@ -74,6 +75,9 @@
     <string name="connections_requests_resolve_button">Resolve Requests</string>
     <string name="connections_accept_request_dialog_button">Accept</string>
     <string name="connections_decline_request_diaglog_button">Decline</string>
+    <string name="connections_start_chat_dialog_button">Start Chat</string>
+    <string name="connections_start_groupchat_dialog_button">Start Group Chat</string>
+    <string name="connections_delete_connection">Delete Connection</string>
 
     <string-array name="connections_search_filter">
         <item>Username</item>
