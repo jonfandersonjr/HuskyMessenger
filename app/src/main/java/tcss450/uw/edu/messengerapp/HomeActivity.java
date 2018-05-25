@@ -37,15 +37,15 @@ import tcss450.uw.edu.messengerapp.model.PullService;
 public class HomeActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         ConnectionsFragment.OnConnectionsInteractionListener,
-        SearchContactsFragment.OnSearchFragmentInteractionListener {
+        SearchContactsFragment.OnSearchFragmentInteractionListener,
+        HomeFragment.OnFragmentInteractionListener {
 
     private static final String TAG = "HomeActivity";
+
     private MessageUpdateReceiver mMessagesUpdateReceiver;
     private ConnectionUpdateReceiver mConnectionsUpdateReceiver;
     private String mUsername;
-    public int mTotalNotifications = 0;
-    public int mChatNotifications = 0;
-    public int mNumConnectionNotifications = 0;
+    private String mDeleteConnectionUsername;
 
 
     private ArrayList<String> mIncomingMessages = new ArrayList<>();
@@ -113,15 +113,13 @@ public class HomeActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        } else if (!drawer.isDrawerOpen(GravityCompat.START) &&
-                (currentFragment instanceof HomeFragment)) {
-            super.onBackPressed();
-        } else if (!drawer.isDrawerOpen(GravityCompat.START) &&
-                (currentFragment instanceof SearchContactsFragment)) {
+        } else if (!drawer.isDrawerOpen(GravityCompat.START)
+                    && ((currentFragment instanceof HomeFragment)
+                    || currentFragment instanceof SearchContactsFragment)) {
             super.onBackPressed();
         } else {
             loadFragment(new HomeFragment());
-            updateNotificationsUI(mChatNotifications, mNumConnectionNotifications);
+            updateNotificationsUI();
         }
 
     }
@@ -183,11 +181,13 @@ public class HomeActivity extends AppCompatActivity
         switch (id) {
             case R.id.nav_connections:
                 loadFragment(new ConnectionsFragment());
-                updateNotificationsUI(mChatNotifications, 0);
+                mIncomingConnectionRequests.clear();
+                updateNotificationsUI();
                 break;
             case R.id.nav_chatmanager:
                 loadFragment(new ChatManagerFragment());
-                updateNotificationsUI(0, mNumConnectionNotifications);
+                mIncomingMessages.clear();
+                updateNotificationsUI();
                 break;
             case R.id.nav_weather:
                 loadFragment(new WeatherFragment());
@@ -236,11 +236,12 @@ public class HomeActivity extends AppCompatActivity
         if (getIntent().hasExtra(getString(R.string.keys_chat_notification))) {
             //load new chat activity with this person
             loadFragment(new ChatManagerFragment());
-            mChatNotifications -= 1;
-            updateNotificationsUI(mChatNotifications, mNumConnectionNotifications);
+            mIncomingMessages.clear();
+            updateNotificationsUI();
         } else if (getIntent().hasExtra(getString(R.string.keys_connection_notification))) {
             loadFragment(new ConnectionsFragment());
-            updateNotificationsUI(mChatNotifications, 0);
+            mIncomingConnectionRequests.clear();
+            updateNotificationsUI();
         }
 
         if (mMessagesUpdateReceiver == null) {
@@ -255,7 +256,7 @@ public class HomeActivity extends AppCompatActivity
         IntentFilter iFilter2 = new IntentFilter(PullService.CONNECTION_UPDATE);
         registerReceiver(mConnectionsUpdateReceiver, iFilter2);
 
-        updateNotificationsUI(mChatNotifications, mNumConnectionNotifications);
+        updateNotificationsUI();
     }
 
     @Override
@@ -277,11 +278,6 @@ public class HomeActivity extends AppCompatActivity
         if (mConnectionsUpdateReceiver != null) {
             unregisterReceiver(mConnectionsUpdateReceiver);
         }
-
-    }
-
-    @Override
-    public void onConnectionsInteractionListener(String username) {
 
     }
 
@@ -422,6 +418,31 @@ public class HomeActivity extends AppCompatActivity
                 .onCancelled(this::handleErrorsInTask)
                 .build().execute();
 
+    }
+
+    public void onConnectionsDeleteInteractionListener(String username) {
+
+        mDeleteConnectionUsername = username;
+
+        Uri uri = new Uri.Builder()
+                .scheme("https")
+                .appendPath(getString(R.string.ep_base_url))
+                .appendPath(getString(R.string.ep_get_contacts))
+                .build();
+
+        JSONObject msg = new JSONObject();
+        try {
+            msg.put("username", mUsername);
+        } catch (JSONException e) {
+            Log.wtf("Connections Delete json message", "Error reading JSON" +
+                    e.getMessage());
+        }
+
+        new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
+                .onPreExecute(this::handleRequestOnPre)
+                .onPostExecute(this::handleContactsOnPost)
+                .onCancelled(this::handleErrorsInTask)
+                .build().execute();
     }
 
     private void handleRequestOnPre() {
@@ -636,6 +657,115 @@ public class HomeActivity extends AppCompatActivity
         }
     }
 
+    private void handleContactsOnPost(String result) {
+        boolean listA = false;
+
+        try {
+            JSONObject resultsJSON = new JSONObject(result);
+            boolean success = resultsJSON.getBoolean("success");
+
+            if (success) {
+                if (resultsJSON.has(getString(R.string.keys_json_connections_a))) {
+                    try {
+                        JSONArray jReqs = resultsJSON.getJSONArray(getString(R.string.keys_json_connections_a));
+                        for (int i = 0; i < jReqs.length(); i++) {
+                            JSONObject obj = jReqs.getJSONObject(i);
+                            String username = obj.get(getString(R.string.keys_json_username))
+                                    .toString();
+                            if (username.equals(mDeleteConnectionUsername)) {
+                                listA = true;
+                                break;
+                            }
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+                if (resultsJSON.has(getString(R.string.keys_json_connections_b))) {
+                    try {
+                        JSONArray jReqs = resultsJSON.getJSONArray(getString(R.string.keys_json_connections_b));
+                        for (int i = 0; i < jReqs.length(); i++) {
+                            JSONObject obj = jReqs.getJSONObject(i);
+                            String username = obj.get(getString(R.string.keys_json_username))
+                                    .toString();
+                            if (username.equals(mDeleteConnectionUsername)) {
+                                listA = false;
+                                break;
+                            }
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } else {
+                Log.wtf("Get Contacts in handleContactsOnPost", "Back end screw up");
+            }
+        } catch (JSONException e) {
+            Log.e("JSON PARSE ERROR", e.getMessage());
+        }
+
+        Uri uri = new Uri.Builder()
+                .scheme("https")
+                .appendPath(getString(R.string.ep_base_url))
+                .appendPath(getString(R.string.ep_decline_contact_request))
+                .build();
+
+        JSONObject msg = new JSONObject();
+        if (listA) {
+            try {
+                msg.put("usernameA", mDeleteConnectionUsername);
+                msg.put("usernameB", mUsername);
+            } catch (JSONException e) {
+                Log.e("JSON put message error", e.getMessage());
+            }
+        } else {
+            try {
+                msg.put("usernameA", mUsername);
+                msg.put("usernameB", mDeleteConnectionUsername);
+            } catch (JSONException e) {
+                Log.e("JSON put message error", e.getMessage());
+            }
+        }
+
+        new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
+                .onPreExecute(this::handleRequestOnPre)
+                .onPostExecute(this::handleContactDeletedOnPost)
+                .onCancelled(this::handleErrorsInTask)
+                .build().execute();
+
+    }
+
+    private void handleContactDeletedOnPost(String result) {
+        ConnectionsFragment frag = (ConnectionsFragment) getSupportFragmentManager()
+                .findFragmentByTag(getString(R.string.keys_fragment_connections));
+        String username;
+
+        try {
+            JSONObject resultsJSON = new JSONObject(result);
+            boolean success = resultsJSON.getBoolean("success");
+            String usernameA = resultsJSON.getString("username");
+            String usernameB = resultsJSON.getString("usernameB");
+
+
+            if (usernameA.equals(mUsername)) {
+                username = usernameB;
+            } else {
+                username = usernameA;
+            }
+
+            if (success) {
+                frag.handleContactDeletedOnPost(success, username);
+            } else {
+                Toast.makeText(this, "Your action for contact request was not valid",
+                        Toast.LENGTH_SHORT).show();
+            }
+
+        } catch (JSONException e) {
+            frag.setError("Something strange happened");
+            frag.handleOnError(e.toString());
+        }
+    }
+
     private void handleErrorsInTask(String result) {
         Log.e("ASYNC_TASK_ERROR", result);
     }
@@ -664,11 +794,7 @@ public class HomeActivity extends AppCompatActivity
     }
 
 
-    private void updateNotificationsUI (final int theChatNotifications, final int theConnectionNotifications){
-
-        mChatNotifications = theChatNotifications;
-        mNumConnectionNotifications = theConnectionNotifications;
-        mTotalNotifications = mChatNotifications + mNumConnectionNotifications;
+    private void updateNotificationsUI (){
 
         Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.homeFragmentContainer);
 
@@ -704,20 +830,31 @@ public class HomeActivity extends AppCompatActivity
             mNotificationsBar.setText(sb.toString());
         }
 
-        if (mChatNotifications > 0) {
+        if (!mIncomingMessages.isEmpty()) {
             chatNotifications.setGravity(Gravity.CENTER_VERTICAL);
             chatNotifications.setTypeface(null, Typeface.BOLD);
             chatNotifications.setTextColor(getResources().getColor(R.color.colorAccent));
-            chatNotifications.setText(String.valueOf(mChatNotifications)); } else chatNotifications.setText("");
-        if (mNumConnectionNotifications > 0) {
+            chatNotifications.setText(String.valueOf(mIncomingMessages.size())); } else chatNotifications.setText("");
+        if (!mIncomingConnectionRequests.isEmpty()) {
             connectionNotifications.setGravity(Gravity.CENTER_VERTICAL);
             connectionNotifications.setTypeface(null, Typeface.BOLD);
             connectionNotifications.setTextColor(getResources().getColor(R.color.colorAccent));
-            connectionNotifications.setText(String.valueOf(mNumConnectionNotifications)); } else connectionNotifications.setText("");
+            connectionNotifications.setText(String.valueOf(mIncomingConnectionRequests.size())); } else connectionNotifications.setText("");
 
-        mIncomingMessages.clear();
-        mIncomingConnectionRequests.clear();
+        //mIncomingMessages.clear();
+        //mIncomingConnectionRequests.clear();
 
+    }
+
+    @Override
+    public void onOpenChat(int theChatId) {
+        if (theChatId == -1) {
+            loadFragment(new StartChatFragment());
+        } else {
+            Intent intent = new Intent(this, ChatActivity.class);
+            intent.putExtra("CHAT_ID", String.valueOf(theChatId));
+            startActivity(intent);
+        }
     }
 
 
@@ -726,25 +863,23 @@ public class HomeActivity extends AppCompatActivity
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(PullService.MESSAGE_UPDATE)) {
-                Log.d("MessageReceiver", "hey, we got a new message!");
-                mIncomingMessages.add(intent.getStringExtra(getString(R.string.keys_extra_results)));
-                updateNotificationsUI(mChatNotifications +1, mNumConnectionNotifications);
+                String s = intent.getStringExtra(getString(R.string.keys_extra_results));
+                if (!mIncomingMessages.contains(s)) {
+                    mIncomingMessages.add(s);
+                }
+                updateNotificationsUI();
             }
         }
     }
     private class ConnectionUpdateReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
+            String s = intent.getStringExtra("newConnect");
             if (intent.getAction().equals(PullService.CONNECTION_UPDATE)) {
-                Log.e("*******NotificationReceiver*****", "hey, we got a new connection request!");
-                mNumConnectionNotifications = 0;
-                int i = 0;
-                while (intent.getStringExtra(String.valueOf(i)) != null) {
-                    mIncomingConnectionRequests.add(intent.getStringExtra(String.valueOf(i)));
-                    mNumConnectionNotifications++;
-                    i++;
+                if (!mIncomingConnectionRequests.contains(s)) {
+                    if (s != null) mIncomingConnectionRequests.add(s);
                 }
-                updateNotificationsUI(mChatNotifications, mNumConnectionNotifications);
+                updateNotificationsUI();
             }
         }
     }

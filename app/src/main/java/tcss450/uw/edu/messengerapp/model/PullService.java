@@ -238,10 +238,8 @@ public class PullService extends IntentService {
 
                         if (isInForeground) {
                             Intent intent = new Intent(CONNECTION_UPDATE);
-                            int i = 0;
-                            String[] connectKeys = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
                             for (String s : newRequests) {
-                                intent.putExtra(connectKeys[i], s);
+                                intent.putExtra("newConnect", s);
                             }
                             sendBroadcast(intent);
                         }
@@ -286,7 +284,6 @@ public class PullService extends IntentService {
     }
 
     public void handleGetChatsOnPost(String result) {
-        Log.i("HERE","GETMESSAGESPOST");
 
         try {
             JSONObject resultsJSON = new JSONObject(result);
@@ -298,7 +295,6 @@ public class PullService extends IntentService {
                         JSONArray jReqs = resultsJSON.getJSONArray(getString(R.string.keys_json_chats));
                         for (int i = 0; i < jReqs.length(); i++) {
 
-
                             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                             Date date = new Date();
                             date.setMinutes(date.getMinutes()-1);
@@ -306,8 +302,6 @@ public class PullService extends IntentService {
 
                             int chatid = jReqs.getJSONObject(i).getInt("chatid");
                             mChatName = jReqs.getJSONObject(i).getString("name");
-
-                            Log.e(TAG, "***My Chat name is: " + mChatName + " when set");
 
                             //build the web service URL
                             Uri uri = new Uri.Builder()
@@ -377,7 +371,6 @@ public class PullService extends IntentService {
                                 intent.putExtra(getString(R.string.keys_extra_results), messageFrom);
                                 sendBroadcast(intent);
                             } else {
-                                Log.e(TAG, "***My Chat name is: " + mChatName + " when used");
                                 buildNotification(mChatName, 0);
                             }
                         }

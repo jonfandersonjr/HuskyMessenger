@@ -211,18 +211,29 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
         AlertDialog.Builder builder;
         builder = new AlertDialog.Builder(getActivity(), android.R.style.Theme_Material_Dialog_Alert);
         builder.setTitle("").setMessage(msg)
-                .setNeutralButton(getString(R.string.connections_delete_connection),
+                .setNegativeButton(getString(R.string.connections_delete_connection),
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
+                                builder.setTitle("Confirm Deletion")
+                                        .setMessage("Are you sure you want to delete your connection with " +
+                                                username + "?")
+                                        .setPositiveButton(getString(R.string.searchConnections_Yes),
+                                                new DialogInterface.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                                        mInteractionListener.onConnectionsDeleteInteractionListener(username);
+                                                    }
+                                                })
+                                        .setNegativeButton(getString(R.string.searchConnections_Nah),
+                                                new DialogInterface.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(DialogInterface dialogInterface, int i) {
 
-                            }
-                        })
-                .setNegativeButton(getString(R.string.connections_start_groupchat_dialog_button),
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-
+                                                    }
+                                                })
+                                        .setIcon(R.drawable.alert)
+                                        .show();
                             }
                         })
                 .setPositiveButton(getString(R.string.connections_start_chat_dialog_button),
@@ -678,6 +689,27 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
         enableDisableViewGroup(vg, true);
     }
 
+    public void handleContactDeletedOnPost(boolean success, String username) {
+        ViewGroup vg = (ViewGroup) getView().findViewById(R.id.connectionsFrameLayout);
+
+        if (success) {
+            for (int i = 0; i < mVerified.size(); i++) {
+                String str = mVerified.get(i);
+                String subStr = str.substring(0, str.indexOf(" "));
+
+                if (username.equals(subStr)) {
+                    mVerified.remove(i);
+                    mVerifiedRecyclerAdapter.notifyDataSetChanged();
+                    break;
+                }
+            }
+        } else {
+            setError("Something happened on the back end I think...");
+        }
+
+        enableDisableViewGroup(vg, true);
+    }
+
     public void handleSearchOnPost() {
         ViewGroup vg = (ViewGroup) getView().findViewById(R.id.connectionsFrameLayout);
         enableDisableViewGroup(vg, true);
@@ -732,7 +764,7 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
     }
 
     public interface OnConnectionsInteractionListener {
-        void onConnectionsInteractionListener(String username);
+        void onConnectionsDeleteInteractionListener(String username);
         void onRequestInteractionListener(String username, boolean accept, String fragment);
         void onSearchInteractionListener(String searchBy, String searchString,
                                          ArrayList<String> contacts, ArrayList<String> requests,

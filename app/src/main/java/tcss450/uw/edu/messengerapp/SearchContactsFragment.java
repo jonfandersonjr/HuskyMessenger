@@ -334,6 +334,10 @@ public class SearchContactsFragment extends Fragment {
                         mContacts.add(verified);
                         mContacts.sort(String::compareToIgnoreCase);
                         mContactsAdapter.notifyDataSetChanged();
+                    } else {
+                        mNewPeople.add(verified);
+                        mNewPeople.sort(String::compareToIgnoreCase);
+                        mNewPeopleAdapter.notifyDataSetChanged();
                     }
                     mRequests.remove(i);
                     mRequestsAdapter.notifyDataSetChanged();
