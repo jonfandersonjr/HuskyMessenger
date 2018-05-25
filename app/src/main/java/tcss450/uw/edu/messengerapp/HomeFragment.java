@@ -307,7 +307,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
     }
 
 
-        @Override
+    @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;

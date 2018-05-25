@@ -122,7 +122,7 @@ public class PullService extends IntentService {
             mBuilder = new NotificationCompat.Builder(this)
                     .setSmallIcon(R.drawable.ic_chat)
                     .setContentTitle("New message from " + notificationFlag + "!")
-                    .setContentText("Click to chat!");
+                    .setContentText("Click to view your list of chats!");
             // Creates an Intent for the Activity
             notifyIntent = new Intent(this, HomeActivity.class);
             notifyIntent.putExtra(getString(R.string.keys_chat_notification), chatId);
@@ -410,7 +410,7 @@ public class PullService extends IntentService {
         if(date.equals(date1) && hour.equals(hour1)) {
             int currentMinute = Integer.valueOf(minute1);
             int msgMinute = Integer.valueOf(minute);
-            if (currentMinute == msgMinute || (currentMinute == (msgMinute + 1)) ) {
+            if (currentMinute == msgMinute || (currentMinute == (msgMinute + 1))) {
                 return true;
             }
         }
