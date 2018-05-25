@@ -46,6 +46,7 @@ public class ChatActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_chat);
 
+
         //FIX WHERE IT GETS CHAT ID FROM
 
         extras = getIntent().getExtras();
@@ -84,24 +85,32 @@ public class ChatActivity extends AppCompatActivity {
 //            }
 //
 //        });
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
-        alertDialog.setTitle("Who do you wan't to remove?");
-        alertDialog.setMessage("Enter the Username");
 
-        final EditText input = new EditText(this);
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.MATCH_PARENT);
-        input.setLayoutParams(lp);
-        alertDialog.setView(input);
-        //alertDialog.setIcon(R.drawable.key);
 
-        alertDialog.setPositiveButton("Remove",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        mUsername = input.getText().toString();
-                        //removeFromChat();
-                        addToChat();
+
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.chatFab);
+
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AlertDialog.Builder alertDialog = new AlertDialog.Builder(ChatActivity.this);
+                alertDialog.setTitle("Who do you wan't to remove?");
+                alertDialog.setMessage("Enter the Username");
+
+                final EditText input = new EditText(ChatActivity.this);
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.MATCH_PARENT);
+                input.setLayoutParams(lp);
+                alertDialog.setView(input);
+                //alertDialog.setIcon(R.drawable.key);
+
+                alertDialog.setPositiveButton("Remove",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                mUsername = input.getText().toString();
+                                //removeFromChat();
+                                addToChat();
 //                        password = input.getText().toString();
 //                        if (password.compareTo("") == 0) {
 //                            if (pass.equals(password)) {
@@ -115,25 +124,16 @@ public class ChatActivity extends AppCompatActivity {
 //                                        "Wrong Password!", Toast.LENGTH_SHORT).show();
 //                            }
 //                        }
-                    }
-                });
+                            }
+                        });
 
-//        alertDialog.setNegativeButton("NO",
-//                new DialogInterface.OnClickListener() {
-//                    public void onClick(DialogInterface dialog, int which) {
-//                        dialog.cancel();
-//                    }
-//                });
-
-
-        //}
-
-//);
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.chatFab);
-
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+                alertDialog.setNegativeButton("Cancel",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                //dialog.cancel();
+                                dialog.dismiss();
+                            }
+                        });
                 alertDialog.show();
 
 //                adb.setNegativeButton("Cancel", null);

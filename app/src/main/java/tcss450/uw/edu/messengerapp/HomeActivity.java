@@ -47,6 +47,7 @@ public class HomeActivity extends AppCompatActivity
     public int mChatNotifications = 0;
     public int mNumConnectionNotifications = 0;
 
+
     private ArrayList<String> mIncomingMessages = new ArrayList<>();
     private ArrayList<String> mIncomingConnectionRequests = new ArrayList<>();
     private ArrayList<String> mContacts, mRequests, mPending;
@@ -57,6 +58,7 @@ public class HomeActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+
 
         Bundle bundle = getIntent().getExtras();
 

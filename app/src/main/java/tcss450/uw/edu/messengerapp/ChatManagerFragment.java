@@ -205,7 +205,7 @@ public class ChatManagerFragment extends Fragment {
                         for(int i = 0; i < chatIdList.size(); i++) {
                         //    if(!(addedNames.contains(mChatnames.get(i)))){
                                 Button b = new Button(getActivity());
-                                b.setText(chatIdList.get(i)); //Get chat name here!
+                                b.setText(mChatMap.get(chatIdList.get(i))); //Get chat name here!
                             int finalI = i;
                             b.setOnClickListener(new View.OnClickListener() {
                                     @Override
