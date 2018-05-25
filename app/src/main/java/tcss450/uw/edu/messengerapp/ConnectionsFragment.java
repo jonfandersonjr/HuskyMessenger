@@ -210,7 +210,7 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
 
         AlertDialog.Builder builder;
         builder = new AlertDialog.Builder(getActivity(), android.R.style.Theme_Material_Dialog_Alert);
-        builder.setTitle("").setMessage(msg)
+        builder.setTitle("Pick an Action").setMessage(msg)
                 .setNegativeButton(getString(R.string.connections_delete_connection),
                         new DialogInterface.OnClickListener() {
                             @Override
@@ -240,7 +240,7 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
-
+                                mInteractionListener.onConnectionsStartChatListener(username);
                             }
                         });
         if (ryan) {
@@ -765,6 +765,7 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
 
     public interface OnConnectionsInteractionListener {
         void onConnectionsDeleteInteractionListener(String username);
+        void onConnectionsStartChatListener(String username);
         void onRequestInteractionListener(String username, boolean accept, String fragment);
         void onSearchInteractionListener(String searchBy, String searchString,
                                          ArrayList<String> contacts, ArrayList<String> requests,

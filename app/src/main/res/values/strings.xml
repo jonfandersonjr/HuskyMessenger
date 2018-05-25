@@ -39,6 +39,8 @@
     <string name="register_nickname_hint">Username</string>
     <string name="register_confirmpass_hint">Confirm Password</string>
     <string name="register_email_hint">Email</string>
+    <string name="register_pass_instructions">Password must contain atleast five characters,
+        one uppercase letter and one digit</string>
 
     /**Strings for home fragment UI**/
     <string name="home_searchbar">Search Connections</string>
@@ -103,7 +105,7 @@
 
     /**Strings for Start Chat page**/
     <string name="start_text_usernames">Who would you like to chat with?</string>
-    <string name="start_text_chat_name">Chat Name</string>
+    <string name="start_text_chat_name">Enter Chat Room Name...</string>
     <string name="start_button_create">Start Chat!</string>
 
 
