@@ -93,6 +93,14 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
 
         TextView tv = v.findViewById(R.id.homeWelcome);
 
+        Button b = (Button) v.findViewById(R.id.homeFragmentSearchButton);
+        b.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mListener.onSearchInteractionListener();
+            }
+        });
+
         tv.setText("Welcome, " + mUsername + "!");
         initButtons(v);
         getRecentChats();
@@ -351,6 +359,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
      */
     public interface OnFragmentInteractionListener {
         void onOpenChat(int theChatId);
+        void onSearchInteractionListener();
     }
 
 

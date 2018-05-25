@@ -47,6 +47,7 @@
     <string name="home_text_recent_chats">Recent Chats:</string>
     <string name="home_text_empty_chat">Click to create a chat.</string>
     <string name="home_text_notifacationBar">Waiting for new notifications...</string>
+    <string name="home_search_button">Search for someone!</string>
 
     /**Strings for Verify Fragment UI**/
     <string name="verify_code_hint">Enter Code</string>

@@ -237,6 +237,62 @@ public class SearchContactsFragment extends Fragment {
         builder.show();
     }
 
+    private void onItemClickContacts(View v, int position) {
+        String connections = "connections";
+        String str = mContactsAdapter.getItem(position);
+        final String username = str.substring(0, str.indexOf(" "));
+        String[] arr = str.split(" ");
+        boolean ryan = false;
+        String msg = "What do you want to do with " + username + "?";
+        if (arr[1].equals("(Ryan,") && arr[2].equals("Haylee)")) {
+            ryan = true;
+            msg = "What do you want to do with Haylee Ryan?";
+        }
+
+        AlertDialog.Builder builder;
+        builder = new AlertDialog.Builder(getActivity(), android.R.style.Theme_Material_Dialog_Alert);
+        builder.setTitle("Pick an Action").setMessage(msg)
+                .setNegativeButton(getString(R.string.connections_delete_connection),
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                builder.setTitle("Confirm Deletion")
+                                        .setMessage("Are you sure you want to delete your connection with " +
+                                                username + "?")
+                                        .setPositiveButton(getString(R.string.searchConnections_Yes),
+                                                new DialogInterface.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                                        final String frag = "search";
+                                                        mListener.onSearchDeleteContactListener(username, frag);
+                                                    }
+                                                })
+                                        .setNegativeButton(getString(R.string.searchConnections_Nah),
+                                                new DialogInterface.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                                                    }
+                                                })
+                                        .setIcon(R.drawable.alert)
+                                        .show();
+                            }
+                        })
+                .setPositiveButton(getString(R.string.connections_start_chat_dialog_button),
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                mListener.onSearchStartChatListener(username);
+                            }
+                        });
+        if (ryan) {
+            builder.setIcon(R.drawable.ryan);
+        } else {
+            builder.setIcon(R.drawable.contactrequest);
+        }
+        builder.show();
+    }
+
     private void setUpNewPeople() {
         if (mNewPeople.isEmpty()) {
             return;
@@ -268,7 +324,7 @@ public class SearchContactsFragment extends Fragment {
         mContactsRecycler.setLayoutManager(layoutManager);
 
         mContactsAdapter = new MyRecyclerViewAdapter(getActivity(), mContacts);
-        //mContactsAdapter.setClickListener(this::onItemClickNewPeople);
+        mContactsAdapter.setClickListener(this::onItemClickContacts);
         mContactsRecycler.setAdapter(mContactsAdapter);
 
     }
@@ -423,6 +479,41 @@ public class SearchContactsFragment extends Fragment {
 
     }
 
+    public void handleContactDeletedOnPost(boolean success, String username) {
+        ViewGroup vg = (ViewGroup) getView().findViewById(R.id.searchFrameLayout);
+
+        if (success) {
+            for (int i = 0; i < mContacts.size(); i++) {
+                String str = mContacts.get(i);
+                String subStr = str.substring(0, str.indexOf(" "));
+
+                if (username.equals(subStr)) {
+                    String[] arr = str.split(" ");
+                    String verified = arr[0] + " " + arr[1] + " " + arr[2];
+                    mNewPeople.add(verified);
+                    mNewPeople.sort(String::compareToIgnoreCase);
+                    mNewPeopleAdapter.notifyDataSetChanged();
+
+                    mContacts.remove(i);
+                    mContactsAdapter.notifyDataSetChanged();
+
+                    if (mContacts.isEmpty()) {
+                        TextView tv = getView().findViewById(R.id.searchConnectionsCurrentConnectionsHeader);
+                        View v = getView().findViewById(R.id.searchConnectionsDivider2);
+                        tv.setVisibility(TextView.GONE);
+                        v.setVisibility(View.GONE);
+                    }
+                    break;
+                }
+            }
+
+        } else {
+            setError("Something happened on the back end I think...");
+        }
+
+        enableDisableViewGroup(vg, true);
+    }
+
     public void setError(String err) {
         Toast.makeText(getActivity(), "Request unsuccessful for reason: " + err,
                 Toast.LENGTH_SHORT).show();
@@ -459,6 +550,8 @@ public class SearchContactsFragment extends Fragment {
     public interface OnSearchFragmentInteractionListener {
         void onSearchRequestInteraction(String username, boolean accept, String fragment);
         void onSearchAddInteraction(String username);
+        void onSearchStartChatListener(String username);
+        void onSearchDeleteContactListener(String username, String fragment);
     }
 
 
