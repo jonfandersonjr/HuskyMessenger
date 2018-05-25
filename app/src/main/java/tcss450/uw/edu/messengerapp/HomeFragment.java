@@ -43,11 +43,9 @@ public class HomeFragment extends Fragment {
     private final static String BUTTON_EMPTY = "Add new chat!";
     private String mUsername;
     private ArrayList<Message> mRecentMessageInfo = new ArrayList<>();
-    private int mNumChats = -1;
-    private int mFinishedTasks = 0;
 
-    private Button[] mButtons = new Button[3];
-    private Message[] mMesseges = new Message[3];
+    private Button[] mButtons = new Button[5];
+    private Message[] mMesseges = new Message[5];
 
     public HomeFragment() {
         // Required empty public constructor
@@ -111,15 +109,17 @@ public class HomeFragment extends Fragment {
         mButtons[0] = v.findViewById(R.id.chat0);
         mButtons[1] = v.findViewById(R.id.chat1);
         mButtons[2] = v.findViewById(R.id.chat2);
+        mButtons[3] = v.findViewById(R.id.chat3);
+        mButtons[4] = v.findViewById(R.id.chat4);
     }
 
     private void initRecentMessages() {
         Collections.sort(mRecentMessageInfo);
-        Log.wtf("TAG", mRecentMessageInfo.toString());
         for (int i = 0; i < mMesseges.length; i++) {
             if (!mRecentMessageInfo.isEmpty()) {
                 mMesseges[i] = mRecentMessageInfo.remove(0);
                 mButtons[i].setText(mMesseges[i].mAuthor + ": " + mMesseges[i].mContent);
+                mRecentMessageInfo.add(mMesseges[i]);
             } else {
                 mMesseges[i] = null;
                 mButtons[i].setText(BUTTON_EMPTY);
@@ -172,10 +172,8 @@ public class HomeFragment extends Fragment {
             JSONObject resultsJSON = new JSONObject(result);
             boolean success = resultsJSON.getBoolean("success");
 
-            Log.wtf("************WTFFFFFFF***********", "Success is: " + success);
 
             if (success) {
-                Log.wtf("*****FUUUUUUCKKKKKKKK*********", "Do I get in the if?? :" + resultsJSON.has(getString(R.string.keys_json_chats)));
                 if (resultsJSON.has(getString(R.string.keys_json_chats))) {
                     try {
                         JSONArray jReqs = resultsJSON.getJSONArray(getString(R.string.keys_json_chats));
@@ -206,9 +204,6 @@ public class HomeFragment extends Fragment {
                                     .onCancelled(this::handleError)
                                     .build().execute();
                         }
-                        mNumChats = jReqs.length();
-
-                        Log.wtf("*****Numer of chats******", ":" + mNumChats);
 
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -247,8 +242,7 @@ public class HomeFragment extends Fragment {
                         String message = jReqs.getJSONObject(jReqs.length()-1).getString("message");
                         String username = jReqs.getJSONObject(jReqs.length()-1).getString("username");
                         mRecentMessageInfo.add(new Message(messageTime, chatid, message, username));
-                        mFinishedTasks++;
-                        Log.wtf("*****Numer of finished tasks******", ":" + mFinishedTasks);
+                        initRecentMessages();
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -271,12 +265,13 @@ public class HomeFragment extends Fragment {
         String mAuthor;
 
         public Message(String theTimestamp, String theID, String theContent, String theAuthor) {
-            String year = theTimestamp.substring(0,4);
-            String month = theTimestamp.substring(5, 7);
-            String day = theTimestamp.substring(8, 10);
-            String hour = theTimestamp.substring(14,16);
-            String minute = theTimestamp.substring(17,19);
-            mMessageTime = new GregorianCalendar();
+            int year = Integer.valueOf(theTimestamp.substring(0,4));
+            int month = Integer.valueOf(theTimestamp.substring(5, 7));
+            int day = Integer.valueOf(theTimestamp.substring(8, 10));
+            int hour = Integer.valueOf(theTimestamp.substring(14,16));
+            int minute = Integer.valueOf(theTimestamp.substring(17,19));
+            int second = Integer.valueOf(theTimestamp.substring(20, 22));
+            mMessageTime = new GregorianCalendar(year, month, day, hour, minute, second);
             mId = theID;
             mContent = theContent;
             mAuthor = theAuthor;
@@ -285,7 +280,7 @@ public class HomeFragment extends Fragment {
 
         @Override
         public int compareTo(@NonNull Message o) {
-            return this.mMessageTime.compareTo(o.mMessageTime);
+            return (this.mMessageTime.compareTo(o.mMessageTime) * -1);
         }
     }
 

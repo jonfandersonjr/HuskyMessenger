@@ -25,6 +25,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+
 import tcss450.uw.edu.messengerapp.model.ListenManager;
 import tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask;
 
@@ -38,6 +40,7 @@ import tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask;
 public class ChatFragment extends Fragment {
 
     private String mUsername;
+    private String chatUsername;
     private String mSendUrl;
     private TextView mOutputTextView;
     private ListenManager mListenManager;
@@ -45,6 +48,7 @@ public class ChatFragment extends Fragment {
     private int currentMessages;
     private String mUserchatID = "1";
     private String chatID;
+    public ArrayList<String> allUsernames = new ArrayList<>();
 
 
     @SuppressLint("ValidFragment")
@@ -218,8 +222,10 @@ public class ChatFragment extends Fragment {
                 for (int i = 0; i < jMessages.length(); i++) {
                     JSONObject msg = jMessages.getJSONObject(i);
                     String username = msg.get(getString(R.string.keys_json_username)).toString();
+                    //chatUsername = username;
                     String userMessage = msg.get(getString(R.string.keys_json_message)).toString();
                     msgs[i] = username + ":" + userMessage;
+                    allUsernames.add(username);
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -228,8 +234,8 @@ public class ChatFragment extends Fragment {
 
             getActivity().runOnUiThread(() -> {
 
-                Log.e("CURRENT MESSAGES", currentMessages + "");
-                Log.e("MSGLENGTH", msgs.length + "");
+                //Log.e("CURRENT MESSAGES", currentMessages + "");
+                //Log.e("MSGLENGTH", msgs.length + "");
                 //check if new messages!
                 mOutputTextView = getView().findViewById(R.id.chatOutput);
 
@@ -238,9 +244,10 @@ public class ChatFragment extends Fragment {
                    // mOutputTextView.setText("");
                     currentMessages = msgs.length;
                     for(int i = 0; i <msgs.length;i++) {
-                        Button b = new Button(getActivity());
-                        b.setText(msgs[i]);
-                        b.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                        String [] sendUsername = msgs[i].split(":");
+
+
+
                         //smFragment.addView(b);
 //                        ConstraintLayout c = (ConstraintLayout) getView().findViewById(R.id.chatFragment);
 //                        TextView t = new TextView(getContext());
@@ -252,10 +259,35 @@ public class ChatFragment extends Fragment {
 //
 //                        Log.e("MESSAGES", "ADDED");
 //                        t.setText("HELLO");
-                        b.setTextColor(Color.parseColor("#ffffff"));
-                        b.setBackgroundResource(R.drawable.message_box);
-                        b.setPadding(8,8,8,8);
-                        mFragment.addView(b);
+                        if(mUsername.equals(sendUsername[0])) {
+                            Button b = new Button(getActivity());
+                            b.setText(msgs[i]);
+                            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                            params.weight = 1.0f;
+                            params.gravity = Gravity.RIGHT;
+                            b.setLayoutParams(params);
+                            //Log.e("TAG",""+test);
+                            Log.e("Logged in", mUsername);
+                            Log.e("Sender", sendUsername[0]);
+                            b.setTextColor(Color.parseColor("#ffffff"));
+                            b.setBackgroundResource(R.drawable.message_box);
+                            b.setPadding(8,8,8,8);
+                            mFragment.addView(b);
+                        } else {
+                            Button b = new Button(getActivity());
+                            b.setText(msgs[i]);
+                            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                            b.setLayoutParams(params);
+                            b.setTextColor(Color.parseColor("#ffffff"));
+                            b.setBackgroundResource(R.drawable.message_box);
+
+
+                            b.setPadding(8,8,8,8);
+                            mFragment.addView(b);
+                           // b.setGravity(Gravity.RIGHT);
+
+                        }
+
 //
 //                        c.addView(t);
 
