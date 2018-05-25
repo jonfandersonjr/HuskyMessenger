@@ -33,7 +33,7 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/button_bg_stroke"
                 android:paddingLeft="8dp"
-                android:text="@string/home_text_connection1"
+                android:text="@string/home_text_empty_chat"
                 android:textAlignment="textStart"
                 android:textSize="20sp" />
 
@@ -44,7 +44,7 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/button_bg_stroke"
                 android:paddingLeft="8dp"
-                android:text="@string/home_text_connection4"
+                android:text="@string/home_text_empty_chat"
                 android:textAlignment="textStart"
                 android:textSize="20sp" />
 
@@ -55,7 +55,7 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/button_bg_stroke"
                 android:paddingLeft="8dp"
-                android:text="@string/home_text_connection3"
+                android:text="@string/home_text_empty_chat"
                 android:textAlignment="textStart"
                 android:textSize="20sp" />
 
@@ -66,7 +66,7 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/button_bg_stroke"
                 android:paddingLeft="8dp"
-                android:text="@string/home_text_connection3"
+                android:text="@string/home_text_empty_chat"
                 android:textAlignment="textStart"
                 android:textSize="20sp" />
 
@@ -77,7 +77,7 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/button_bg_stroke"
                 android:paddingLeft="8dp"
-                android:text="@string/home_text_connection3"
+                android:text="@string/home_text_empty_chat"
                 android:textAlignment="textStart"
                 android:textSize="20sp" />
 

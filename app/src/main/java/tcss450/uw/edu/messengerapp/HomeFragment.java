@@ -42,7 +42,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
 
     private OnFragmentInteractionListener mListener;
 
-    private final static String BUTTON_EMPTY = "Add new chat!";
+    private final static String BUTTON_EMPTY = "Click to create a chat.";
     private String mUsername;
     private ArrayList<Message> mRecentMessageInfo = new ArrayList<>();
 

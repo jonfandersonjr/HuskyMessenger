@@ -43,11 +43,7 @@
     /**Strings for home fragment UI**/
     <string name="home_searchbar">Search Connections</string>
     <string name="home_text_recent_chats">Recent Chats:</string>
-    <string name="home_text_connection1">Global chat</string>
-    <string name="home_text_connection2">Jon and Barry O</string>
-    <string name="home_text_connection3">Test chat1</string>
-    <string name="home_text_connection4">Fantasy League</string>
-    <string name="home_text_connection5">Uncreative chat name</string>
+    <string name="home_text_empty_chat">Click to create a chat.</string>
     <string name="home_text_notifacationBar">Waiting for new notifications...</string>
 
     /**Strings for Verify Fragment UI**/
@@ -101,6 +97,11 @@
     <string name="weather_button_end">End Service</string>
     <string name="weather_button_result">New Results</string>
     <string name="weather_button_fetching">Fetching</string>
+
+    /**Strings for Start Chat page**/
+    <string name="start_text_usernames">Who would you like to chat with?</string>
+    <string name="start_text_chat_name">Chat Name</string>
+    <string name="start_button_create">Start Chat!</string>
 
 
 </resources>
