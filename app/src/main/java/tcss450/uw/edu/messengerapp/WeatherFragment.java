@@ -1,6 +1,7 @@
 package tcss450.uw.edu.messengerapp;
 
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -75,15 +76,10 @@ public class WeatherFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         View v = inflater.inflate(R.layout.fragment_weather, container, false);
+        Intent intent = new Intent(getActivity(), MyLocationsActivity.class);
+        startActivity(intent);
 
-        //note because we are using an earlier SDK level, you will need to cast here.
-        mResultsButton = (Button) v.findViewById(R.id.resultsButton);
 
-        mStartButton = (Button) v.findViewById(R.id.startButton);
-        mStartButton.setOnClickListener(this::startListener);
-
-        mStopButton = (Button) v.findViewById(R.id.stopButton);
-        mStopButton.setOnClickListener(this::stopListener);
 
         return v;
     }
