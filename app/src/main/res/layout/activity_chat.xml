@@ -23,12 +23,4 @@
         android:minHeight="?attr/actionBarSize"
         android:theme="?attr/actionBarTheme" />
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/chatFab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center|right"
-        android:layout_margin="@dimen/fab_margin"
-        app:srcCompat="@drawable/ic_person_add" />
-
 </android.support.design.widget.CoordinatorLayout>

@@ -4,8 +4,11 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
@@ -20,6 +23,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import org.json.JSONArray;
@@ -27,6 +31,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Random;
 
 import tcss450.uw.edu.messengerapp.model.ListenManager;
 import tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask;
@@ -49,7 +55,11 @@ public class ChatFragment extends Fragment {
     private int currentMessages;
     private String mUserchatID = "1";
     private String chatID;
+    private static final int[] MESSAGE_COLORS = {R.color.colorPrimary3,R.color.colorAccent4,
+            R.color.colorPrimary4,R.color.colorAccent5,R.color.colorPrimary,R.color.colorPrimaryDark2,
+            R.color.colorPrimary5,R.color.colorPrimaryDark3};
     public ArrayList<String> allUsernames = new ArrayList<>();
+    public HashMap<String, Integer> userColors = new HashMap<>();
 
 
     @SuppressLint("ValidFragment")
@@ -82,6 +92,14 @@ public class ChatFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mFragment = (LinearLayout) view.findViewById(R.id.chatLayout);
+
+//        scroll.post(new Runnable() {
+//            @Override
+//            public void run() {
+//                scroll.fullScroll(View.FOCUS_DOWN);
+//            }
+//        });
+
 //        Button b = new Button(getActivity());
 //        b.setText("HI!!!!!");
 //        mFragment.addView(b);
@@ -139,6 +157,7 @@ public class ChatFragment extends Fragment {
                     .setDelay(1000)
                     .build();
         }
+
 
     }
 
@@ -229,6 +248,10 @@ public class ChatFragment extends Fragment {
                     String userMessage = msg.get(getString(R.string.keys_json_message)).toString();
                     msgs[i] = username + ":" + userMessage;
                     allUsernames.add(username);
+                    if(!(userColors.containsKey(username))) {
+                        Random r = new Random();
+                        userColors.put(username, MESSAGE_COLORS[r.nextInt(MESSAGE_COLORS.length)]);
+                    }
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -273,16 +296,20 @@ public class ChatFragment extends Fragment {
                             Log.e("Logged in", mUsername);
                             Log.e("Sender", sendUsername[0]);
                             b.setTextColor(Color.parseColor("#ffffff"));
-                            b.setBackgroundResource(R.drawable.message_box);
+                            b.setBackgroundResource(R.drawable.sent_messagee_box);
                             b.setPadding(8,8,8,8);
                             mFragment.addView(b);
                         } else {
                             Button b = new Button(getActivity());
                             b.setText(msgs[i]);
+                            Drawable mDrawable = getContext().getResources().getDrawable(R.drawable.message_box,null);
+                            mDrawable.setColorFilter(getResources().getColor(userColors.get(sendUsername[0]),null), PorterDuff.Mode.MULTIPLY);
+                            //r.s
                             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
                             b.setLayoutParams(params);
                             b.setTextColor(Color.parseColor("#ffffff"));
-                            b.setBackgroundResource(R.drawable.message_box);
+                            //b.setBackgroundResource(mDrawable);
+                            b.setBackground(mDrawable);
 
 
                             b.setPadding(8,8,8,8);

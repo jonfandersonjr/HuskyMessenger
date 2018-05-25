@@ -222,7 +222,8 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
                                                 new DialogInterface.OnClickListener() {
                                                     @Override
                                                     public void onClick(DialogInterface dialogInterface, int i) {
-                                                        mInteractionListener.onConnectionsDeleteInteractionListener(username);
+                                                        final String frag = "connections";
+                                                        mInteractionListener.onConnectionsDeleteInteractionListener(username, frag);
                                                     }
                                                 })
                                         .setNegativeButton(getString(R.string.searchConnections_Nah),
@@ -764,7 +765,7 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
     }
 
     public interface OnConnectionsInteractionListener {
-        void onConnectionsDeleteInteractionListener(String username);
+        void onConnectionsDeleteInteractionListener(String username, String fragment);
         void onConnectionsStartChatListener(String username);
         void onRequestInteractionListener(String username, boolean accept, String fragment);
         void onSearchInteractionListener(String searchBy, String searchString,
