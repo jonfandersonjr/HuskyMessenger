@@ -284,7 +284,6 @@ public class PullService extends IntentService {
     }
 
     public void handleGetChatsOnPost(String result) {
-        Log.i("HERE","GETMESSAGESPOST");
 
         try {
             JSONObject resultsJSON = new JSONObject(result);

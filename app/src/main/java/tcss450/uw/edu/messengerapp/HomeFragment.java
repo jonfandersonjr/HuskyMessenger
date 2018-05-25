@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,6 +20,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.GregorianCalendar;
 
 
@@ -38,12 +40,14 @@ public class HomeFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
+    private final static String BUTTON_EMPTY = "Add new chat!";
     private String mUsername;
-    private ArrayList<String> mChatTimes = new ArrayList<>();
-    private ArrayList<String> mChatNames = new ArrayList<>();
-    private ArrayList<Message> mChatInfo = new ArrayList<>();
+    private ArrayList<Message> mRecentMessageInfo = new ArrayList<>();
+    private int mNumChats = -1;
+    private int mFinishedTasks = 0;
 
-    private Button[] mButtons = new Button[5];
+    private Button[] mButtons = new Button[3];
+    private Message[] mMesseges = new Message[3];
 
     public HomeFragment() {
         // Required empty public constructor
@@ -81,31 +85,52 @@ public class HomeFragment extends Fragment {
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_home, container, false);
 
-        getRecentChats();
-        TextView tv = v.findViewById(R.id.homeWelcome);
 
         SharedPreferences prefs = getActivity().
                 getSharedPreferences(getString(R.string.keys_shared_prefs), Context.MODE_PRIVATE);
 
         mUsername = prefs.getString(getString(R.string.keys_prefs_username), "");
-        tv.setText("Welcome, " + mUsername + "!");
 
+        TextView tv = v.findViewById(R.id.homeWelcome);
+
+        tv.setText("Welcome, " + mUsername + "!");
         initButtons(v);
-        setButtonListeners();
+        getRecentChats();
+
         return v;
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        initRecentMessages();
+        //setButtonListeners();
     }
 
     private void initButtons(View v) {
         mButtons[0] = v.findViewById(R.id.chat0);
         mButtons[1] = v.findViewById(R.id.chat1);
         mButtons[2] = v.findViewById(R.id.chat2);
-        mButtons[3] = v.findViewById(R.id.chat3);
-        mButtons[4] = v.findViewById(R.id.chat4);
     }
 
+    private void initRecentMessages() {
+        Collections.sort(mRecentMessageInfo);
+        Log.wtf("TAG", mRecentMessageInfo.toString());
+        for (int i = 0; i < mMesseges.length; i++) {
+            if (!mRecentMessageInfo.isEmpty()) {
+                mMesseges[i] = mRecentMessageInfo.remove(0);
+                mButtons[i].setText(mMesseges[i].mAuthor + ": " + mMesseges[i].mContent);
+            } else {
+                mMesseges[i] = null;
+                mButtons[i].setText(BUTTON_EMPTY);
+            }
+
+        }
+    }
 
     private void setButtonListeners() {
         for (int i = 0; i < mButtons.length; i++) {
+            //String chatId = getMostRecentMessage
             //mButtons[i].setOnClickListener(this::onButtonClick);// = getMinChat();
         }
     }
@@ -117,21 +142,20 @@ public class HomeFragment extends Fragment {
 
     private void getRecentChats() {
 
+        Uri uri = new Uri.Builder()
+                .scheme("https")
+                .appendPath(getString(R.string.ep_base_url))
+                .appendPath(getString(R.string.ep_get_all_chats))
+                .build();
+
         JSONObject msg = new JSONObject();
         try {
             msg.put("username", mUsername);
         } catch (JSONException e) {
             Log.wtf("JSON EXCEPTION", e.toString());
         }
-        Uri retrieveRequests = new Uri.Builder()
-                .scheme("https")
-                .appendPath(getString(R.string.ep_base_url))
-                .appendPath(getString(R.string.ep_get_all_chats))
-                .build();
 
-        Log.e("CONTENT",retrieveRequests.toString());
-
-        new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(retrieveRequests.toString(), msg)
+        new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
                 .onPreExecute(this::getRecentChatsOnPre)
                 .onPostExecute(this::getRecentChatsOnPost)
                 .onCancelled(this::handleError)
@@ -148,7 +172,10 @@ public class HomeFragment extends Fragment {
             JSONObject resultsJSON = new JSONObject(result);
             boolean success = resultsJSON.getBoolean("success");
 
+            Log.wtf("************WTFFFFFFF***********", "Success is: " + success);
+
             if (success) {
+                Log.wtf("*****FUUUUUUCKKKKKKKK*********", "Do I get in the if?? :" + resultsJSON.has(getString(R.string.keys_json_chats)));
                 if (resultsJSON.has(getString(R.string.keys_json_chats))) {
                     try {
                         JSONArray jReqs = resultsJSON.getJSONArray(getString(R.string.keys_json_chats));
@@ -157,7 +184,6 @@ public class HomeFragment extends Fragment {
                             String time = "1970-01-01 00:00:00";
 
                             int chatid = jReqs.getJSONObject(i).getInt("chatid");
-                            mChatNames.add(jReqs.getJSONObject(i).getString("name"));
 
                             //build the web service URL
                             Uri uri = new Uri.Builder()
@@ -180,7 +206,9 @@ public class HomeFragment extends Fragment {
                                     .onCancelled(this::handleError)
                                     .build().execute();
                         }
+                        mNumChats = jReqs.length();
 
+                        Log.wtf("*****Numer of chats******", ":" + mNumChats);
 
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -210,7 +238,6 @@ public class HomeFragment extends Fragment {
         try {
             JSONObject resultsJSON = new JSONObject(result);
             boolean success = resultsJSON.getBoolean("success");
-
             if (success) {
                 if (resultsJSON.has(getString(R.string.keys_json_messages))) {
                     try {
@@ -219,7 +246,9 @@ public class HomeFragment extends Fragment {
                         String chatid = jReqs.getJSONObject(jReqs.length()-1).getString("chatid");
                         String message = jReqs.getJSONObject(jReqs.length()-1).getString("message");
                         String username = jReqs.getJSONObject(jReqs.length()-1).getString("username");
-                        mChatInfo.add(new Message(messageTime, chatid, message, username));
+                        mRecentMessageInfo.add(new Message(messageTime, chatid, message, username));
+                        mFinishedTasks++;
+                        Log.wtf("*****Numer of finished tasks******", ":" + mFinishedTasks);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
