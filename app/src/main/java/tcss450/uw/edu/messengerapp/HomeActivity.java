@@ -37,7 +37,8 @@ import tcss450.uw.edu.messengerapp.model.PullService;
 public class HomeActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         ConnectionsFragment.OnConnectionsInteractionListener,
-        SearchContactsFragment.OnSearchFragmentInteractionListener {
+        SearchContactsFragment.OnSearchFragmentInteractionListener,
+        HomeFragment.OnFragmentInteractionListener {
 
     private static final String TAG = "HomeActivity";
 
@@ -841,6 +842,17 @@ public class HomeActivity extends AppCompatActivity
         //mIncomingMessages.clear();
         //mIncomingConnectionRequests.clear();
 
+    }
+
+    @Override
+    public void onOpenChat(int theChatId) {
+        if (theChatId == -1) {
+            loadFragment(new StartChatFragment());
+        } else {
+            Intent intent = new Intent(this, ChatActivity.class);
+            intent.putExtra("CHAT_ID", String.valueOf(theChatId));
+            startActivity(intent);
+        }
     }
 
 

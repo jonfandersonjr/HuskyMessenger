@@ -29,7 +29,7 @@ import java.util.GregorianCalendar;
  * Use the {@link HomeFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class HomeFragment extends Fragment {
+public class HomeFragment extends Fragment implements View.OnClickListener {
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -39,6 +39,8 @@ public class HomeFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+
+    private OnFragmentInteractionListener mListener;
 
     private final static String BUTTON_EMPTY = "Add new chat!";
     private String mUsername;
@@ -101,16 +103,19 @@ public class HomeFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        initRecentMessages();
-        //setButtonListeners();
     }
 
     private void initButtons(View v) {
         mButtons[0] = v.findViewById(R.id.chat0);
+        mButtons[0].setOnClickListener(this);
         mButtons[1] = v.findViewById(R.id.chat1);
+        mButtons[1].setOnClickListener(this);
         mButtons[2] = v.findViewById(R.id.chat2);
+        mButtons[2].setOnClickListener(this);
         mButtons[3] = v.findViewById(R.id.chat3);
+        mButtons[3].setOnClickListener(this);
         mButtons[4] = v.findViewById(R.id.chat4);
+        mButtons[4].setOnClickListener(this);
     }
 
     private void initRecentMessages() {
@@ -124,15 +129,8 @@ public class HomeFragment extends Fragment {
                 mMesseges[i] = null;
                 mButtons[i].setText(BUTTON_EMPTY);
             }
-
         }
-    }
 
-    private void setButtonListeners() {
-        for (int i = 0; i < mButtons.length; i++) {
-            //String chatId = getMostRecentMessage
-            //mButtons[i].setOnClickListener(this::onButtonClick);// = getMinChat();
-        }
     }
 
     private void onButtonClick() {
@@ -257,6 +255,69 @@ public class HomeFragment extends Fragment {
         Log.e("LISTEN ERROR!!!", e);
     }
 
+    @Override
+    public void onClick(View v) {
+        if (mListener != null) {
+            switch (v.getId()) {
+                case R.id.chat0:
+                    if (mMesseges[0] != null) {
+                        mListener.onOpenChat(Integer.valueOf(mMesseges[0].mId));
+                    } else {
+                        mListener.onOpenChat(-1);
+                    }
+                    break;
+                case R.id.chat1:
+                    if (mMesseges[0] != null) {
+                        mListener.onOpenChat(Integer.valueOf(mMesseges[1].mId));
+                    } else {
+                        mListener.onOpenChat(-1);
+                    }
+                    break;
+                case R.id.chat2:
+                    if (mMesseges[0] != null) {
+                        mListener.onOpenChat(Integer.valueOf(mMesseges[2].mId));
+                    } else {
+                        mListener.onOpenChat(-1);
+                    }
+                    break;
+                case R.id.chat3:
+                    if (mMesseges[0] != null) {
+                        mListener.onOpenChat(Integer.valueOf(mMesseges[3].mId));
+                    } else {
+                        mListener.onOpenChat(-1);
+                    }
+                    break;
+                case R.id.chat4:
+                    if (mMesseges[0] != null) {
+                        mListener.onOpenChat(Integer.valueOf(mMesseges[4].mId));
+                    } else {
+                        mListener.onOpenChat(-1);
+                    }
+                    break;
+                default:
+                    Log.wtf("", "Didn't expect to see me...");
+            }
+        }
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof OnFragmentInteractionListener) {
+            mListener = (OnFragmentInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
+    }
+
+
+        @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
+    }
+
     private class Message implements Comparable<Message> {
 
         GregorianCalendar mMessageTime;
@@ -283,5 +344,19 @@ public class HomeFragment extends Fragment {
             return (this.mMessageTime.compareTo(o.mMessageTime) * -1);
         }
     }
+    /**
+     * This interface must be implemented by activities that contain this
+     * fragment to allow an interaction in this fragment to be communicated
+     * to the activity and potentially other fragments contained in that
+     * activity.
+     * <p>
+     * See the Android Training lesson <a href=
+     * "http://developer.android.com/training/basics/fragments/communicating.html"
+     * >Communicating with Other Fragments</a> for more information.
+     */
+    public interface OnFragmentInteractionListener {
+        void onOpenChat(int theChatId);
+    }
+
 
 }
