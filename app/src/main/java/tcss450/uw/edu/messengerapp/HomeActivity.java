@@ -444,6 +444,14 @@ public class HomeActivity extends AppCompatActivity
                 .build().execute();
     }
 
+    public void onConnectionsStartChatListener(String username) {
+        StartChatFragment frag = new StartChatFragment();
+        Bundle bundle = new Bundle();
+        bundle.putString("user", username);
+        frag.setArguments(bundle);
+        loadFragment(frag);
+    }
+
     private void handleRequestOnPre() {
         ConnectionsFragment frag = (ConnectionsFragment) getSupportFragmentManager()
                 .findFragmentByTag(getString(R.string.keys_fragment_connections));

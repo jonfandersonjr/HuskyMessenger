@@ -44,6 +44,13 @@ public class StartChatFragment extends Fragment {
         usernames = (EditText) v.findViewById(R.id.enterUsernames);
         chatName = (EditText) v.findViewById(R.id.chatName);
         v.findViewById(R.id.createChat).setOnClickListener(this::sendMessage);
+
+        Bundle bundle = this.getArguments();
+        if (bundle != null) {
+            usernames.setText(bundle.getString("user"));
+            usernames.setEnabled(false);
+        }
+
         return v;
     }
 

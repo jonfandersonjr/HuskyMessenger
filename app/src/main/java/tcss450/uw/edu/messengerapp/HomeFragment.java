@@ -250,44 +250,36 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
         Log.e("LISTEN ERROR!!!", e);
     }
 
+    /**
+     * Helper method for attaching chat opening to buttons
+     * @param buttonNum
+     */
+    private void setButtonListener(int buttonNum) {
+        if (mMesseges[buttonNum] != null) {
+            mListener.onOpenChat(Integer.valueOf(mMesseges[buttonNum].mId));
+        } else {
+            mListener.onOpenChat(-1);
+        }
+    }
+
     @Override
     public void onClick(View v) {
         if (mListener != null) {
             switch (v.getId()) {
                 case R.id.chat0:
-                    if (mMesseges[0] != null) {
-                        mListener.onOpenChat(Integer.valueOf(mMesseges[0].mId));
-                    } else {
-                        mListener.onOpenChat(-1);
-                    }
+                    setButtonListener(0);
                     break;
                 case R.id.chat1:
-                    if (mMesseges[1] != null) {
-                        mListener.onOpenChat(Integer.valueOf(mMesseges[1].mId));
-                    } else {
-                        mListener.onOpenChat(-1);
-                    }
+                    setButtonListener(1);
                     break;
                 case R.id.chat2:
-                    if (mMesseges[2] != null) {
-                        mListener.onOpenChat(Integer.valueOf(mMesseges[2].mId));
-                    } else {
-                        mListener.onOpenChat(-1);
-                    }
+                    setButtonListener(2);
                     break;
                 case R.id.chat3:
-                    if (mMesseges[3] != null) {
-                        mListener.onOpenChat(Integer.valueOf(mMesseges[3].mId));
-                    } else {
-                        mListener.onOpenChat(-1);
-                    }
+                    setButtonListener(3);
                     break;
                 case R.id.chat4:
-                    if (mMesseges[4] != null) {
-                        mListener.onOpenChat(Integer.valueOf(mMesseges[4].mId));
-                    } else {
-                        mListener.onOpenChat(-1);
-                    }
+                    setButtonListener(4);
                     break;
                 default:
                     Log.wtf("", "Didn't expect to see me...");
@@ -313,6 +305,9 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
         mListener = null;
     }
 
+    /**
+     * Inner class to store messages with the ability to sort by timestamp
+     */
     private class Message implements Comparable<Message> {
 
         GregorianCalendar mMessageTime;
