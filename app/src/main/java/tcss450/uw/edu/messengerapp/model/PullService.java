@@ -109,9 +109,9 @@ public class PullService extends IntentService {
 
     /**
      * Prepares a notification if the app is in the background.
-     * @param s
+     * @param
      */
-    private void buildNotification(String s, int notificationType) {
+    private void buildNotification(String notificationFlag, String chatId, int notificationType) {
         NotificationCompat.Builder mBuilder = null;
         NotificationCompat.Builder mBuilder2 = null;
         Intent notifyIntent = null;
@@ -121,11 +121,11 @@ public class PullService extends IntentService {
 
             mBuilder = new NotificationCompat.Builder(this)
                     .setSmallIcon(R.drawable.ic_chat)
-                    .setContentTitle("New Message in " + s + "!")
+                    .setContentTitle("New message from " + notificationFlag + "!")
                     .setContentText("Click to chat!");
             // Creates an Intent for the Activity
             notifyIntent = new Intent(this, HomeActivity.class);
-            notifyIntent.putExtra(getString(R.string.keys_chat_notification), s);
+            notifyIntent.putExtra(getString(R.string.keys_chat_notification), chatId);
             // Sets the Activity to start in a new, empty task
             notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                     | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -151,10 +151,10 @@ public class PullService extends IntentService {
 
             mBuilder2 = new NotificationCompat.Builder(this)
                     .setSmallIcon(R.drawable.ic_person_add)
-                    .setContentTitle(s + " sent you a new connection request!")
+                    .setContentTitle(notificationFlag + " sent you a new connection request!")
                     .setContentText("Click to view your requests!");
             notifyIntent = new Intent(this, HomeActivity.class);
-            notifyIntent.putExtra(getString(R.string.keys_connection_notification), s);
+            notifyIntent.putExtra(getString(R.string.keys_connection_notification), notificationFlag);
             // Sets the Activity to start in a new, empty task
             notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                     | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -231,7 +231,7 @@ public class PullService extends IntentService {
                                 if (isInForeground) {
                                     newRequests.add(request);
                                 } else {
-                                    buildNotification(request, 1);
+                                    buildNotification(request, "1", 1);
                                 }
                             }
                         }
@@ -359,6 +359,7 @@ public class PullService extends IntentService {
 
                         String messageFrom = jReqs2.getJSONObject(jReqs2.length()-1).getString("username");
                         String messageTime = jReqs2.getJSONObject(jReqs2.length()-1).getString("timestamp");
+                        String chatId = jReqs2.getJSONObject(jReqs2.length()-1).getString("chatid");
 
                         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                         Date date = new Date();
@@ -371,7 +372,7 @@ public class PullService extends IntentService {
                                 intent.putExtra(getString(R.string.keys_extra_results), messageFrom);
                                 sendBroadcast(intent);
                             } else {
-                                buildNotification(mChatName, 0);
+                                buildNotification(messageFrom, chatId,0);
                             }
                         }
 

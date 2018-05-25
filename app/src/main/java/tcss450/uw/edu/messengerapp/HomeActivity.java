@@ -226,16 +226,15 @@ public class HomeActivity extends AppCompatActivity
             PullService.stopServiceAlarm(this);
             //restart but in the foreground
             PullService.startServiceAlarm(this, true);
-
             PullService.setUsername(mUsername);
-
         }
 
         //Look to see if the intent has a result string for us.
         //If true, then this Activity was started from the notification bar
         if (getIntent().hasExtra(getString(R.string.keys_chat_notification))) {
             //load new chat activity with this person
-            loadFragment(new ChatManagerFragment());
+            onOpenChat(Integer.valueOf(getIntent().getStringExtra(getString(R.string.keys_chat_notification))));
+            //Activi
             mIncomingMessages.clear();
             updateNotificationsUI();
         } else if (getIntent().hasExtra(getString(R.string.keys_connection_notification))) {
