@@ -55,7 +55,10 @@
     <string name="verify_dowhat_text">We sent you a verification code to the email that you provided.
         Please enter that code in the box above.</string>
 
+    /**Chat Activity UI Strings**/
     <string name="title_activity_chat">ChatActivity</string>
+    <string name="menu_add_user">Add User to Chat</string>
+    <string name="menu_remove_user">Remove User</string>
 
     /**Strings for Chat Fragment UI**/
     <string name="chat_textbar_hint">Write a message</string>

@@ -18,6 +18,8 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -43,7 +45,6 @@ public class ChatActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_chat);
 
         //FIX WHERE IT GETS CHAT ID FROM
@@ -74,16 +75,7 @@ public class ChatActivity extends AppCompatActivity {
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.chatToolbar);
         setSupportActionBar(toolbar);
-//        AlertDialog.Builder adb = new AlertDialog.Builder(this);
-//        CharSequence items[] = new CharSequence[] {"First", "Second", "Third"};
-//        adb.setSingleChoiceItems(items, 0, new DialogInterface.OnClickListener() {
-//
-//            @Override
-//            public void onClick(DialogInterface d, int n) {
-//                // ...
-//            }
-//
-//        });
+
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
         alertDialog.setTitle("Who do you wan't to remove?");
         alertDialog.setMessage("Enter the Username");
@@ -102,47 +94,43 @@ public class ChatActivity extends AppCompatActivity {
                         mUsername = input.getText().toString();
                         //removeFromChat();
                         addToChat();
-//                        password = input.getText().toString();
-//                        if (password.compareTo("") == 0) {
-//                            if (pass.equals(password)) {
-//                                Toast.makeText(getApplicationContext(),
-//                                        "Password Matched", Toast.LENGTH_SHORT).show();
-//                                Intent myIntent1 = new Intent(view.getContext(),
-//                                        Show.class);
-//                                startActivityForResult(myIntent1, 0);
-//                            } else {
-//                                Toast.makeText(getApplicationContext(),
-//                                        "Wrong Password!", Toast.LENGTH_SHORT).show();
-//                            }
-//                        }
+
+                        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.chatFab);
+
+                        fab.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                alertDialog.show();
+
+
+                            }
+                        });
                     }
                 });
+    }
 
-//        alertDialog.setNegativeButton("NO",
-//                new DialogInterface.OnClickListener() {
-//                    public void onClick(DialogInterface dialog, int which) {
-//                        dialog.cancel();
-//                    }
-//                });
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.addUserToChat:
+                //add user menu
+                break;
+            case R.id.removeUserFromChat:
+                //remove user menu
+                break;
+            default:
+                Log.e("TAG", "Something wrong in Chat Menu");
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
-
-        //}
-
-//);
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.chatFab);
-
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                alertDialog.show();
-
-//                adb.setNegativeButton("Cancel", null);
-//                adb.setTitle("Which one?");
-//                adb.show();
-                //loadFragment(new StartChatFragment());
-            }
-        });
-
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+        getMenuInflater().inflate(R.menu.menu_chat, menu);
+        return true;
     }
 
     public void loadFragment(Fragment theFragment) {
