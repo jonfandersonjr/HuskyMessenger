@@ -26,6 +26,7 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -134,7 +135,6 @@ public class MyLocationsActivity extends AppCompatActivity implements
         new SendPostAsyncTask.Builder(mSendUrl, messageJson).onCancelled(this::handleError)
                 .onPostExecute(this::endOfSendMsgTask).build().execute();
         TextView a =  (TextView) findViewById(R.id.currentTemp);
-        a.setText("TESTING");
 
     }
 
@@ -149,10 +149,47 @@ public class MyLocationsActivity extends AppCompatActivity implements
         try {
             JSONObject res = new JSONObject(result);
             JSONObject current = res.getJSONObject("current");
-
             TextView a =  (TextView) findViewById(R.id.currentTemp);
-            //a.setText(current.getJSONObject("summary").toString());
-            a.setText(current.getString("summary").toString());
+           // a.setText("Current Information Temperature: " + current.getString("temperature").toString() +  " Summary: " + current.getString("summary").toString());
+            a.setText("Current Information Temperature: " + current.getString("temperature").toString() +  "Summary: " + current.getString("summary").toString());
+
+
+            JSONObject hourly = res.getJSONObject("hourly");
+            JSONArray hourlyData = hourly.getJSONArray("data");
+            String hour = "Hourly Data\n";
+
+
+            for (int i = 0 ; i < hourlyData.length(); i++) {
+                JSONObject msg = hourlyData.getJSONObject(i);
+                String temperature = msg.get("temperature").toString();
+                String summary = msg.get("summary").toString();
+
+
+                String data = "Time +" + i + "hours: " + temperature + " " + summary + "\n";
+                hour = hour + data;
+
+            }
+            TextView b =  (TextView) findViewById(R.id.hourlyData);
+            b.setText(hour);
+
+
+            JSONObject daily = res.getJSONObject("daily");
+            JSONArray dailyData = daily.getJSONArray("data");
+            String day = "Daily Data\n";
+
+
+            for (int i = 0 ; i < dailyData.length(); i++) {
+                JSONObject msg = dailyData.getJSONObject(i);
+                String temperature = msg.get("temperature").toString();
+                String summary = msg.get("summary").toString();
+
+
+                String data = "Day +" + i + ": " + temperature + " " + summary + "\n";
+                day = day + data;
+
+            }
+            TextView c =  (TextView) findViewById(R.id.dailyData);
+            c.setText(day);
 
 
         } catch (JSONException e) {
