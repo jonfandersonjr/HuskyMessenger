@@ -120,7 +120,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
 
     private void initRecentMessages() {
         Collections.sort(mRecentMessageInfo);
-        for (int i = 0; i < mMesseges.length; i++) {
+        for (int i = 0; i < Math.min(mMesseges.length, mRecentMessageInfo.size()); i++) {
             if (!mRecentMessageInfo.isEmpty()) {
                 mMesseges[i] = mRecentMessageInfo.remove(0);
                 mButtons[i].setText(mMesseges[i].mAuthor + ": " + mMesseges[i].mContent);
@@ -132,11 +132,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
         }
 
     }
-
-    private void onButtonClick() {
-
-    }
-
 
     private void getRecentChats() {
 
@@ -267,28 +262,28 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
                     }
                     break;
                 case R.id.chat1:
-                    if (mMesseges[0] != null) {
+                    if (mMesseges[1] != null) {
                         mListener.onOpenChat(Integer.valueOf(mMesseges[1].mId));
                     } else {
                         mListener.onOpenChat(-1);
                     }
                     break;
                 case R.id.chat2:
-                    if (mMesseges[0] != null) {
+                    if (mMesseges[2] != null) {
                         mListener.onOpenChat(Integer.valueOf(mMesseges[2].mId));
                     } else {
                         mListener.onOpenChat(-1);
                     }
                     break;
                 case R.id.chat3:
-                    if (mMesseges[0] != null) {
+                    if (mMesseges[3] != null) {
                         mListener.onOpenChat(Integer.valueOf(mMesseges[3].mId));
                     } else {
                         mListener.onOpenChat(-1);
                     }
                     break;
                 case R.id.chat4:
-                    if (mMesseges[0] != null) {
+                    if (mMesseges[4] != null) {
                         mListener.onOpenChat(Integer.valueOf(mMesseges[4].mId));
                     } else {
                         mListener.onOpenChat(-1);
