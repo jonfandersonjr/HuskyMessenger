@@ -20,6 +20,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import org.json.JSONArray;
@@ -82,6 +83,14 @@ public class ChatFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mFragment = (LinearLayout) view.findViewById(R.id.chatLayout);
+
+//        scroll.post(new Runnable() {
+//            @Override
+//            public void run() {
+//                scroll.fullScroll(View.FOCUS_DOWN);
+//            }
+//        });
+
 //        Button b = new Button(getActivity());
 //        b.setText("HI!!!!!");
 //        mFragment.addView(b);
@@ -139,6 +148,7 @@ public class ChatFragment extends Fragment {
                     .setDelay(1000)
                     .build();
         }
+
 
     }
 
@@ -273,7 +283,7 @@ public class ChatFragment extends Fragment {
                             Log.e("Logged in", mUsername);
                             Log.e("Sender", sendUsername[0]);
                             b.setTextColor(Color.parseColor("#ffffff"));
-                            b.setBackgroundResource(R.drawable.message_box);
+                            b.setBackgroundResource(R.drawable.sent_messagee_box);
                             b.setPadding(8,8,8,8);
                             mFragment.addView(b);
                         } else {

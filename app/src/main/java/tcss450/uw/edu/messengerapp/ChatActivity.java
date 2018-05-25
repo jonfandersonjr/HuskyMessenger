@@ -25,6 +25,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -72,6 +74,7 @@ public class ChatActivity extends AppCompatActivity {
             if (findViewById(R.id.chatContainer) != null) {
                 loadFragment(new ChatFragment(value));
             }
+
         }
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.chatToolbar);
@@ -88,15 +91,18 @@ public class ChatActivity extends AppCompatActivity {
         input.setLayoutParams(lp);
         alertDialog.setView(input);
         //alertDialog.setIcon(R.drawable.key);
+    }
 
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.chatFab);
 
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.addUserToChat:
                 AlertDialog.Builder alertDialog = new AlertDialog.Builder(ChatActivity.this);
-                alertDialog.setTitle("Who do you wan't to remove?");
+                alertDialog.setTitle("Who do you wan't to add?");
                 alertDialog.setMessage("Enter the Username");
 
                 final EditText input = new EditText(ChatActivity.this);
@@ -107,7 +113,7 @@ public class ChatActivity extends AppCompatActivity {
                 alertDialog.setView(input);
                 //alertDialog.setIcon(R.drawable.key);
 
-                alertDialog.setPositiveButton("Remove",
+                alertDialog.setPositiveButton("Add",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 mUsername = input.getText().toString();
@@ -137,19 +143,51 @@ public class ChatActivity extends AppCompatActivity {
                             }
                         });
                 alertDialog.show();
-            }
-        });
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle item selection
-        switch (item.getItemId()) {
-            case R.id.addUserToChat:
-                //add user menu
                 break;
             case R.id.removeUserFromChat:
                 //remove user menu
+                AlertDialog.Builder alertDialog2 = new AlertDialog.Builder(ChatActivity.this);
+                alertDialog2.setTitle("Who do you wan't to remove?");
+                alertDialog2.setMessage("Enter the Username");
+
+                final EditText input2 = new EditText(ChatActivity.this);
+                LinearLayout.LayoutParams lp2 = new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.MATCH_PARENT);
+                input2.setLayoutParams(lp2);
+                alertDialog2.setView(input2);
+                //alertDialog.setIcon(R.drawable.key);
+
+                alertDialog2.setPositiveButton("Remove",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                mUsername = input2.getText().toString();
+                                //removeFromChat();
+                                removeFromChat();
+//                        password = input.getText().toString();
+//                        if (password.compareTo("") == 0) {
+//                            if (pass.equals(password)) {
+//                                Toast.makeText(getApplicationContext(),
+//                                        "Password Matched", Toast.LENGTH_SHORT).show();
+//                                Intent myIntent1 = new Intent(view.getContext(),
+//                                        Show.class);
+//                                startActivityForResult(myIntent1, 0);
+//                            } else {
+//                                Toast.makeText(getApplicationContext(),
+//                                        "Wrong Password!", Toast.LENGTH_SHORT).show();
+//                            }
+//                        }
+                            }
+                        });
+
+                alertDialog2.setNegativeButton("Cancel",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                //dialog.cancel();
+                                dialog.dismiss();
+                            }
+                        });
+                alertDialog2.show();
                 break;
             default:
                 Log.e("TAG", "Something wrong in Chat Menu");
@@ -226,6 +264,9 @@ public class ChatActivity extends AppCompatActivity {
             boolean success = requests.getBoolean("success");
             if (success) {
                 Log.e("CHAT","USER SUCCESFULLY DELETED");
+            } else {
+                Toast.makeText(this, "You can only remove people who are in this Chat",
+                        Toast.LENGTH_LONG).show();
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -279,6 +320,9 @@ public class ChatActivity extends AppCompatActivity {
             boolean success = requests.getBoolean("success");
             if (success) {
                 Log.e("CHAT","USER SUCCESFULLY ADDED");
+            } else {
+                Toast.makeText(this, "Please enter a valid username",
+                        Toast.LENGTH_LONG).show();
             }
         } catch (JSONException e) {
             e.printStackTrace();
