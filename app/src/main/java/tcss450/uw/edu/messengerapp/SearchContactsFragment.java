@@ -390,10 +390,16 @@ public class SearchContactsFragment extends Fragment {
                         mContacts.add(verified);
                         mContacts.sort(String::compareToIgnoreCase);
                         mContactsAdapter.notifyDataSetChanged();
+                        Toast.makeText(getActivity(),
+                                "You added " + username + " as a contact!",
+                                Toast.LENGTH_LONG).show();
                     } else {
                         mNewPeople.add(verified);
                         mNewPeople.sort(String::compareToIgnoreCase);
                         mNewPeopleAdapter.notifyDataSetChanged();
+                        Toast.makeText(getActivity(),
+                                "You declined " + username + "'s connection request",
+                                Toast.LENGTH_LONG).show();
                     }
                     mRequests.remove(i);
                     mRequestsAdapter.notifyDataSetChanged();
@@ -427,6 +433,9 @@ public class SearchContactsFragment extends Fragment {
                 if (username.equals(subStr)) {
                     mPending.remove(i);
                     mPendingAdapter.notifyDataSetChanged();
+                    Toast.makeText(getActivity(),
+                            "You rescinded your connection request to " + username,
+                            Toast.LENGTH_LONG).show();
                     break;
                 }
             }
@@ -458,6 +467,10 @@ public class SearchContactsFragment extends Fragment {
 
                 mPending.add(verified);
                 mPending.sort(String::compareToIgnoreCase);
+
+                Toast.makeText(getActivity(),
+                        "You requested " + username + " as a contact!",
+                        Toast.LENGTH_LONG).show();
 
                 TextView tv = getView().findViewById(R.id.searchConnectionsPendingHeaderText);
                 View v = getView().findViewById(R.id.searchConnectionsDivider4);
@@ -496,6 +509,9 @@ public class SearchContactsFragment extends Fragment {
 
                     mContacts.remove(i);
                     mContactsAdapter.notifyDataSetChanged();
+                    Toast.makeText(getActivity(),
+                            "You deleted " + username + " as a contact",
+                            Toast.LENGTH_LONG).show();
 
                     if (mContacts.isEmpty()) {
                         TextView tv = getView().findViewById(R.id.searchConnectionsCurrentConnectionsHeader);

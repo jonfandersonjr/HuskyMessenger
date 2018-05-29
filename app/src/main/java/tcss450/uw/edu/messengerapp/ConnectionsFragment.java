@@ -638,6 +638,13 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
                         mVerified.add(verified);
                         mVerified.sort(String::compareToIgnoreCase);
                         mVerifiedRecyclerAdapter.notifyDataSetChanged();
+                        Toast.makeText(getActivity(),
+                                "You added " + username + " as a contact!",
+                                Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(getActivity(),
+                                "You declined " + username + "'s connection request",
+                                Toast.LENGTH_LONG).show();
                     }
                     mRequests.remove(i);
                     mRecyclerAdapter.notifyDataSetChanged();
@@ -672,6 +679,9 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
                 if (username.equals(subStr)) {
                     mPending.remove(i);
                     mPendingAdapter.notifyDataSetChanged();
+                    Toast.makeText(getActivity(),
+                            "You rescinded your connection request to " + username,
+                            Toast.LENGTH_LONG).show();
                     break;
                 }
             }
@@ -701,6 +711,8 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
                 if (username.equals(subStr)) {
                     mVerified.remove(i);
                     mVerifiedRecyclerAdapter.notifyDataSetChanged();
+                    Toast.makeText(getActivity(), "You deleted " + username + " as a contact",
+                            Toast.LENGTH_LONG).show();
                     break;
                 }
             }
