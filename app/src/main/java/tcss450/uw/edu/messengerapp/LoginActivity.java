@@ -1,5 +1,6 @@
 package tcss450.uw.edu.messengerapp;
 
+import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -50,6 +51,56 @@ public class LoginActivity extends AppCompatActivity
             }
         }
 
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        SharedPreferences prefs = getSharedPreferences(getString(R.string.keys_shared_prefs),
+                Context.MODE_PRIVATE);
+
+        android.support.v4.app.Fragment currentFragment =
+                getSupportFragmentManager()
+                        .findFragmentById(R.id.loginFragmentContainer);
+
+        if (currentFragment instanceof RegisterFragment) {
+            prefs.edit().putString("frag", "register").commit();
+        } else if (currentFragment instanceof ResetPassword) {
+            prefs.edit().putString("frag", "reset").commit();
+        }
+
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        SharedPreferences prefs = getSharedPreferences(getString(R.string.keys_shared_prefs),
+                Context.MODE_PRIVATE);
+
+        String frag = prefs.getString("frag", "");
+        if (frag.equals("register")) {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.loginFragmentContainer, new RegisterFragment(),
+                            getString(R.string.keys_fragment_register))
+                    .addToBackStack(null)
+                    .commit();
+            prefs.edit().remove("frag").commit();
+        } else if (frag.equals("reset")) {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.loginFragmentContainer, new ResetPassword(),
+                            getString(R.string.keys_fragment_resetPassword))
+                    .addToBackStack(null)
+                    .commit();
+            prefs.edit().remove("frag").commit();
+        } else {
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.loginFragmentContainer, new LoginFragment(),
+                            getString(R.string.keys_fragment_login))
+                    .commit();
+            prefs.edit().remove("frag").commit();
+        }
     }
 
     private void checkStayLoggedIn() {
@@ -241,6 +292,13 @@ public class LoginActivity extends AppCompatActivity
                 .build().execute();
     }
 
+    @Override
+    public void onGreatButtonInteraction() {
+        getSupportFragmentManager().beginTransaction().replace(R.id.loginFragmentContainer,
+                new LoginFragment(), getString(R.string.keys_fragment_login))
+                .commit();
+    }
+
     private void handleErrorsInTask(String result) {
         Log.e("ASYNC_TASK_ERROR", result);
     }
@@ -284,15 +342,7 @@ public class LoginActivity extends AppCompatActivity
             boolean success = resultsJSON.getBoolean("success");
 
             if (success) {
-                LoginFragment login = new LoginFragment();
-
-                Bundle bundle = new Bundle();
-                bundle.putBoolean("passChanged", true);
-
-                login.setArguments(bundle);
-
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.loginFragmentContainer, login).commit();
+                frag.handleResetOnPost();
             } else {
                 frag.handleOnError();
             }

@@ -1,7 +1,9 @@
 package tcss450.uw.edu.messengerapp;
 
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
@@ -146,6 +148,26 @@ public class ResetPassword extends Fragment {
         }
     }
 
+    public void handleResetOnPost() {
+        ProgressBar progBar = getView().findViewById(R.id.resetPasswordProgressBar);
+        progBar.setVisibility(ProgressBar.GONE);
+
+        AlertDialog.Builder builder;
+        builder = new AlertDialog.Builder(getActivity(), android.R.style.Theme_Material_Dialog_Alert);
+        builder.setTitle("Password Changed")
+                .setMessage("Your password has successfully been changed")
+                .setPositiveButton("Great!", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        mListener.onGreatButtonInteraction();
+                    }
+                })
+                .setIcon(R.drawable.checkicon);
+        final AlertDialog dialog = builder.create();
+        dialog.show();
+        dialog.setCanceledOnTouchOutside(false);
+    }
+
     public void handleOnError() {
         EditText enter = getView().findViewById(R.id.changePasswordEditText);
         enter.setEnabled(true);
@@ -268,6 +290,7 @@ public class ResetPassword extends Fragment {
     public interface OnResetPasswordFragmentInteractionListener {
         void onVerifyResetButtonInteraction(int code);
         void onResetButtonInteraction(Editable pass);
+        void onGreatButtonInteraction();
     }
 
 }
