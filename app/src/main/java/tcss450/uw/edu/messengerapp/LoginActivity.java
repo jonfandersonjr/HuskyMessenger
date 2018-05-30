@@ -1,13 +1,16 @@
 package tcss450.uw.edu.messengerapp;
 
+import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
 import android.util.Log;
 import android.widget.CheckBox;
+import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,7 +20,8 @@ import tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask;
 public class LoginActivity extends AppCompatActivity
         implements LoginFragment.OnLoginFragmentInteractionListener,
         RegisterFragment.OnRegisterFragmentInteractionListener,
-        VerifyFragment.OnVerifyFragmentInteractionListener {
+        VerifyFragment.OnVerifyFragmentInteractionListener,
+        ResetPassword.OnResetPasswordFragmentInteractionListener {
 
     private tcss450.uw.edu.messengerapp.model.Credentials mCredentials;
 
@@ -47,6 +51,56 @@ public class LoginActivity extends AppCompatActivity
             }
         }
 
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        SharedPreferences prefs = getSharedPreferences(getString(R.string.keys_shared_prefs),
+                Context.MODE_PRIVATE);
+
+        android.support.v4.app.Fragment currentFragment =
+                getSupportFragmentManager()
+                        .findFragmentById(R.id.loginFragmentContainer);
+
+        if (currentFragment instanceof RegisterFragment) {
+            prefs.edit().putString("frag", "register").commit();
+        } else if (currentFragment instanceof ResetPassword) {
+            prefs.edit().putString("frag", "reset").commit();
+        }
+
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        SharedPreferences prefs = getSharedPreferences(getString(R.string.keys_shared_prefs),
+                Context.MODE_PRIVATE);
+
+        String frag = prefs.getString("frag", "");
+        if (frag.equals("register")) {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.loginFragmentContainer, new RegisterFragment(),
+                            getString(R.string.keys_fragment_register))
+                    .addToBackStack(null)
+                    .commit();
+            prefs.edit().remove("frag").commit();
+        } else if (frag.equals("reset")) {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.loginFragmentContainer, new ResetPassword(),
+                            getString(R.string.keys_fragment_resetPassword))
+                    .addToBackStack(null)
+                    .commit();
+            prefs.edit().remove("frag").commit();
+        } else {
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.loginFragmentContainer, new LoginFragment(),
+                            getString(R.string.keys_fragment_login))
+                    .commit();
+            prefs.edit().remove("frag").commit();
+        }
     }
 
     private void checkStayLoggedIn() {
@@ -80,6 +134,7 @@ public class LoginActivity extends AppCompatActivity
                 .addToBackStack(null).commit();
         getSupportFragmentManager().executePendingTransactions();
     }
+
 
     @Override
     public void onRegisterButtonInteraction() {
@@ -156,6 +211,94 @@ public class LoginActivity extends AppCompatActivity
                 .build().execute();
     }
 
+    @Override
+    public void onVerifyResetButtonInteraction(int code) {
+        Uri uri = new Uri.Builder()
+                .scheme("https")
+                .appendPath(getString(R.string.ep_base_url))
+                .appendPath(getString(R.string.ep_verify_reset))
+                .build();
+
+        SharedPreferences prefs = getSharedPreferences(getString(R.string.keys_shared_prefs),
+                Context.MODE_PRIVATE);
+        String email = prefs.getString("changePassEmail", "");
+
+        JSONObject msg = new JSONObject();
+        try {
+            msg.put("email", email);
+            msg.put("code", code);
+        } catch (JSONException e) {
+            Log.wtf("Verify Reset Button", "Error reading JSON" + e.getMessage());
+        }
+
+        new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
+                .onPreExecute(this::handleVerifyResetOnPre)
+                .onPostExecute(this::handleVerifyResetOnPost)
+                .onCancelled(this::handleErrorsInTask)
+                .build().execute();
+
+    }
+
+    @Override
+    public void onChangePasswordInteraction() {
+        Uri uri = new Uri.Builder()
+                .scheme("https")
+                .appendPath(getString(R.string.ep_base_url))
+                .appendPath(getString(R.string.ep_start_reset))
+                .build();
+        SharedPreferences prefs = getSharedPreferences(getString(R.string.keys_shared_prefs),
+                                Context.MODE_PRIVATE);
+        String email = prefs.getString("changePassEmail", "");
+
+        JSONObject msg = new JSONObject();
+        try {
+            msg.put("email", email);
+        } catch (JSONException e) {
+            Log.wtf("Start Reset", "Error Reading JSON" + e.getMessage());
+        }
+
+        new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
+                .onPreExecute(this::handleLoginOnPre)
+                .onPostExecute(this::handleStartResetOnPost)
+                .onCancelled(this::handleErrorsInTask)
+                .build().execute();
+
+    }
+
+    @Override
+    public void onResetButtonInteraction(Editable pass) {
+        Uri uri = new Uri.Builder()
+                .scheme("https")
+                .appendPath(getString(R.string.ep_base_url))
+                .appendPath(getString(R.string.ep_password_reset))
+                .build();
+
+        SharedPreferences prefs = getSharedPreferences(getString(R.string.keys_shared_prefs),
+                Context.MODE_PRIVATE);
+        String email = prefs.getString("changePassEmail", "");
+
+        JSONObject msg = new JSONObject();
+        try {
+            msg.put("email", email);
+            msg.put("password", pass);
+        } catch (JSONException e) {
+            Log.wtf("Reset Password Interaction", "Error reading JSON" + e.getMessage());
+        }
+
+        new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
+                .onPreExecute(this::handleResetOnPre)
+                .onPostExecute(this::handleResetOnPost)
+                .onCancelled(this::handleErrorsInTask)
+                .build().execute();
+    }
+
+    @Override
+    public void onGreatButtonInteraction() {
+        getSupportFragmentManager().beginTransaction().replace(R.id.loginFragmentContainer,
+                new LoginFragment(), getString(R.string.keys_fragment_login))
+                .commit();
+    }
+
     private void handleErrorsInTask(String result) {
         Log.e("ASYNC_TASK_ERROR", result);
     }
@@ -176,6 +319,70 @@ public class LoginActivity extends AppCompatActivity
         LoginFragment frag = (LoginFragment) getSupportFragmentManager()
                 .findFragmentByTag(getString(R.string.keys_fragment_login));
         frag.handleOnPre();
+    }
+
+    private void handleVerifyResetOnPre() {
+        ResetPassword frag = (ResetPassword) getSupportFragmentManager()
+                .findFragmentByTag(getString(R.string.keys_fragment_resetPassword));
+        frag.handleVerifyOnPre();
+    }
+
+    private void handleResetOnPre() {
+        ResetPassword frag = (ResetPassword) getSupportFragmentManager()
+                .findFragmentByTag(getString(R.string.keys_fragment_resetPassword));
+        frag.handleResetOnPre();
+    }
+
+    private void handleResetOnPost(String result) {
+        ResetPassword frag = (ResetPassword) getSupportFragmentManager()
+                .findFragmentByTag(getString(R.string.keys_fragment_resetPassword));
+
+        try {
+            JSONObject resultsJSON = new JSONObject(result);
+            boolean success = resultsJSON.getBoolean("success");
+
+            if (success) {
+                frag.handleResetOnPost();
+            } else {
+                frag.handleOnError();
+            }
+
+        } catch (JSONException e) {
+            Log.e("JSON_PARSE_ERROR", result + System.lineSeparator() + e.getMessage());
+        }
+    }
+
+    private void handleStartResetOnPost(String result) {
+        try {
+            JSONObject resultsJSON = new JSONObject(result);
+            boolean success = resultsJSON.getBoolean("success");
+
+            LoginFragment frag = (LoginFragment) getSupportFragmentManager()
+                    .findFragmentByTag(getString(R.string.keys_fragment_login));
+            //because it enables everything again
+            frag.handleOnError();
+
+            if (success) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.loginFragmentContainer, new ResetPassword(),
+                                getString(R.string.keys_fragment_resetPassword))
+                        .addToBackStack(null).commit();
+                getSupportFragmentManager().executePendingTransactions();
+            } else {
+                int reason = resultsJSON.getInt("reason");
+                if (reason == 1) {
+                    frag.showEmailAlert();
+                } else {
+                    Toast.makeText(this,
+                            "Something happened with that process in the backend. Reason: "
+                                    + reason,
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+        } catch (JSONException e) {
+            Log.wtf("handleStartResetOnPost", "Error with JSON" + e.getMessage());
+            Toast.makeText(this, "Error" + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
     }
 
     private void handleVerifyOnPost(String result) {
@@ -255,6 +462,21 @@ public class LoginActivity extends AppCompatActivity
                     .findFragmentByTag(getString(R.string.keys_fragment_login));
             frag.setError("Incorrect credentials");
             frag.handleOnError();
+        }
+    }
+
+    private void handleVerifyResetOnPost(String result) {
+        ResetPassword frag = (ResetPassword) getSupportFragmentManager()
+                .findFragmentByTag(getString(R.string.keys_fragment_resetPassword));
+
+        try {
+            JSONObject resultsJSON = new JSONObject(result);
+            boolean success = resultsJSON.getBoolean("success");
+
+            frag.handleVerifyOnPost(success);
+
+        } catch (JSONException e) {
+            Log.e("JSON_PARSE_ERROR", result + System.lineSeparator() + e.getMessage());
         }
     }
 }

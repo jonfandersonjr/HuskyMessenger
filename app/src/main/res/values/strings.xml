@@ -30,6 +30,7 @@
     <string name="login_username_hint">Username</string>
     <string name="login_password_hint">Password</string>
     <string name="login_checkbox_text">Stay Logged In</string>
+    <string name="login_forgot_password_button">Forgot Password?</string>
 
     /**Strings for register fragment UI**/
     <string name="register_button_submit">Submit</string>
@@ -39,7 +40,7 @@
     <string name="register_nickname_hint">Username</string>
     <string name="register_confirmpass_hint">Confirm Password</string>
     <string name="register_email_hint">Email</string>
-    <string name="register_pass_instructions">Password must contain atleast five characters,
+    <string name="register_pass_instructions">Password must contain at least five characters,
         one uppercase letter and one digit</string>
 
     /**Strings for home fragment UI**/
@@ -57,6 +58,12 @@
     <string name="verify_igetit_button">I Get It</string>
     <string name="verify_dowhat_text">We sent you a verification code to the email that you provided.
         Please enter that code in the box above.</string>
+
+    /**Strings for ResetPassword Fragment UI**/
+    <string name="reset_enter_new_text">Enter and Confirm New Password</string>
+    <string name="reset_new_password_hint">Enter new password</string>
+    <string name="reset_confirm_new_password_hint">Confirm new Password</string>
+    <string name="reset_password_button">I\'m done</string>
 
     /**Chat Activity UI Strings**/
     <string name="title_activity_chat">ChatActivity</string>
@@ -109,6 +116,9 @@
     <string name="start_text_chat_name">Enter Chat Room Name...</string>
     <string name="start_button_create">Start Chat!</string>
     <string name="title_activity_my_locations">MyLocationsActivity</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 
 </resources>

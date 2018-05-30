@@ -1,7 +1,11 @@
 package tcss450.uw.edu.messengerapp;
 
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
@@ -10,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,46 +30,10 @@ import tcss450.uw.edu.messengerapp.model.Credentials;
 public class LoginFragment extends Fragment {
 
     private OnLoginFragmentInteractionListener myListener;
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
+    private boolean mArgumentsRead;
 
     public LoginFragment() {
         // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment LoginFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static LoginFragment newInstance(String param1, String param2) {
-        LoginFragment fragment = new LoginFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
@@ -72,6 +41,8 @@ public class LoginFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_login, container, false);
+
+        mArgumentsRead = false;
 
         Button b = (Button) v.findViewById(R.id.loginButton);
         b.setOnClickListener(new View.OnClickListener() {
@@ -89,7 +60,117 @@ public class LoginFragment extends Fragment {
             }
         });
 
+        b = (Button) v.findViewById(R.id.loginForgotPasswordButton);
+        b.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                EditText et = new EditText(getActivity());
+                et.setHint("Enter email address");
+                et.setTextColor(getResources().getColor(android.R.color.white));
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT);
+                et.setLayoutParams(lp);
+
+                final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(),
+                        android.R.style.Theme_Material_Dialog_Alert);
+                builder.setView(et);
+                builder.setTitle("Change Password")
+                        .setMessage("To change your password, we need to verify your email address")
+                        .setNegativeButton("Done", null)
+                        .setPositiveButton("Nevermind", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+
+                            }
+                        });
+
+                final AlertDialog dialog = builder.create();
+                dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+                    @Override
+                    public void onShow(DialogInterface dialogInterface) {
+                        Button b = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_NEGATIVE);
+                        b.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                boolean isNotEmail = checkFieldIsEmail(et);
+                                boolean isEmpty = checkFieldIsEmpty(et);
+
+                                if (!(isEmpty || isNotEmail)) {
+                                    SharedPreferences prefs =
+                                            getActivity().getSharedPreferences
+                                                    (getString(R.string.keys_shared_prefs),
+                                                            Context.MODE_PRIVATE);
+                                    prefs.edit().putString("changePassEmail",
+                                            et.getText().toString()).apply();
+                                    dialog.dismiss();
+                                    myListener.onChangePasswordInteraction();
+                                }
+                            }
+                        });
+                    }
+                });
+                dialog.show();
+            }
+        });
+
+
         return v;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (!mArgumentsRead) {
+            if (this.getArguments() != null) {
+                Bundle bundle = this.getArguments();
+                try {
+                    boolean passChanged = bundle.getBoolean("passChanged");
+                    if (passChanged) {
+                        AlertDialog.Builder builder;
+                        builder = new AlertDialog.Builder(getActivity(), android.R.style.Theme_Material_Dialog_Alert);
+                        builder.setTitle("Password Changed")
+                                .setMessage("Your password has successfully been changed")
+                                .setPositiveButton("Great!", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        mArgumentsRead = true;
+                                    }
+                                })
+                                .setIcon(R.drawable.checkicon);
+                        builder.show();
+                    }
+                } catch (NullPointerException e) {
+
+                }
+            }
+        }
+    }
+
+    public boolean checkFieldIsEmpty(EditText et) {
+        boolean isEmpty;
+        String email = et.getText().toString();
+        if (email.trim().length() > 0) {
+            isEmpty = false;
+        } else {
+            isEmpty = true;
+            et.setError("Field cannot be empty");
+        }
+
+        return isEmpty;
+    }
+
+    public boolean checkFieldIsEmail(EditText et) {
+        boolean isNotEmail;
+        String email = et.getText().toString();
+        if (email.contains("@")) {
+            isNotEmail = false;
+        } else {
+            isNotEmail = true;
+            et.setError("Must be an email address");
+        }
+
+        return isNotEmail;
     }
 
 
@@ -118,20 +199,6 @@ public class LoginFragment extends Fragment {
         }
 
         return fine;
-    }
-
-    public boolean usernameIsNotEmail() {
-        boolean okay;
-        EditText username = getView().findViewById(R.id.usernameEditText);
-        String usernameString = username.getText().toString();
-        if (usernameString.contains("@")) {
-            okay = false;
-        } else {
-            okay = true;
-            username.setError("Must be an email address");
-        }
-
-        return okay;
     }
 
     public Editable getPassword() {
@@ -165,6 +232,9 @@ public class LoginFragment extends Fragment {
         b = getView().findViewById(R.id.registerButton);
         b.setEnabled(false);
 
+        b = getView().findViewById(R.id.loginForgotPasswordButton);
+        b.setEnabled(false);
+
         ProgressBar progBar = getView().findViewById(R.id.loginProgressBar);
         progBar.setVisibility(ProgressBar.VISIBLE);
     }
@@ -178,6 +248,9 @@ public class LoginFragment extends Fragment {
 
         b = getView().findViewById(R.id.registerButton);
         b.setEnabled(true);
+
+        b = getView().findViewById(R.id.loginForgotPasswordButton);
+        b.setEnabled(true);
     }
 
     public void setError(String err) {
@@ -187,6 +260,21 @@ public class LoginFragment extends Fragment {
 
         ((TextView) getView().findViewById(R.id.usernameEditText))
                 .setError("Login Unsuccessful");
+    }
+
+    public void showEmailAlert() {
+        AlertDialog.Builder builder;
+        builder = new AlertDialog.Builder(getActivity(), android.R.style.Theme_Material_Dialog_Alert)
+        .setTitle("Error")
+        .setMessage("Email is not associated with an account")
+        .setPositiveButton("Okay", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+            }
+        })
+        .setIcon(R.drawable.alert);
+        builder.show();
     }
 
     public void onRegisterButtonClicked(View view) {
@@ -207,6 +295,7 @@ public class LoginFragment extends Fragment {
     public interface OnLoginFragmentInteractionListener {
         void onRegisterButtonInteraction();
         void onLoginButtonInteraction(tcss450.uw.edu.messengerapp.model.Credentials credentials);
+        void onChangePasswordInteraction();
     }
 
 }

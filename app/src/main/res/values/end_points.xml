@@ -39,5 +39,10 @@
     <string name="ep_phish_version">v3</string>
     <string name="ep_phish_setlist">setlist</string>
     <string name="ep_phish_random">random</string>
+    
+    /**Reset Password Endpoints**/
+    <string name="ep_verify_reset">verifyReset</string>
+    <string name="ep_start_reset">startReset</string>
+    <string name="ep_password_reset">passwordReset</string>
 
 </resources>
