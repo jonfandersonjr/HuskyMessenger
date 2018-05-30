@@ -166,7 +166,7 @@
         android:layout_width="0dp"
         android:layout_height="50sp"
         android:layout_marginTop="2dp"
-        android:background="@color/colorPrimary2"
+        android:background="?attr/colorPrimary"
         android:clickable="false"
         android:ems="10"
         android:focusable="false"
@@ -186,11 +186,13 @@
     <Button
         android:id="@+id/homeFragmentSearchButton"
         style="@style/Widget.AppCompat.Button.Colored"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:text="@string/home_search_button"
+        app:layout_constraintEnd_toStartOf="@+id/tempWeather"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

@@ -8,11 +8,11 @@
     <string name="nav_header_title">Group 3 Messenger</string>
     <string name="nav_header_subtitle">TCSS 450</string>
     <string name="nav_header_desc">Navigation header</string>
-    <string name="action_colorScheme">Color Schemes:</string>
-    <string name="action_color_rugged">Rugged</string>
-    <string name="action_color_modern">Modern</string>
-    <string name="action_color_summer">Summer</string>
-    <string name="action_color_UW">UW</string>
+    <string name="action_colorScheme">Select an app style:</string>
+    <string name="action_color_rugged">Rugged Outdoorsman</string>
+    <string name="action_color_modern">Modern Twist</string>
+    <string name="action_color_summer">Summer Breeze</string>
+    <string name="action_color_UW">Husky Style</string>
 
     /**Strings for home activity Drawer**/
     <string name="drawer_login">LOGIN</string>

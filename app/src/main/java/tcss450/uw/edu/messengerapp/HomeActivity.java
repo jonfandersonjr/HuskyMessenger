@@ -33,6 +33,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 import tcss450.uw.edu.messengerapp.model.PullService;
+import tcss450.uw.edu.messengerapp.utils.ThemesU;
 
 public class HomeActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
@@ -47,6 +48,7 @@ public class HomeActivity extends AppCompatActivity
     private String mUsername;
     private String mDeleteConnectionUsername;
 
+    public static int mTheme = ThemesU.THEME_MODERN;
 
     private ArrayList<String> mIncomingMessages = new ArrayList<>();
     private ArrayList<String> mIncomingConnectionRequests = new ArrayList<>();
@@ -57,6 +59,10 @@ public class HomeActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        int theme = ThemesU.getThemeId(mTheme);
+        setTheme(theme);
+
         setContentView(R.layout.activity_home);
 
 
@@ -140,15 +146,20 @@ public class HomeActivity extends AppCompatActivity
 
         switch (id) {
             case (R.id.color_rugged):
+                mTheme = ThemesU.THEME_RUGGED;
+                HomeActivity.this.recreate();
                 break;
             case (R.id.color_modern):
-                //swap
+                mTheme = ThemesU.THEME_MODERN;
+                HomeActivity.this.recreate();
                 break;
             case (R.id.color_summer):
-                //swap
+                mTheme = ThemesU.THEME_SUMMER;
+                HomeActivity.this.recreate();
                 break;
             case (R.id.color_UW):
-                //swap
+                mTheme = ThemesU.THEME_UW;
+                HomeActivity.this.recreate();
                 break;
         }
 

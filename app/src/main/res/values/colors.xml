@@ -9,6 +9,7 @@
     /**Brown-Blue**/
     <color name="colorPrimary1">#795548</color>
     <color name="colorPrimaryDark1">#5D40379F</color>
+    483D8B
     <color name="colorAccent1">#448AFF</color>
 
     /**Grey-Pink Modern**/
@@ -22,9 +23,9 @@
     <color name="colorAccent3">#8BC34A</color>
 
     /**UW**/
-    <color name="colorPrimary4">#673AB7</color>
+    <color name="colorPrimary4">#4B2E83</color>
     <color name="colorPrimaryDark4">#512DA8</color>
-    <color name="colorAccent4">#FFC107</color>
+    <color name="colorAccent4">#B7A57A</color>
 
     /**Default**/
     <color name="colorPrimary5">#3F51B5</color>
