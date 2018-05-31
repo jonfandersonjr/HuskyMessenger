@@ -56,8 +56,7 @@ public class ChatFragment extends Fragment {
     private String mUserchatID = "1";
     private String chatID;
     private static final int[] MESSAGE_COLORS = {R.color.colorPrimary3,R.color.colorAccent4,
-            R.color.colorPrimary4,R.color.colorAccent5,R.color.colorPrimary,R.color.colorPrimaryDark2,
-            R.color.colorPrimary5,R.color.colorPrimaryDark3};
+            R.color.colorPrimary4,R.color.colorAccent5,R.color.colorPrimary,R.color.colorPrimaryDark2};
     public ArrayList<String> allUsernames = new ArrayList<>();
     public HashMap<String, Integer> userColors = new HashMap<>();
 
@@ -189,6 +188,7 @@ public class ChatFragment extends Fragment {
 
 
     private void sendMessage(final View theButton) {
+        Log.e("SEND MESSAGE", "I HAVE BEEN CALLED!");
         JSONObject messageJson = new JSONObject();
         String msg = ((EditText) getView().findViewById(R.id.chatInput))
                 .getText().toString();
@@ -247,6 +247,7 @@ public class ChatFragment extends Fragment {
                     //chatUsername = username;
                     String userMessage = msg.get(getString(R.string.keys_json_message)).toString();
                     msgs[i] = username + ":" + userMessage;
+                    Log.e("MESSAGES", msgs[i]);
                     allUsernames.add(username);
                     if(!(userColors.containsKey(username))) {
                         Random r = new Random();
@@ -267,7 +268,7 @@ public class ChatFragment extends Fragment {
 
                 if(msgs.length !=  0 && currentMessages!= msgs.length) {
                     Log.e("CHANGE","CHANGE");
-                   // mOutputTextView.setText("");
+                    mFragment.removeAllViews();
                     currentMessages = msgs.length;
                     for(int i = 0; i <msgs.length;i++) {
                         String [] sendUsername = msgs[i].split(":");
@@ -289,6 +290,7 @@ public class ChatFragment extends Fragment {
                             Button b = new Button(getActivity());
                             b.setText(msgs[i]);
                             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                            params.setMargins(10,10,10,10);
                             params.weight = 1.0f;
                             params.gravity = Gravity.RIGHT;
                             b.setLayoutParams(params);
@@ -306,6 +308,7 @@ public class ChatFragment extends Fragment {
                             mDrawable.setColorFilter(getResources().getColor(userColors.get(sendUsername[0]),null), PorterDuff.Mode.MULTIPLY);
                             //r.s
                             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                            params.setMargins(10,10,10,10);
                             b.setLayoutParams(params);
                             b.setTextColor(Color.parseColor("#ffffff"));
                             //b.setBackgroundResource(mDrawable);
