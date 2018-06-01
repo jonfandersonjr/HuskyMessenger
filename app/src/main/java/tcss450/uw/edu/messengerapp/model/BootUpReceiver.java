@@ -13,6 +13,9 @@ public class BootUpReceiver extends BroadcastReceiver {
 
     private static final String TAG = "BootUpReceiver";
 
+    /*
+     * Starts the receiver once a user has been detemined
+     */
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.d(TAG, "onReceive");

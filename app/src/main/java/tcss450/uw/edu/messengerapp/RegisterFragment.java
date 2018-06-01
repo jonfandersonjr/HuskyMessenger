@@ -1,6 +1,5 @@
 package tcss450.uw.edu.messengerapp;
 
-
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -17,49 +16,27 @@ import android.widget.Toast;
 
 import tcss450.uw.edu.messengerapp.model.Credentials;
 
-
 /**
- * A simple {@link Fragment} subclass.
- * Use the {@link RegisterFragment#newInstance} factory method to
- * create an instance of this fragment.
+ * Fragment that acts as a Registration Page for the app.
+ *
+ * Mostly handles the UI for registration.
+ *
+ * @author Marshall Freed
+ * @version 5/31/2018
  */
 public class RegisterFragment extends Fragment {
 
     private OnRegisterFragmentInteractionListener myListener;
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-
-    public RegisterFragment() {
-        // Required empty public constructor
-    }
-
     /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment RegisterFragment.
+     * Called to have the fragment instantiate its user interface view.
+     * Sets onClickListeners to all buttons in view
+     * @param inflater The LayoutInflater object that can be used to inflate any views in the fragment
+     * @param container parent view that the fragment's UI should be attached to
+     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous
+     *                           saved state as given here
+     * @return Return the View for the fragment's UI, or null.
      */
-    // TODO: Rename and change types and number of parameters
-    public static RegisterFragment newInstance(String param1, String param2) {
-        RegisterFragment fragment = new RegisterFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -77,6 +54,12 @@ public class RegisterFragment extends Fragment {
         return v;
     }
 
+    /**
+     * Called when the "submit" button in the fragment is clicked. Method will collect
+     * all information entered in the EditTexts and pass them to helper methods to check
+     * for client-side constraints before calling back to the Activity to launch an AsyncTask
+     * @param view the button that was clicked
+     */
     public void onSubmitButtonClicked(View view) {
         EditText edits[] = new EditText[6];
 
@@ -110,6 +93,11 @@ public class RegisterFragment extends Fragment {
         }
     }
 
+    /**
+     * Helper method to check if at least one EditText in an array is empty.
+     * @param edits array of EditTexts
+     * @return if at least one of them is empty
+     */
     public boolean isFieldEmpty(EditText edits[]) {
         boolean fieldIsEmpty = false;
 
@@ -125,6 +113,11 @@ public class RegisterFragment extends Fragment {
         return fieldIsEmpty;
     }
 
+    /**
+     * Helper method to check if the both passwords that the user entered are exactly matching
+     * or not.
+     * @return whether they are matching
+     */
     public boolean passwordsMatch() {
         boolean isMatching;
 
@@ -143,6 +136,11 @@ public class RegisterFragment extends Fragment {
         return isMatching;
     }
 
+    /**
+     * Helper method to check if the email they typed in is actually an email address (in theory).
+     * Only checks for an "@" symbol.
+     * @return whether it's an email address or not
+     */
     public boolean isEmail() {
         boolean isEmail = false;
 
@@ -158,6 +156,11 @@ public class RegisterFragment extends Fragment {
         return isEmail;
     }
 
+    /**
+     * Helper method to check if the password they typed in meets our constraints.
+     * Passwords must have at least 5 characters, an uppercase character and at least one digit
+     * @return whether the password meets the constraints or not
+     */
     public boolean passMeetsConstraints() {
         boolean hasUpper = false;
         boolean hasDigit = false;
@@ -201,42 +204,61 @@ public class RegisterFragment extends Fragment {
         return meetsConstraints;
     }
 
+    /**
+     * Returns the "nickname" (username) that the user entered for their account
+     * @return the username
+     */
     public String getNickname() {
         EditText nickName = getView().findViewById(R.id.register_nickname);
-        String nickNameString = nickName.getText().toString();
 
-        return nickNameString;
+        return nickName.getText().toString();
     }
 
+    /**
+     * Returns the password that the user entered for their account
+     * @return the password
+     */
     public Editable getPassword() {
         EditText password = getView().findViewById(R.id.register_password);
-        Editable passwordString = password.getEditableText();
 
-        return passwordString;
+        return password.getEditableText();
 
     }
 
+    /**
+     * Returns the first name of the user that they entered for their account
+     * @return the name
+     */
     public String getFname() {
         EditText fname = getView().findViewById(R.id.register_fname);
-        String fnameString = fname.getText().toString();
 
-        return fnameString;
+        return fname.getText().toString();
     }
 
+    /**
+     * Returns the last name of the user that they entered for their account
+     * @return the name
+     */
     public String getLname() {
         EditText lname = getView().findViewById(R.id.register_lname);
-        String lnameString = lname.getText().toString();
 
-        return lnameString;
+        return lname.getText().toString();
     }
 
+    /**
+     * Returns the email that the user entered for their account
+     * @return the email
+     */
     public String getEmail() {
         EditText email = getView().findViewById(R.id.register_email);
-        String emailString = email.getText().toString();
 
-        return emailString;
+        return email.getText().toString();
     }
 
+    /**
+     * Called when a fragment is first attached to its context.
+     * @param context Activity fragment is attached to
+     */
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -248,6 +270,10 @@ public class RegisterFragment extends Fragment {
         }
     }
 
+    /**
+     * Called before the app launches an AsyncTask to disable the views that the user can
+     * interact with and show a progress bar.
+     */
     public void handleOnPre() {
         ProgressBar progBar = getView().findViewById(R.id.registerProgressBar);
         progBar.setVisibility(ProgressBar.VISIBLE);
@@ -256,6 +282,10 @@ public class RegisterFragment extends Fragment {
         b.setEnabled(false);
     }
 
+    /**
+     * Called after the app launches an AsyncTask and encounters an error to re-enable
+     * the views that the user can interact with and hide the progress bar.
+     */
     public void handleOnError() {
         ProgressBar progBar = getView().findViewById(R.id.registerProgressBar);
         progBar.setVisibility(ProgressBar.GONE);
@@ -264,6 +294,12 @@ public class RegisterFragment extends Fragment {
         b.setEnabled(true);
     }
 
+    /**
+     * Displays a toast if the AsyncTask that attempted to register the user returns
+     * false. Toast contains details as to why the registration did not work. Also sets an error on the
+     * EditText field.
+     * @param err message about why verification was unsuccessful
+     */
     public void setError(String err) {
         Log.wtf("REGISTER FRAGMENT", "In set error, string is: " + err);
         //Register unsuccessful for reason: err. Try again.
@@ -274,6 +310,10 @@ public class RegisterFragment extends Fragment {
                 .setError("Login Unsuccessful");
     }
 
+    /**
+     * Interface that contains callback methods for the Activity to do some heavy lifting
+     * when buttons on this fragment are pressed.
+     */
     public interface OnRegisterFragmentInteractionListener {
         void onSubmitButtonInteraction(tcss450.uw.edu.messengerapp.model.Credentials credentials);
     }
