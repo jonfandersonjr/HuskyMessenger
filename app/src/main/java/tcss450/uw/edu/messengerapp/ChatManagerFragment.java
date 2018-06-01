@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -206,8 +207,16 @@ public class ChatManagerFragment extends Fragment {
                         for(int i = 0; i < chatIdList.size(); i++) {
                         //    if(!(addedNames.contains(mChatnames.get(i)))){
                                 Button b = new Button(getActivity());
-                                b.setTextColor(getResources().getColor(R.color.colorAccent2,null));
+                                b.setTextColor(Color.parseColor("#ffffff"));
                                 b.setText(mChatMap.get(chatIdList.get(i))); //Get chat name here!
+                                Drawable mDrawable = getContext().getResources().getDrawable(R.drawable.start_chat_box,null);
+
+
+                                b.setBackgroundResource(R.drawable.start_chat_box);
+                                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                                params.setMargins(5,5,5,5);
+                                b.setLayoutParams(params);
+                                // b.setBackground(mDrawable);
                             int finalI = i;
                             b.setOnClickListener(new View.OnClickListener() {
                                     @Override
