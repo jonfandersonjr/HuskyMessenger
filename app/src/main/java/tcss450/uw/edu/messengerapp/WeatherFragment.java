@@ -1,19 +1,33 @@
 package tcss450.uw.edu.messengerapp;
 
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
+import android.widget.TextView;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import tcss450.uw.edu.messengerapp.model.PullService;
+import tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask;
 
 
 /**
@@ -76,13 +90,151 @@ public class WeatherFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         View v = inflater.inflate(R.layout.fragment_weather, container, false);
+
+        Button currentLocation = (Button) v.findViewById(R.id.currentLocation);
+        currentLocation.setOnClickListener(this::loadCurrent);
+
+        Button searchButton = (Button) v.findViewById(R.id.searchButton);
+        searchButton.setOnClickListener(this::loadSearch);
+
+        loadSavedWeather();
+        return v;
+    }
+
+    private void loadSavedWeather() {
+        JSONObject messageJson = new JSONObject();
+        try {
+
+            SharedPreferences sharedPreferences =
+                    getActivity().getSharedPreferences(getString(R.string.keys_shared_prefs),
+                            Context.MODE_PRIVATE);
+
+            messageJson.put("username", sharedPreferences.getString("username",""));
+            Log.e("long",messageJson.toString());
+            new SendPostAsyncTask.Builder("http://10.0.0.94:5000/getWeatherLocations", messageJson).onCancelled(this::handleError).onPostExecute(this::loadSavedWeather).build().execute();
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void loadSavedWeather(String s) {
+
+        try {
+            JSONObject messageJson = new JSONObject(s);
+            JSONArray msgs = messageJson.getJSONArray("data");
+
+
+            for (int i = 0; i < msgs.length(); i++) {
+                JSONObject msg = msgs.getJSONObject(i);
+                String city = msg.getString("city");
+
+                if(!city.equals("undefined") ) {
+                    String long1 = msg.getString("long");
+                    String lat1 = msg.getString("lat");
+                    String out = city + long1 + "  " + lat1;
+                    Log.e("long",out);
+                    Button b = new Button(getActivity());
+                    b.setTextColor(Color.parseColor("#ffffff"));
+                    b.setText(city); //Get chat name here!
+                    Drawable mDrawable = getContext().getResources().getDrawable(R.drawable.start_chat_box,null);
+                    b.setBackgroundResource(R.drawable.start_chat_box);
+                    LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                    params.setMargins(5,5,5,5);
+                    b.setLayoutParams(params);
+                    b.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            SharedPreferences sharedPreferences =
+                                    getActivity().getSharedPreferences(getString(R.string.keys_shared_prefs),
+                                            Context.MODE_PRIVATE);
+                            final SharedPreferences.Editor editor = sharedPreferences.edit();
+                            editor.putBoolean("CurrentLocation", false);
+                            editor.putString("LatInfo", lat1);
+                            editor.putString("LongInfo", long1);
+                            editor.apply();
+                            Intent intent = new Intent(getActivity(), MyLocationsActivity.class);
+                            startActivity(intent);
+                        }
+                    });
+                    LinearLayout  scrollView = (LinearLayout ) getView().findViewById(R.id.saveWeather);
+                    scrollView.addView(b);
+
+
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
+    private void loadSearch(View view) {
+        JSONObject messageJson = new JSONObject();
+        TextView zipSearch = (TextView) getView().findViewById(R.id.zipSearch);
+        Log.e("ZIP",zipSearch.getText().toString());
+         try {
+             messageJson.put("zipcode", zipSearch.getText().toString());
+             String mSendUrl = new Uri.Builder()
+                     .scheme("https")
+                     .appendPath(getString(R.string.ep_base_url))
+                     .appendPath("getWeatherZip")
+                     .build()
+                     .toString();
+             Log.e("url","10.0.0.94:5000/getWeatherZip");
+             Log.e("long",messageJson.toString());
+             new SendPostAsyncTask.Builder("http://10.0.0.94:5000/getWeatherZip", messageJson).onCancelled(this::handleError).onPostExecute(this::loadSearchHelper).build().execute();
+
+         } catch (JSONException e) {
+             e.printStackTrace();
+         }
+    }
+
+
+    private void handleError(final String msg) {
+        Log.e("CHAT ERROR!!!", msg.toString());
+    }
+
+    private void loadSearchHelper(String s) {
+        Log.e("response",s);
+
+        try {
+            JSONObject res = new JSONObject(s);
+            String longInfo = res.getString("long").toString();
+            String latInfo = res.getString("lat").toString();
+            SharedPreferences sharedPreferences =
+                    getActivity().getSharedPreferences(getString(R.string.keys_shared_prefs),
+                            Context.MODE_PRIVATE);
+            final SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean("CurrentLocation", false);
+            editor.putString("LatInfo", latInfo);
+            editor.putString("LongInfo", longInfo);
+            editor.apply();
+            Intent intent = new Intent(getActivity(), MyLocationsActivity.class);
+            startActivity(intent);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loadCurrent(View view) {
+        SharedPreferences sharedPreferences =
+                getActivity().getSharedPreferences(getString(R.string.keys_shared_prefs),
+                        Context.MODE_PRIVATE);
+        final SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean("CurrentLocation", true);
+        //editor.putString("chatid", "1"); //defeault chatid
+        editor.apply();
+
+        //Start the service to wait for messages from database.
         Intent intent = new Intent(getActivity(), MyLocationsActivity.class);
         startActivity(intent);
 
-
-
-        return v;
     }
+
 
     private void startListener(final View theButton) {
         //PullService.startServiceAlarm(getContext(), true);

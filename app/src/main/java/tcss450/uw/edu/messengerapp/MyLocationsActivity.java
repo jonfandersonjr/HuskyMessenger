@@ -2,7 +2,9 @@ package tcss450.uw.edu.messengerapp;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.Uri;
@@ -17,6 +19,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -38,7 +41,7 @@ public class MyLocationsActivity extends AppCompatActivity implements
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener {
 
-    private static final String TAG = "MyLocationsActivity";
+    private static final String TAG = "Weather";
     /**
      * The desired interval for location updates. Inexact. Updates may be more or less frequent.
      */
@@ -56,6 +59,11 @@ public class MyLocationsActivity extends AppCompatActivity implements
     private LocationRequest mLocationRequest;
     private Location mCurrentLocation;
     private TextView mLocationTextView;
+    private String lat1 = "";
+    private String long1 = "";
+
+
+
 
     @SuppressLint("RestrictedApi")
     @Override
@@ -68,6 +76,10 @@ public class MyLocationsActivity extends AppCompatActivity implements
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.loadWeather);
         fab.setOnClickListener(this::handleWeather);
 
+        Button button = (Button) findViewById(R.id.saveButton);
+        button.setOnClickListener(this::saveLocation);
+
+
         // Create an instance of GoogleAPIClient.
         if (mGoogleApiClient == null) {
             mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -76,7 +88,6 @@ public class MyLocationsActivity extends AppCompatActivity implements
                     .addApi(LocationServices.API)
                     .build();
         }
-
         mLocationRequest = new LocationRequest();
 
         // Sets the desired interval for active location updates. This interval is
@@ -84,13 +95,10 @@ public class MyLocationsActivity extends AppCompatActivity implements
         // you may receive them slower than requested. You may also receive updates faster than
         // requested if other applications are requesting location at a faster interval.
         mLocationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS);
-
         // Sets the fastest rate for active location updates. This interval is exact, and your
         // application will never receive updates faster than this value.
         mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
-
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(this,
@@ -102,21 +110,73 @@ public class MyLocationsActivity extends AppCompatActivity implements
                             , Manifest.permission.ACCESS_FINE_LOCATION},
                     MY_PERMISSIONS_LOCATIONS);
         }
-
         mLocationTextView = (TextView) findViewById(R.id.location_text_view);
+
 
     }
 
-    private void handleWeather(View view) {
-        Log.e("LAT", String.valueOf(mCurrentLocation.getLatitude()));
-        Log.e("long",String.valueOf(mCurrentLocation.getLongitude()));
-
+    private void saveLocation(View view) {
         JSONObject messageJson = new JSONObject();
+        SharedPreferences sharedPreferences = getSharedPreferences(getString(R.string.keys_shared_prefs),
+                Context.MODE_PRIVATE);
         try {
-            messageJson.put("lat", String.valueOf(mCurrentLocation.getLatitude()));
-            messageJson.put("long", String.valueOf(mCurrentLocation.getLongitude()));
+            EditText a =  (EditText) findViewById(R.id.saveAs);
+            String city = a.getText().toString();
+            a.setText("");
+            messageJson.put("long", long1);
+            messageJson.put("lat", lat1);
+            messageJson.put("city", city);
+            messageJson.put("username", sharedPreferences.getString("username",""));
+            Log.e("long",messageJson.toString());
+            new SendPostAsyncTask.Builder("http://10.0.0.94:5000/addWeatherLocation", messageJson).onCancelled(this::handleError)
+                    .onPostExecute(this::check).build().execute();
         } catch (JSONException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void check(String s) {
+        Log.e("WORK","WROK");
+    }
+
+    private void handleWeather(View view) {
+        JSONObject messageJson = new JSONObject();
+        //Check shared preferences for location ->
+        SharedPreferences sharedPreferences = getSharedPreferences(getString(R.string.keys_shared_prefs),
+                        Context.MODE_PRIVATE);
+//        final SharedPreferences.Editor editor = sharedPreferences.edit();
+//        editor.putBoolean(getString(R.string.keys_sp_on), true);
+//        editor.putString("chatid", "1"); //defeault chatid
+//        editor.apply();
+
+        boolean currentLocation = sharedPreferences.getBoolean("CurrentLocation",false);
+        Log.e("IS CURRENT LOCATION TRUE", currentLocation + " ");
+        if(currentLocation) {
+            try {
+                messageJson.put("lat", String.valueOf(mCurrentLocation.getLatitude()));
+                messageJson.put("long", String.valueOf(mCurrentLocation.getLongitude()));
+
+
+                lat1 = String.valueOf(mCurrentLocation.getLatitude());
+                long1 = String.valueOf(mCurrentLocation.getLongitude());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        } else {
+            String latinf = sharedPreferences.getString("LatInfo","0");
+            String longinf = sharedPreferences.getString("LongInfo","0");
+
+            lat1 = latinf;
+            long1 = longinf;
+
+            Log.e(latinf,longinf+"SEARCHING");
+            try {
+                messageJson.put("lat", latinf);
+                messageJson.put("long", longinf);
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
         String mSendUrl = new Uri.Builder()
                 .scheme("https")
@@ -143,49 +203,52 @@ public class MyLocationsActivity extends AppCompatActivity implements
     }
 
     private void endOfSendMsgTask(final String result) {
-
-        Log.e("returned value from weather",String.valueOf(mCurrentLocation.getLongitude()));
+        Log.e("NO ERROR!!!", result);
 
         try {
             JSONObject res = new JSONObject(result);
             JSONObject current = res.getJSONObject("current");
+            JSONObject allInfo = res.getJSONObject("allInfo");
             TextView a =  (TextView) findViewById(R.id.currentTemp);
+            String timeZone = allInfo.getString("timezone").toString();
            // a.setText("Current Information Temperature: " + current.getString("temperature").toString() +  " Summary: " + current.getString("summary").toString());
-            a.setText("Current Information Temperature: " + current.getString("temperature").toString() +  "Summary: " + current.getString("summary").toString());
+            a.setText("Current: " + current.getString("temperature").toString() +  "\nSummary: " + current.getString("summary").toString() );
+            //FIX THIS
 
+            mLocationTextView.setText(mCurrentLocation.getLatitude() + "," +
+                    mCurrentLocation.getLongitude()+ "\n " + timeZone);
 
             JSONObject hourly = res.getJSONObject("hourly");
             JSONArray hourlyData = hourly.getJSONArray("data");
             String hour = "Hourly Data\n";
-
-
             for (int i = 0 ; i < hourlyData.length(); i++) {
                 JSONObject msg = hourlyData.getJSONObject(i);
                 String temperature = msg.get("temperature").toString();
                 String summary = msg.get("summary").toString();
-
-
-                String data = "Time +" + i + "hours: " + temperature + " " + summary + "\n";
+                String data = "+" + i + " hours:     " + temperature + "\n" + summary + "\n";
                 hour = hour + data;
-
             }
             TextView b =  (TextView) findViewById(R.id.hourlyData);
             b.setText(hour);
-
-
             JSONObject daily = res.getJSONObject("daily");
             JSONArray dailyData = daily.getJSONArray("data");
-            String day = "Daily Data\n";
-
-
+            String day = "Daily Data     High     Low\n";
+            int counter = 1;
             for (int i = 0 ; i < dailyData.length(); i++) {
+                Log.e("I INDEX",i + "");
+
                 JSONObject msg = dailyData.getJSONObject(i);
-                String temperature = msg.get("temperature").toString();
+                String temperatureMin = msg.get("temperatureMin").toString();
+
+                String temperatureMax = msg.get("temperatureMax").toString();
+
+
                 String summary = msg.get("summary").toString();
 
 
-                String data = "Day +" + i + ": " + temperature + " " + summary + "\n";
+                String data = "+" + counter + ":            " + temperatureMin + "          " + temperatureMax + "\n " + summary + "\n";
                 day = day + data;
+                counter++;
 
             }
             TextView c =  (TextView) findViewById(R.id.dailyData);
@@ -319,15 +382,12 @@ public class MyLocationsActivity extends AppCompatActivity implements
         // user launches the activity,
         // moves to a new location, and then changes the device orientation, the original location
         // is displayed as the activity is re-created.
-
         if (mCurrentLocation == null) {
-
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                     == PackageManager.PERMISSION_GRANTED
                     &&
                     ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
                             == PackageManager.PERMISSION_GRANTED) {
-
                 mCurrentLocation =
                         LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
 
@@ -344,10 +404,10 @@ public class MyLocationsActivity extends AppCompatActivity implements
      */
     @Override
     public void onLocationChanged(Location location) {
-        mCurrentLocation = location;
-        Log.d(TAG, mCurrentLocation.toString());
-        mLocationTextView.setText(mCurrentLocation.getLatitude() + " " +
-                mCurrentLocation.getLongitude());
+//        mCurrentLocation = location;
+//        Log.d(TAG, mCurrentLocation.toString());
+//        mLocationTextView.setText(mCurrentLocation.getLatitude() + "," +
+//                mCurrentLocation.getLongitude());
     }
 
     @Override
