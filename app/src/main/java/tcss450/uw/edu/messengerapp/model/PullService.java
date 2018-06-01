@@ -122,7 +122,7 @@ public class PullService extends IntentService {
             mBuilder = new NotificationCompat.Builder(this)
                     .setSmallIcon(R.drawable.ic_chat)
                     .setContentTitle("New message from " + notificationFlag + "!")
-                    .setContentText("Click to view your list of chats!");
+                    .setContentText("Click to open this chat!");
             // Creates an Intent for the Activity
             notifyIntent = new Intent(this, HomeActivity.class);
             notifyIntent.putExtra(getString(R.string.keys_chat_notification), chatId);

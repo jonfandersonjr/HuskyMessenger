@@ -35,12 +35,29 @@ import java.util.ArrayList;
 import tcss450.uw.edu.messengerapp.model.PullService;
 import tcss450.uw.edu.messengerapp.utils.ThemesU;
 
+/**
+ * Main activity for the bulk of the application.
+ *
+ * Activity handles all major transactions between the fragments.
+ * Handles most AsyncTasks launched from different fragment's buttons
+ * including connections, search, and weather. Activity also handles
+ * notifications and notfication UI.
+ *
+ * @author Marshall Freed
+ * @author Jon Anderson
+ * @author Mahad Fahiye
+ * @author Karan Kurbur
+ * @version 5/31/2018
+ */
 public class HomeActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         ConnectionsFragment.OnConnectionsInteractionListener,
         SearchContactsFragment.OnSearchFragmentInteractionListener,
         HomeFragment.OnFragmentInteractionListener {
 
+    /**
+     * Global variables for different use throughout the application
+     */
     private static final String TAG = "HomeActivity";
 
     private MessageUpdateReceiver mMessagesUpdateReceiver;
@@ -56,6 +73,12 @@ public class HomeActivity extends AppCompatActivity
 
     private TextView chatNotifications, connectionNotifications, mNotificationsBar;
 
+    /**
+     * Called when the activity is starting. Handles storing the latest chatId, stores the
+     * username of the user logged in into Shared Preferences also handles various UI in the
+     * activity.
+     * @param savedInstanceState contains data most recently supplied if activity reactivated
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -112,6 +135,11 @@ public class HomeActivity extends AppCompatActivity
                 findItem(R.id.nav_connections));
     }
 
+    /**
+     * Method to be invoked when the back button is pressed while the activity is in the foreground.
+     * Depending on if the navigation drawer is open, closed or what the current fragment in view is,
+     * there are different results.
+     */
     @Override
     public void onBackPressed() {
         Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.homeFragmentContainer);
@@ -130,6 +158,11 @@ public class HomeActivity extends AppCompatActivity
 
     }
 
+    /**
+     * Creates the options menu in the toolbar
+     * @param menu menu from the XML that needs to be inflated
+     * @return true when created
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -137,6 +170,11 @@ public class HomeActivity extends AppCompatActivity
         return true;
     }
 
+    /**
+     * Method to be invoked when option items int the activity's tool bar are clicked.
+     * @param item the menu item that was clicked
+     * @return super class method call
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -166,6 +204,11 @@ public class HomeActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * Method called whenever a new fragment needs to be loaded on top of the activity.
+     * Connections fragment adds a tag so it can be discoverable again later.
+     * @param frag fragment to be loaded onto the activity
+     */
     private void loadFragment(Fragment frag) {
         if (frag instanceof ConnectionsFragment) {
             String tag = getString(R.string.keys_fragment_connections);
@@ -183,6 +226,12 @@ public class HomeActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Method to be invoked when an item in the navigation drawer is selected. The item clicked
+     * dictates the fragment loaded.
+     * @param item menu item that was clicked
+     * @return true when successful
+     */
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
@@ -225,6 +274,9 @@ public class HomeActivity extends AppCompatActivity
         return true;
     }
 
+    /**
+     * Method called when fragment is brought back into view.
+     */
     @Override
     protected void onResume() {
         super.onResume();
@@ -244,9 +296,9 @@ public class HomeActivity extends AppCompatActivity
         //If true, then this Activity was started from the notification bar
         if (getIntent().hasExtra(getString(R.string.keys_chat_notification))) {
             //load new chat activity with this person
-            //onOpenChat(Integer.valueOf(getIntent().getStringExtra(getString(R.string.keys_chat_notification))));
+            onOpenChat(Integer.valueOf(getIntent().getStringExtra(getString(R.string.keys_chat_notification))));
             //Activi
-            loadFragment(new ChatManagerFragment());
+            //loadFragment(new ChatManagerFragment());
             mIncomingMessages.clear();
             updateNotificationsUI();
         } else if (getIntent().hasExtra(getString(R.string.keys_connection_notification))) {
@@ -270,6 +322,9 @@ public class HomeActivity extends AppCompatActivity
         updateNotificationsUI();
     }
 
+    /**
+     * Method to be called when fragment is not longer in focus.
+     */
     @Override
     protected void onPause() {
         super.onPause();
@@ -292,11 +347,19 @@ public class HomeActivity extends AppCompatActivity
 
     }
 
+    /**
+     * Method to be invoked when the search button in the home fragment is clicked.
+     */
     @Override
     public void onSearchInteractionListener() {
         loadFragment(new ConnectionsFragment());
     }
 
+    /**
+     * Method to be called when the user wants to add a user from the Search fragment.
+     * Prepares an executes an AsyncTask with required information.
+     * @param username username of the contact the user wants to add
+     */
     @Override
     public void onSearchAddInteraction(String username) {
         Uri uri = new Uri.Builder()
@@ -324,6 +387,14 @@ public class HomeActivity extends AppCompatActivity
                 .build().execute();
     }
 
+    /**
+     * Method to be called when the user of the app responds (accept/decline) to a connection
+     * request on either the connections fragment or the search fragment since
+     * functionality is very similar.
+     * @param username username of the contact the user is responding to
+     * @param accept whether the user accepted or declined request
+     * @param fragment which fragment this action is coming from
+     */
     @Override
     public void onRequestInteractionListener(String username, boolean accept, String fragment) {
         String endpoint;
@@ -389,11 +460,27 @@ public class HomeActivity extends AppCompatActivity
 
     }
 
+    /**
+     * Method to be called when the user is responding to a connection request from the search
+     * fragment. Just calls the method above to send AsyncTask
+     * @param username username of the contact user is responding to
+     * @param accept whether the user accepted or declined request
+     * @param fragment which fragment the action is coming from
+     */
     @Override
     public void onSearchRequestInteraction(String username, boolean accept, String fragment) {
         onRequestInteractionListener(username, accept, fragment);
     }
 
+    /**
+     * Method to be called when the user clicks the search button in the connections fragment
+     * to search for another user of the app. Only called when client constraints are met.
+     * @param searchBy category user wants to search by (first/last/email/username)
+     * @param searchString what the user typed in to search for
+     * @param contacts user's existing contact list
+     * @param requests user's existing requests list
+     * @param pending user's existing pending requests list
+     */
     @Override
     public void onSearchInteractionListener(String searchBy, String searchString,
                                             ArrayList<String> contacts, ArrayList<String> requests,
@@ -436,10 +523,23 @@ public class HomeActivity extends AppCompatActivity
 
     }
 
+    /**
+     * Method to be called when user wants to delete a contact from the search fragment.
+     * Calls another method to launch an AsyncTask
+     * @param username username of the contact user is deleting
+     * @param fragment which fragment this action took place
+     */
     public void onSearchDeleteContactListener(String username, String fragment) {
         onConnectionsDeleteInteractionListener(username, fragment);
     }
 
+    /**
+     * Method called when a user deletes a contact from either the connections fragment or
+     * the search fragment. Method launches an AsyncTask with the required information
+     * to delete the connection from the DB.
+     * @param username username of the connection the user wants to delete
+     * @param fragment which fragment this action took place
+     */
     public void onConnectionsDeleteInteractionListener(String username, String fragment) {
         mDeleteConnectionUsername = username;
 
@@ -472,6 +572,11 @@ public class HomeActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Method to be called when the user wants to start a chat with an existing
+     * connection from the connections fragment.
+     * @param username username of the connection user wants to start chat with
+     */
     public void onConnectionsStartChatListener(String username) {
         StartChatFragment frag = new StartChatFragment();
         Bundle bundle = new Bundle();
@@ -480,6 +585,11 @@ public class HomeActivity extends AppCompatActivity
         loadFragment(frag);
     }
 
+    /**
+     * Method to be called when the user wants to start a chat with an existing
+     * connection from the search fragment.
+     * @param username username of the connection user wants to start chat with
+     */
     public void onSearchStartChatListener(String username) {
         StartChatFragment frag = new StartChatFragment();
         Bundle bundle = new Bundle();
@@ -488,18 +598,32 @@ public class HomeActivity extends AppCompatActivity
         loadFragment(frag);
     }
 
+    /**
+     * Method to be called when the user interacts with a connection request from the
+     * connections fragment. Called before AsyncTask executes
+     */
     private void handleRequestOnPre() {
         ConnectionsFragment frag = (ConnectionsFragment) getSupportFragmentManager()
                 .findFragmentByTag(getString(R.string.keys_fragment_connections));
         frag.handleRequestOnPre();
     }
 
+    /**
+     * Method to be called when the user interacts with a connection request from the
+     * search fragment. Called before AsyncTask executes
+     */
     private void handleSearchRequestOnPre() {
         SearchContactsFragment frag = (SearchContactsFragment) getSupportFragmentManager()
                 .findFragmentByTag(getString(R.string.keys_fragment_searchConnections));
         frag.handleRequestOnPre();
     }
 
+    /**
+     * Method called after the AsyncTask executes from when the user interacts with
+     * a connection request from the connections fragment. Sends info from JSON back
+     * to the connections fragment to be handled there.
+     * @param result JSON string from AsyncTask
+     */
     private void handleRequestOnPost(String result) {
         ConnectionsFragment frag = (ConnectionsFragment) getSupportFragmentManager()
                 .findFragmentByTag(getString(R.string.keys_fragment_connections));
@@ -522,6 +646,12 @@ public class HomeActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Method called after the AsyncTask executes from when the user interacts with
+     * a pending connection request from the connections fragment. Sends info from JSON
+     * back to the connections fragment to be handled there.
+     * @param result JSON string from AsyncTask
+     */
     private void handlePendingOnPost(String result) {
         ConnectionsFragment frag = (ConnectionsFragment) getSupportFragmentManager()
                 .findFragmentByTag(getString(R.string.keys_fragment_connections));
@@ -544,6 +674,12 @@ public class HomeActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Method called after the AsyncTask executes from when the user interacts with
+     * a connection request from the search fragment. Sends info from JSON
+     * back to the connections fragment to be handled there.
+     * @param result JSON string from AsyncTask
+     */
     private void handleSearchRequestOnPost(String result) {
         SearchContactsFragment frag = (SearchContactsFragment) getSupportFragmentManager()
                 .findFragmentByTag(getString(R.string.keys_fragment_searchConnections));
@@ -567,6 +703,12 @@ public class HomeActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Method called after the AsyncTask executes from when the user interacts with
+     * a pending connection request from the search fragment. Sends info from JSON
+     * back to the connections fragment to be handled there.
+     * @param result JSON string from AsyncTask
+     */
     private void handleSearchPendingOnPost(String result) {
         SearchContactsFragment frag = (SearchContactsFragment) getSupportFragmentManager()
                 .findFragmentByTag(getString(R.string.keys_fragment_searchConnections));
@@ -589,6 +731,12 @@ public class HomeActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Method to be called after the AsyncTask executes from when the user requests a connection
+     * to another user from the search results. Necessary info from JSON is passed back to
+     * search fragment to handle UI changes
+     * @param result JSON string from AsyncTask
+     */
     private void handleSearchAddOnPost(String result) {
         SearchContactsFragment frag = (SearchContactsFragment) getSupportFragmentManager()
                 .findFragmentByTag(getString(R.string.keys_fragment_searchConnections));
@@ -609,6 +757,13 @@ public class HomeActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Method to be called after the AsyncTask executes from when a user searches in the search
+     * bar for a user in the DB. Method parses the JSON an places users in the DB in the according
+     * list depending on their relationship to the user (connection/pending/request). Passes the
+     * list back to the search fragment to handle UI
+     * @param result JSON string from AsyncTask
+     */
     private void handleSearchOnPost(String result) {
         ConnectionsFragment frag = (ConnectionsFragment) getSupportFragmentManager()
                 .findFragmentByTag(getString(R.string.keys_fragment_connections));
@@ -700,6 +855,13 @@ public class HomeActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Method to be called after AsyncTask from when the user deletes a connection is executed
+     * from the connections fragment.Method needs to parse the JSON and figure out which column
+     * the user to delete resides in. Once found, another AsyncTask is launched to delete the
+     * connection from the DB.
+     * @param result JSON string from AsyncTask
+     */
     private void handleContactsOnPost(String result) {
         boolean listA = false;
 
@@ -724,22 +886,7 @@ public class HomeActivity extends AppCompatActivity
                         e.printStackTrace();
                     }
                 }
-                if (resultsJSON.has(getString(R.string.keys_json_connections_b))) {
-                    try {
-                        JSONArray jReqs = resultsJSON.getJSONArray(getString(R.string.keys_json_connections_b));
-                        for (int i = 0; i < jReqs.length(); i++) {
-                            JSONObject obj = jReqs.getJSONObject(i);
-                            String username = obj.get(getString(R.string.keys_json_username))
-                                    .toString();
-                            if (username.equals(mDeleteConnectionUsername)) {
-                                listA = false;
-                                break;
-                            }
-                        }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
+
             } else {
                 Log.wtf("Get Contacts in handleContactsOnPost", "Back end screw up");
             }
@@ -778,6 +925,13 @@ public class HomeActivity extends AppCompatActivity
 
     }
 
+    /**
+     * Method to be called after AsyncTask from when the user deletes a connection is executed
+     * from the search fragment.Method needs to parse the JSON and figure out which column
+     * the user to delete resides in. Once found, another AsyncTask is launched to delete the
+     * connection from the DB.
+     * @param result JSON string from AsyncTask
+     */
     private void handleSearchContactsOnPost(String result) {
         boolean listA = false;
 
@@ -841,6 +995,11 @@ public class HomeActivity extends AppCompatActivity
 
     }
 
+    /**
+     * Method to be called after a connection has been deleted by the user from the connections
+     * fragment. Necessary info is passed back to the fragment to handle UI
+     * @param result JSON string from AsyncTask
+     */
     private void handleContactDeletedOnPost(String result) {
         ConnectionsFragment frag = (ConnectionsFragment) getSupportFragmentManager()
                 .findFragmentByTag(getString(R.string.keys_fragment_connections));
@@ -872,6 +1031,11 @@ public class HomeActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Method to be called after a connection has been deleted by the user from the search
+     * fragment. Necessary info is passed back to the fragment to handle UI
+     * @param result JSON string from AsyncTask
+     */
     private void handleSearchContactDeletedOnPost(String result) {
         SearchContactsFragment frag = (SearchContactsFragment) getSupportFragmentManager()
                 .findFragmentByTag(getString(R.string.keys_fragment_searchConnections));
@@ -903,10 +1067,21 @@ public class HomeActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Logs what the error is that occured from an AsyncTask
+     * @param result JSON string from AsyncTask
+     */
     private void handleErrorsInTask(String result) {
         Log.e("ASYNC_TASK_ERROR", result);
     }
 
+    /**
+     * Binary search method to help determine which names are in which data structure so the app
+     * can properly organize connections in UI
+     * @param username username to be searched for
+     * @param existingList list that contains connections (either current/requests/pending)
+     * @return if user is in that list or not
+     */
     private boolean searchName(String username, ArrayList<String> existingList) {
         int low = 0;
         int high = existingList.size() - 1;
