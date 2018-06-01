@@ -1,6 +1,5 @@
 package tcss450.uw.edu.messengerapp;
 
-
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -41,34 +40,56 @@ import java.util.ArrayList;
 import tcss450.uw.edu.messengerapp.model.MyRecyclerViewAdapter;
 import tcss450.uw.edu.messengerapp.utils.ListenManager;
 
-
+/**
+ * Fragment inside of the app that acts as a page to interact with connections.
+ *
+ * Page gives the ability to search for users of the app based off of their first
+ * and last name, email address or username. Also gives the ability for a user to add
+ * and delete contacts and start a chat with them.
+ *
+ * @author Marshall Freed
+ * @version 5/12/2018
+ */
 public class ConnectionsFragment extends Fragment implements AdapterView.OnItemSelectedListener,
         MyRecyclerViewAdapter.ItemClickListener {
 
+    //fields used when searching for users
     private String mUsername;
     private String mSearchBy;
 
+    //listen manager for contact request updates
     private ListenManager mListenerManager;
 
+    //Data structures to store users that aren't you
     private ArrayList<String> mRequests;
     private ArrayList<String> mVerified;
     private ArrayList<String> mPending;
 
+    //Views for all three contact lists
     private RecyclerView mRequestList;
     private RecyclerView mVerifiedList;
     private RecyclerView mPendingList;
 
+    //Adapters needed for recycler views
     private MyRecyclerViewAdapter mRecyclerAdapter;
     private MyRecyclerViewAdapter mVerifiedRecyclerAdapter;
     private MyRecyclerViewAdapter mPendingAdapter;
 
+    //Listener for the interface
     private OnConnectionsInteractionListener mInteractionListener;
 
     public ConnectionsFragment() {
         // Required empty public constructor
     }
 
-
+    /**
+     * Method called when this fragment is created. Sets up UI elements
+     *
+     * @param inflater
+     * @param container
+     * @param savedInstanceState
+     * @return
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -95,6 +116,11 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
         return v;
     }
 
+    /**
+     * Method called when this fragment comes into view.
+     * Creates the list for friend requests as well as sets up the listener to listen
+     * for new friend requests.
+     */
     @Override
     public void onStart() {
         super.onStart();
@@ -142,12 +168,20 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
 
     }
 
+    /**
+     * Method called when fragment is brought back into view.
+     * Makes the listener for new contact requests start listening again.
+     */
     @Override
     public void onResume() {
         super.onResume();
         mListenerManager.startListening();
     }
 
+    /**
+     * Method called when fragment is no longer visible.
+     * Stops the new contact request listener.
+     */
     @Override
     public void onStop() {
         super.onStop();
@@ -158,6 +192,10 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
         prefs.edit().putString(getString(R.string.keys_prefs_time_stamp), latestMessage).apply();
     }
 
+    /**
+     * Method called when the fragment has been associated with the activity.
+     * @param context the activity that the fragment is attached to
+     */
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -169,6 +207,15 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
         }
     }
 
+    /**
+     * Callback method to be invoked when an item in this view has been selected.
+     * This callback is invoked only when the newly selected position is different from
+     * the previously selected position or if there was no selected item.
+     * @param adapterView The AdapterView where the selection happened
+     * @param view The view within the AdapterView that was clicked
+     * @param i The position of the view in the adapter
+     * @param l The row id of the item that is selected
+     */
     @Override
     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
         String choice = (String) adapterView.getAdapter().getItem(i);
@@ -184,11 +231,22 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
 
     }
 
+    /**
+     * Callback method to be invoked when the selection disappears from this view.
+     * The selection can disappear for instance when touch is activated or
+     * when the adapter becomes empty.
+     * @param adapterView The AdapterView that now contains no selected item.
+     */
     @Override
     public void onNothingSelected(AdapterView<?> adapterView) {
         mSearchBy = "username";
     }
 
+    /**
+     * Callback method to be invoked when an item in this AdapterView has been clicked.
+     * @param  v The view within the AdapterView that was clicked (this will be a view provided by the adapter)
+     * @param position The position of the view in the adapter.
+     */
     @Override
     public void onItemClick(View v, int position) {
         String str = mVerifiedRecyclerAdapter.getItem(position);
@@ -196,6 +254,12 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
 
     }
 
+    /**
+     * Method called when an item in the Contacts adapter view has been clicked.
+     * Displays an alert dialog specific to Contacts
+     * @param v The view within the AdapterView that was clicked (this will be a view provided by the adapter)
+     * @param position The position of the view in the adapter
+     */
     public void onItemClickContacts(View v, int position) {
         String connections = "connections";
         String str = mVerifiedRecyclerAdapter.getItem(position);
@@ -243,7 +307,13 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 mInteractionListener.onConnectionsStartChatListener(username);
                             }
-                        });
+                        })
+                .setNeutralButton("Nevermind", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                    }
+                });
         if (ryan) {
             builder.setIcon(R.drawable.ryan);
         } else {
@@ -253,6 +323,12 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
 
     }
 
+    /**
+     * Method called when an item in the Requests adapter view has been clicked.
+     * Displays an alert dialog specific to Requests
+     * @param v The view within the AdapterView that was clicked (this will be a view provided by the adapter)
+     * @param position The position of the view in the adapter
+     */
     public void onItemClickRequests(View v, int position) {
         String connections = "connections";
         String str = mRecyclerAdapter.getItem(position);
@@ -294,6 +370,12 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
 
     }
 
+    /**
+     * Method called when an item in the Contacts Pending adapter view has been clicked.
+     * Displays an alert dialog specific to Pending contacts
+     * @param v The view within the AdapterView that was clicked (this will be a view provided by the adapter)
+     * @param position The position of the view in the adapter
+     */
     public void onItemClickPending(View v, int position) {
         String str = mPendingAdapter.getItem(position);
         final String username = str.substring(0, str.indexOf(" "));
@@ -353,6 +435,10 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
         builder.show();
     }
 
+    /**
+     * Method to called when the search button is clicked.
+     * Checks constraints before a search for a username is allowed.
+     */
     public void onSearchButtonClick() {
         EditText search = (EditText) getView().findViewById(R.id.connectionsSearchEditText);
         String searchString = search.getText().toString();
@@ -367,7 +453,10 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
 
     }
 
-
+    /**
+     * Method that is called by onStart to send a PostAsyncTask to an endpoint in the
+     * webservice to retrieve currently connected contacts.
+     */
     public void getContacts() {
         SharedPreferences prefs =
                 getActivity().getSharedPreferences(getString(R.string.keys_shared_prefs),
@@ -395,6 +484,10 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
                 .build().execute();
     }
 
+    /**
+     * Method that is called by onStart to send a PostAsyncTask to an endpoint in the
+     * webservice to retrieve pending contact requests.
+     */
     public void getPending() {
         SharedPreferences prefs = getActivity().
                 getSharedPreferences(getString(R.string.keys_shared_prefs),
@@ -422,6 +515,11 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
 
     }
 
+    /**
+     * Method to be called from activity after PostAsyncTask has finished. Method parses
+     * through JSON that is returned and loads it correctly into the contacts recycler view.
+     * @param result String representation of JSON object that contains contact information
+     */
     public void handleContactsOnPost(String result) {
         try {
             JSONObject resultsJSON = new JSONObject(result);
@@ -498,6 +596,11 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
         }
     }
 
+    /**
+     * Method to be called from activity after PostAsyncTask has finished. Method parses
+     * through JSON that is returned and loads it correctly into the pending requests recycler view.
+     * @param result String representation of JSON object that contains pending contact information
+     */
     public void handlePendingOnPost(String result) {
         try {
             JSONObject resultsJSON = new JSONObject(result);
@@ -563,6 +666,11 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
         }
     }
 
+    /**
+     * Method to be called from activity if there was an error. Re-enables the views that were
+     * disabled during the execution of the task.
+     * @param result String representation of JSON object that contains contact information
+     */
     public void handleErrorsInTask(String result) {
         ViewGroup vg = (ViewGroup) getView().findViewById(R.id.connectionsFrameLayout);
         enableDisableViewGroup(vg, true);
@@ -570,10 +678,19 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
         Log.e("ASYNC_TASK_ERROR", result);
     }
 
+    /**
+     * Method to be called when there is an error during the listening for new contact requests.
+     * @param e Exception given by the listener
+     */
     private void handleError(final Exception e) {
         Log.e("LISTEN ERROR!!!", e.getMessage());
     }
 
+    /**
+     * Method called when listener obtains new information to put into the Requests recycler view.
+     * Parses the JSON and assigns to the Requests recycler view in proper format.
+     * @param requests JSON object returned by listener containing new request info
+     */
     private void publishRequests(JSONObject requests) {
         final String[] reqs;
         if (requests.has(getString(R.string.keys_json_requests))) {
@@ -616,12 +733,24 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
         }
     }
 
+    /**
+     * Method to be called when the user either accepts or declines a contact request.
+     * Disables all children of the main layout.
+     */
     public void handleRequestOnPre() {
         ViewGroup vg = (ViewGroup) getView().findViewById(R.id.connectionsFrameLayout);
         enableDisableViewGroup(vg, false);
 
     }
 
+    /**
+     * Method to be called after the user makes a decision about a connection request. Depending on
+     * whether they accepted or declined, requesting user gets placed into current contacts. Request
+     * gets deleted from request list. All views become enabled again.
+     * @param success success of the AsyncTask
+     * @param username username of request user accepted or declined
+     * @param accept whether user accepted the request or not
+     */
     public void handleRequestOnPost(boolean success, String username, boolean accept) {
         ViewGroup vg = (ViewGroup) getView().findViewById(R.id.connectionsFrameLayout);
 
@@ -668,6 +797,12 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
 
     }
 
+    /**
+     * Method to be called after the user revokes a pending request. Request
+     * gets deleted from pending list. All views become enabled again.
+     * @param success success of the AsyncTask
+     * @param username username of pending contact request
+     */
     public void handlePendingOnPost(boolean success, String username) {
         ViewGroup vg = (ViewGroup) getView().findViewById(R.id.connectionsFrameLayout);
 
@@ -700,6 +835,12 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
         enableDisableViewGroup(vg, true);
     }
 
+    /**
+     * Method to be called after the user deletes a contact. Contact will be
+     * deleted from the contact list. All views become enabled again.
+     * @param success success of the AsyncTask
+     * @param username username of pending contact request
+     */
     public void handleContactDeletedOnPost(boolean success, String username) {
         ViewGroup vg = (ViewGroup) getView().findViewById(R.id.connectionsFrameLayout);
 
@@ -723,11 +864,19 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
         enableDisableViewGroup(vg, true);
     }
 
+    /**
+     * Method to be called before the searching AsyncTask is executed.
+     * Disables all children views of the parent layout.
+     */
     public void handleSearchOnPost() {
         ViewGroup vg = (ViewGroup) getView().findViewById(R.id.connectionsFrameLayout);
         enableDisableViewGroup(vg, true);
     }
 
+    /**
+     * Method to be called when the search AsyncTask returns no results.
+     * Creates a toast telling you just that.
+     */
     public void handleEmptySearch() {
         ViewGroup vg = (ViewGroup) getView().findViewById(R.id.connectionsFrameLayout);
         enableDisableViewGroup(vg, true);
@@ -735,6 +884,10 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
         Toast.makeText(getActivity(), "Search yielded no results", Toast.LENGTH_LONG).show();
     }
 
+    /**
+     * Method to be called when the search AsyncTask returns yourself.
+     * Creates a toast telling you just that.
+     */
     public void handleSearchForSelf() {
         ViewGroup vg = (ViewGroup) getView().findViewById(R.id.connectionsFrameLayout);
         enableDisableViewGroup(vg, true);
@@ -743,6 +896,11 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
                 Toast.LENGTH_LONG).show();
     }
 
+    /**
+     * Method disables all children of the viewgroup that is passed in.
+     * @param vg viewgroup to enable or disable
+     * @param enabled boolean to decide whether to enable or disable
+     */
     private void enableDisableViewGroup(ViewGroup vg, boolean enabled) {
         int children = vg.getChildCount();
         for (int i = 0; i < children; i++) {
@@ -762,11 +920,20 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
         }
     }
 
+    /**
+     * Method called if there is an error within an AsyncTask
+     * @param err error that occurred
+     */
     public void setError(String err) {
         Toast.makeText(getActivity(), "Request unsuccessful for reason: " + err,
                 Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * Method called if there is an error that occurs within an AsyncTask.
+     * Re-Enables the viewgroup
+     * @param e error that occurred
+     */
     public void handleOnError(String e) {
         ViewGroup vg = (ViewGroup) getView().findViewById(R.id.connectionsFrameLayout);
 
@@ -776,6 +943,9 @@ public class ConnectionsFragment extends Fragment implements AdapterView.OnItemS
         enableDisableViewGroup(vg, true);
     }
 
+    /**
+     * Interface that contains methods that pertain to button clicks.
+     */
     public interface OnConnectionsInteractionListener {
         void onConnectionsDeleteInteractionListener(String username, String fragment);
         void onConnectionsStartChatListener(String username);

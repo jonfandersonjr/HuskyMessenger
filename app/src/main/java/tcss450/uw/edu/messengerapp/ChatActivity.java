@@ -40,6 +40,8 @@ import tcss450.uw.edu.messengerapp.R;
 import tcss450.uw.edu.messengerapp.WeatherFragment;
 
 public class ChatActivity extends AppCompatActivity {
+
+    /**Storage of information needed for chats**/
     Bundle extras;
     String mUsername;
     String mChatId;
@@ -48,9 +50,6 @@ public class ChatActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
-
-
-        //FIX WHERE IT GETS CHAT ID FROM
 
         extras = getIntent().getExtras();
         String value = "1";
@@ -93,9 +92,12 @@ public class ChatActivity extends AppCompatActivity {
         //alertDialog.setIcon(R.drawable.key);
     }
 
-
-
-
+    /**
+     * Gives the user the option to either add a user to this chat or
+     * remove a user from this chat.
+     * @param item that was selected
+     * @return
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
@@ -119,19 +121,6 @@ public class ChatActivity extends AppCompatActivity {
                                 mUsername = input.getText().toString();
                                 //removeFromChat();
                                 addToChat();
-//                        password = input.getText().toString();
-//                        if (password.compareTo("") == 0) {
-//                            if (pass.equals(password)) {
-//                                Toast.makeText(getApplicationContext(),
-//                                        "Password Matched", Toast.LENGTH_SHORT).show();
-//                                Intent myIntent1 = new Intent(view.getContext(),
-//                                        Show.class);
-//                                startActivityForResult(myIntent1, 0);
-//                            } else {
-//                                Toast.makeText(getApplicationContext(),
-//                                        "Wrong Password!", Toast.LENGTH_SHORT).show();
-//                            }
-//                        }
                             }
                         });
 
@@ -164,19 +153,6 @@ public class ChatActivity extends AppCompatActivity {
                                 mUsername = input2.getText().toString();
                                 //removeFromChat();
                                 removeFromChat();
-//                        password = input.getText().toString();
-//                        if (password.compareTo("") == 0) {
-//                            if (pass.equals(password)) {
-//                                Toast.makeText(getApplicationContext(),
-//                                        "Password Matched", Toast.LENGTH_SHORT).show();
-//                                Intent myIntent1 = new Intent(view.getContext(),
-//                                        Show.class);
-//                                startActivityForResult(myIntent1, 0);
-//                            } else {
-//                                Toast.makeText(getApplicationContext(),
-//                                        "Wrong Password!", Toast.LENGTH_SHORT).show();
-//                            }
-//                        }
                             }
                         });
 
@@ -203,6 +179,10 @@ public class ChatActivity extends AppCompatActivity {
         return true;
     }
 
+    /**
+     * Loads whichever chat fragment you choose to send it
+     * @param theFragment to be loaded
+     */
     public void loadFragment(Fragment theFragment) {
         theFragment.setArguments(extras);
         FragmentTransaction transaction = getSupportFragmentManager()
@@ -212,6 +192,9 @@ public class ChatActivity extends AppCompatActivity {
         transaction.commit();
     }
 
+    /**
+     * Leaves back to home activity
+     */
     @Override
     public void onBackPressed() {
         super.onBackPressed();

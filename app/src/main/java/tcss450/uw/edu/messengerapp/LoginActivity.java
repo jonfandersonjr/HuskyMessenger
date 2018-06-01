@@ -17,6 +17,16 @@ import org.json.JSONObject;
 
 import tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask;
 
+/**
+ * Activity for the login/registration portion of the app.
+ *
+ * Activity handles all major transactions between the fragments.
+ * Handles most AsyncTasks launched from different fragment's buttons
+ * including login, register, verify and reset password.
+ *
+ * @author Marshall Freed
+ * @version 5/31/2018
+ */
 public class LoginActivity extends AppCompatActivity
         implements LoginFragment.OnLoginFragmentInteractionListener,
         RegisterFragment.OnRegisterFragmentInteractionListener,
@@ -25,6 +35,11 @@ public class LoginActivity extends AppCompatActivity
 
     private tcss450.uw.edu.messengerapp.model.Credentials mCredentials;
 
+    /**
+     * Called when the activity is starting. Handles deciding if the app needs to load the
+     * HomeActivity or not based on user's preferences.
+     * @param savedInstanceState contains data most recently supplied if activity reactivated
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,6 +68,10 @@ public class LoginActivity extends AppCompatActivity
 
     }
 
+    /**
+     * Method called when activity is no longer in focus.
+     * Stores a string in shared preferences about which fragment you were last on.
+     */
     @Override
     public void onPause() {
         super.onPause();
@@ -72,6 +91,10 @@ public class LoginActivity extends AppCompatActivity
 
     }
 
+    /**
+     * Method called when activity is in focus. Decides which fragment to load based on
+     * the which fragment was last in focus when activity left focus
+     */
     @Override
     public void onResume() {
         super.onResume();
@@ -94,15 +117,13 @@ public class LoginActivity extends AppCompatActivity
                     .addToBackStack(null)
                     .commit();
             prefs.edit().remove("frag").commit();
-        } else {
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.loginFragmentContainer, new LoginFragment(),
-                            getString(R.string.keys_fragment_login))
-                    .commit();
-            prefs.edit().remove("frag").commit();
         }
     }
 
+    /**
+     * Checks whether or not the user selected the checkbox to stay logged in or not.
+     * If so, store some notice in the DB
+     */
     private void checkStayLoggedIn() {
         SharedPreferences prefs =
                 getSharedPreferences(getString(R.string.keys_shared_prefs),
@@ -117,11 +138,19 @@ public class LoginActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Loads the HomeActivity
+     */
     private void loadHomePage() {
         Intent intent = new Intent(this, HomeActivity.class);
         startActivity(intent);
     }
 
+    /**
+     * Specific method to load the verify fragment with the user's email who is trying
+     * to log in.
+     * @param email user's email
+     */
     private void loadVerifyFragment(String email) {
         //give email string to verify fragment
         Bundle bundle = new Bundle();
@@ -135,7 +164,10 @@ public class LoginActivity extends AppCompatActivity
         getSupportFragmentManager().executePendingTransactions();
     }
 
-
+    /**
+     * Loads the register fragment when the register button is clicked from the
+     * login fragment.
+     */
     @Override
     public void onRegisterButtonInteraction() {
         getSupportFragmentManager().beginTransaction()
@@ -145,6 +177,11 @@ public class LoginActivity extends AppCompatActivity
         getSupportFragmentManager().executePendingTransactions();
     }
 
+    /**
+     * Builds an executes an AsyncTask to try and authenticate the user with the credentials that
+     * the user provided in the edit texts.
+     * @param credentials user's log in credentials
+     */
     @Override
     public void onLoginButtonInteraction(tcss450.uw.edu.messengerapp.model.Credentials credentials) {
         //build the web service URL
@@ -167,6 +204,11 @@ public class LoginActivity extends AppCompatActivity
                 .build().execute();
     }
 
+    /**
+     * Builds and executes an AsyncTask when the user hits the submit button on the registration
+     * fragment.
+     * @param credentials user's credentials
+     */
     @Override
     public void onSubmitButtonInteraction(tcss450.uw.edu.messengerapp.model.Credentials credentials) {
         //build the web service URL
@@ -181,6 +223,11 @@ public class LoginActivity extends AppCompatActivity
 
         mCredentials = credentials;
 
+        SharedPreferences prefs = getSharedPreferences(getString(R.string.keys_shared_prefs),
+                Context.MODE_PRIVATE);
+
+        prefs.edit().putString("keys_json_username", mCredentials.getUsername());
+
         new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
                 .onPreExecute(this::handleRegisterOnPre)
                 .onPostExecute(this::handleRegisterOnPost)
@@ -188,6 +235,12 @@ public class LoginActivity extends AppCompatActivity
                 .build().execute();
     }
 
+    /**
+     * When the verify button is clicked from the verify fragment, the app launches an AsyncTask
+     * to authenticate the user with the code they have entered into the edit text.
+     * @param email user's email
+     * @param code code user entered
+     */
     @Override
     public void onVerifyButtonInteraction(String email, String code) {
         Uri uri = new Uri.Builder()
@@ -211,6 +264,11 @@ public class LoginActivity extends AppCompatActivity
                 .build().execute();
     }
 
+    /**
+     * When the verify button is clicked from the reset password fragment, this method launches an
+     * AsyncTask to authenticate the user with a code they have entered into the edit text.
+     * @param code user's code
+     */
     @Override
     public void onVerifyResetButtonInteraction(int code) {
         Uri uri = new Uri.Builder()
@@ -239,6 +297,11 @@ public class LoginActivity extends AppCompatActivity
 
     }
 
+    /**
+     * When the "done" button is clicked on the alert dialog that launches from the "forgot
+     * password" button, this method launches an AsyncTask to check if the email entered
+     * is associated with an existing account in the DB
+     */
     @Override
     public void onChangePasswordInteraction() {
         Uri uri = new Uri.Builder()
@@ -265,6 +328,12 @@ public class LoginActivity extends AppCompatActivity
 
     }
 
+    /**
+     * When the "I'm Done" button is clicked int the reset password fragment, this method launches
+     * an AsyncTask to change the user's password in the DB to what they entered in the edit
+     * texts.
+     * @param pass user's new password they entered
+     */
     @Override
     public void onResetButtonInteraction(Editable pass) {
         Uri uri = new Uri.Builder()
@@ -292,6 +361,10 @@ public class LoginActivity extends AppCompatActivity
                 .build().execute();
     }
 
+    /**
+     * Called when the user clicks the "Great!" button in the alert dialog after their password
+     * has been successfully changed. Takes them back to the login fragment
+     */
     @Override
     public void onGreatButtonInteraction() {
         getSupportFragmentManager().beginTransaction().replace(R.id.loginFragmentContainer,
@@ -299,40 +372,69 @@ public class LoginActivity extends AppCompatActivity
                 .commit();
     }
 
+    /**
+     * Logs an error when one happens while executing an AsyncTask
+     * @param result JSON string from AsyncTask
+     */
     private void handleErrorsInTask(String result) {
         Log.e("ASYNC_TASK_ERROR", result);
     }
 
+    /**
+     * Calls a method in the verify fragment to disable UI before an AsyncTask triggered
+     * from that fragment is executed
+     */
     private void handleVerifyOnPre() {
         VerifyFragment frag = (VerifyFragment) getSupportFragmentManager()
                 .findFragmentByTag(getString(R.string.keys_fragment_verify));
         frag.handleOnPre();
     }
 
+    /**
+     * Calls a method in the register fragment to disable UI before an AsyncTask triggered
+     * from that fragment is executed
+     */
     private void handleRegisterOnPre() {
         RegisterFragment frag = (RegisterFragment) getSupportFragmentManager()
                 .findFragmentByTag(getString(R.string.keys_fragment_register));
         frag.handleOnPre();
     }
 
+    /**
+     * Calls a method in the login fragment to disable UI before an AsyncTask triggered
+     * from that fragment is executed
+     */
     private void handleLoginOnPre() {
         LoginFragment frag = (LoginFragment) getSupportFragmentManager()
                 .findFragmentByTag(getString(R.string.keys_fragment_login));
         frag.handleOnPre();
     }
 
+    /**
+     * Calls a method in the reset password fragment to disable UI when the user clicks a button
+     * to verify the code they've entered.
+     */
     private void handleVerifyResetOnPre() {
         ResetPassword frag = (ResetPassword) getSupportFragmentManager()
                 .findFragmentByTag(getString(R.string.keys_fragment_resetPassword));
         frag.handleVerifyOnPre();
     }
 
+    /**
+     * Calls a method in the reset password fragment to disable UI when the user clicks a button
+     * to reset their password to whatever they typed into the edit texts.
+     */
     private void handleResetOnPre() {
         ResetPassword frag = (ResetPassword) getSupportFragmentManager()
                 .findFragmentByTag(getString(R.string.keys_fragment_resetPassword));
         frag.handleResetOnPre();
     }
 
+    /**
+     * Called after the AsyncTask executes from when the user has attempted to change their
+     * password.
+     * @param result JSON string from AsyncTask
+     */
     private void handleResetOnPost(String result) {
         ResetPassword frag = (ResetPassword) getSupportFragmentManager()
                 .findFragmentByTag(getString(R.string.keys_fragment_resetPassword));
@@ -352,6 +454,12 @@ public class LoginActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Called after the AsyncTask executed from when the app has checked if the email the user has
+     * entered is associated with an existing account after the user has forgotten their password.
+     * Bad English...
+     * @param result JSON string from AsyncTask
+     */
     private void handleStartResetOnPost(String result) {
         try {
             JSONObject resultsJSON = new JSONObject(result);
@@ -385,6 +493,12 @@ public class LoginActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Called after the AsyncTask has executed from when the user has attempted to verify their
+     * email after registration. If successful, store the username in SharedPrefs and launch the
+     * home activity
+     * @param result JSON string from AsyncTask
+     */
     private void handleVerifyOnPost(String result) {
         try {
             JSONObject resultsJSON = new JSONObject(result);
@@ -410,6 +524,11 @@ public class LoginActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Called after AsyncTask executes from when user has clicked the "Submit" button when
+     * attempting to register for an account.
+     * @param result JSON string from AsyncTask
+     */
     private void handleRegisterOnPost(String result) {
         try {
             JSONObject resultsJSON = new JSONObject(result);
@@ -432,7 +551,11 @@ public class LoginActivity extends AppCompatActivity
         }
     }
 
-
+    /**
+     * Called after AsyncTask has executed from when user has attempted to login from the
+     * login fragment.
+     * @param result JSON string from AsyncTask
+     */
     private void handleLoginOnPost(String result) {
         try {
             JSONObject resultsJSON = new JSONObject(result);
@@ -465,6 +588,11 @@ public class LoginActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Called after AsyncTask executes from when the user has attempted to verify their email
+     * address on the Reset Password fragment.
+     * @param result JSON string from AsyncTask
+     */
     private void handleVerifyResetOnPost(String result) {
         ResetPassword frag = (ResetPassword) getSupportFragmentManager()
                 .findFragmentByTag(getString(R.string.keys_fragment_resetPassword));
