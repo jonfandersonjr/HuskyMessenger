@@ -244,9 +244,9 @@ public class HomeActivity extends AppCompatActivity
         //If true, then this Activity was started from the notification bar
         if (getIntent().hasExtra(getString(R.string.keys_chat_notification))) {
             //load new chat activity with this person
-            //onOpenChat(Integer.valueOf(getIntent().getStringExtra(getString(R.string.keys_chat_notification))));
+            onOpenChat(Integer.valueOf(getIntent().getStringExtra(getString(R.string.keys_chat_notification))));
             //Activi
-            loadFragment(new ChatManagerFragment());
+            //loadFragment(new ChatManagerFragment());
             mIncomingMessages.clear();
             updateNotificationsUI();
         } else if (getIntent().hasExtra(getString(R.string.keys_connection_notification))) {
