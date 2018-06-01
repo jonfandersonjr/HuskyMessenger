@@ -43,18 +43,26 @@ public class HomeActivity extends AppCompatActivity
 
     private static final String TAG = "HomeActivity";
 
+    /**Broadcase receivers for getting chat and connection notifications**/
     private MessageUpdateReceiver mMessagesUpdateReceiver;
     private ConnectionUpdateReceiver mConnectionsUpdateReceiver;
+
+    /**Lists to hold notification requests**/
+    private ArrayList<String> mIncomingMessages = new ArrayList<>();
+    private ArrayList<String> mIncomingConnectionRequests = new ArrayList<>();
+
+    //Default theme set to modern
+    public static int mTheme = ThemesU.THEME_MODERN;
+
+    //Fields for contact page functionality
+    private ArrayList<String> mContacts, mRequests, mPending;
+
+    //Textviews to display notifications on navigation bar and navigation drawer
+    private TextView chatNotifications, connectionNotifications, mNotificationsBar;
+
     private String mUsername;
     private String mDeleteConnectionUsername;
 
-    public static int mTheme = ThemesU.THEME_MODERN;
-
-    private ArrayList<String> mIncomingMessages = new ArrayList<>();
-    private ArrayList<String> mIncomingConnectionRequests = new ArrayList<>();
-    private ArrayList<String> mContacts, mRequests, mPending;
-
-    private TextView chatNotifications, connectionNotifications, mNotificationsBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
