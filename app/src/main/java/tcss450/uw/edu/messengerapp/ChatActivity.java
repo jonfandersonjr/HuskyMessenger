@@ -46,6 +46,10 @@ public class ChatActivity extends AppCompatActivity {
     String mUsername;
     String mChatId;
 
+    /**
+     * Gets a chat ID from the passed bundle and loads the appropriate chat
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -172,6 +176,11 @@ public class ChatActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * Creates the menu to add or remove people from chats
+     * @param menu
+     * @return that it was created
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
@@ -237,6 +246,10 @@ public class ChatActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Gracefully handle errors from AsyncTaks
+     * @param e error
+     */
     private void handleError(String e) {
         Log.e("LISTEN ERROR!!!", e);
     }
