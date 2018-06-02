@@ -4,7 +4,7 @@ Developed by:
 Marshall Freed
 Jon Anderson
 Karan Kurbur
-Mahad Ahmed
+Mahad Fahiye
 
 Links:
 Google Drive: https://drive.google.com/drive/folders/1omcy1Qqcv_DX3HQEdOuXY8-AaqrPs3Kn
