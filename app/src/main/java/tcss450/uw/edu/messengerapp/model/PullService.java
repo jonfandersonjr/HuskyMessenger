@@ -33,6 +33,7 @@ import tcss450.uw.edu.messengerapp.R;
 
 public class PullService extends IntentService {
 
+    /**Tags for detecting which notification was received**/
     public static final String UPDATE = "UPDATE!";
     public static final String MESSAGE_UPDATE = "New Message!";
     public static final String CONNECTION_UPDATE = "New Connection Request!";
@@ -42,11 +43,12 @@ public class PullService extends IntentService {
 
     private static final String TAG = "PullService";
 
+    //Storage for data from notifications
     private static String mUsername = "";
     private static String mChatName = "";
-
     private boolean isInForeground;
 
+    //List of new connections requests (filering copies)
     ArrayList<String> connectionRequests = new ArrayList<>();
 
     public PullService() {
@@ -61,6 +63,11 @@ public class PullService extends IntentService {
         }
     }
 
+    /**
+     * Starts one service for chat notifications and one for connection requests
+     * @param context of app
+     * @param isInForeground for notification type
+     */
     public static void startServiceAlarm(Context context, boolean isInForeground) {
         Intent i = new Intent(context, PullService.class);
         i.putExtra(context.getString(R.string.keys_is_foreground), isInForeground);
@@ -82,6 +89,10 @@ public class PullService extends IntentService {
 
     }
 
+    /**
+     * Ends the current version of the service.
+     * @param context of the app
+     */
     public static void stopServiceAlarm(Context context) {
         Intent i = new Intent(context, PullService.class);
         PendingIntent pendingIntent = PendingIntent.getService(context, 1, i, 0);
@@ -109,7 +120,9 @@ public class PullService extends IntentService {
 
     /**
      * Prepares a notification if the app is in the background.
-     * @param
+     * @param notificationFlag what the notification will see
+     * @param chatId of the new message
+     * @param notificationType for differrentiation
      */
     private void buildNotification(String notificationFlag, String chatId, int notificationType) {
         NotificationCompat.Builder mBuilder = null;
@@ -117,12 +130,12 @@ public class PullService extends IntentService {
         Intent notifyIntent = null;
 
         //******Chat notification == 0, Connection notification == 1*****//
-        if (notificationType == 0) {
+        if (notificationType == 0) { //new chat
 
             mBuilder = new NotificationCompat.Builder(this)
                     .setSmallIcon(R.drawable.ic_chat)
                     .setContentTitle("New message from " + notificationFlag + "!")
-                    .setContentText("Click to view your list of chats!");
+                    .setContentText("Click to open this chat!");
             // Creates an Intent for the Activity
             notifyIntent = new Intent(this, HomeActivity.class);
             notifyIntent.putExtra(getString(R.string.keys_chat_notification), chatId);
@@ -147,7 +160,7 @@ public class PullService extends IntentService {
             // mId allows you to update the notification later on.
             mNotificationManager.notify(1, mBuilder.build());
 
-        } else if (notificationType == 1) {
+        } else if (notificationType == 1) { //new connection request
 
             mBuilder2 = new NotificationCompat.Builder(this)
                     .setSmallIcon(R.drawable.ic_person_add)
@@ -180,6 +193,10 @@ public class PullService extends IntentService {
 
     }
 
+    /**
+     * Sends a DB call to check if there have been any new connection requests
+     * that have not already been stored.
+     */
     private void checkNewConnectionRequests() {
         //build the web service URL
         Uri uri = new Uri.Builder()
@@ -196,14 +213,10 @@ public class PullService extends IntentService {
         }
 
         new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
-                .onPreExecute(this::handleGetConnectionRequestsOnPre)
+                //.onPreExecute(this::handleGetConnectionRequestsOnPre)
                 .onPostExecute(this::handleGetConnectionRequestsOnPost)
                 .onCancelled(this::handleErrorsInTask)
                 .build().execute();
-    }
-
-    public void handleGetConnectionRequestsOnPre() {
-
     }
 
     /**
@@ -254,8 +267,9 @@ public class PullService extends IntentService {
         }
     }
 
-
-
+    /**
+     * Sends a request for all the chats this user is a part of
+     */
     private void checkNewMessages() {
         //build the web service URL
         Uri uri = new Uri.Builder()
@@ -272,17 +286,17 @@ public class PullService extends IntentService {
         }
 
         new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
-                .onPreExecute(this::handleGetChatsOnPre)
+                //.onPreExecute(this::handleGetChatsOnPre)
                 .onPostExecute(this::handleGetChatsOnPost)
                 .onCancelled(this::handleErrorsInTask)
                 .build().execute();
     }
 
-
-    public void handleGetChatsOnPre() {
-
-    }
-
+    /**
+     * Iterated through all the chats you are a part of and makes a call to see if
+     * any of those chats have new messages.
+     * @param result of the getAllChats call
+     */
     public void handleGetChatsOnPost(String result) {
 
         try {
@@ -319,7 +333,7 @@ public class PullService extends IntentService {
                             }
 
                             new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(uri.toString(), msg)
-                                    .onPreExecute(this::handleGetMessagesOnPre)
+                                    //.onPreExecute(this::handleGetMessagesOnPre)
                                     .onPostExecute(this::handleGetMessagesOnPost)
                                     .onCancelled(this::handleErrorsInTask)
                                     .build().execute();
@@ -337,14 +351,10 @@ public class PullService extends IntentService {
         }
     }
 
-    public void handleGetMessagesOnPre() {
-
-    }
-
     /**
      * Read through the list of chats and see if the most recent is from
      * somebody else and came recently.
-     * @param result of finding chats
+     * @param result messages of a particular chat
      */
     public void handleGetMessagesOnPost(String result) {
 
@@ -386,17 +396,19 @@ public class PullService extends IntentService {
         }
     }
 
-
-
+    /**
+     * Gracefully handles errors on AsyncTask
+     */
     public void handleErrorsInTask(String result) {
         Log.e("ASYNC_TASK_ERROR", result);
     }
 
-
-    public static void setUsername(final String theString) {
-        mUsername = theString;
-    }
-
+    /**
+     * Helper method to see if any message was received int he last minute.
+     * @param time of the message
+     * @param currentTime on the phone
+     * @return whether or not the essage was in the last minute
+     */
     public boolean inLastMinute(String time, String currentTime) {
 
         String date = time.substring(0,10);
@@ -416,5 +428,10 @@ public class PullService extends IntentService {
         }
         return false;
     }
+
+    public static void setUsername(final String theString) {
+        mUsername = theString;
+    }
+
 
 }

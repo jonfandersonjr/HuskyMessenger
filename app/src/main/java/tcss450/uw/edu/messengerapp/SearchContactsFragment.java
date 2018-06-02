@@ -20,29 +20,31 @@ import java.util.ArrayList;
 
 import tcss450.uw.edu.messengerapp.model.MyRecyclerViewAdapter;
 
-
 /**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link SearchContactsFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link SearchContactsFragment#newInstance} factory method to
- * create an instance of this fragment.
+ * Fragment that acts as a Search Contacts page for the app
+ *
+ * Mostly handles the UI for search results
+ *
+ * @author Marshall Freed
+ * @version 5/31/2018
  */
 public class SearchContactsFragment extends Fragment {
 
     private OnSearchFragmentInteractionListener mListener;
 
+    /*Lists to organize users of app in relation to user*/
     private ArrayList<String> mContacts;
     private ArrayList<String> mRequests;
     private ArrayList<String> mPending;
     private ArrayList<String> mNewPeople;
 
+    /*Views for the lists above*/
     private RecyclerView mNewPeopleRecycler;
     private RecyclerView mContactsRecycler;
     private RecyclerView mRequestsRecycler;
     private RecyclerView mPendingRecycler;
 
+    /*Adapters for the views above*/
     private MyRecyclerViewAdapter mNewPeopleAdapter;
     private MyRecyclerViewAdapter mContactsAdapter;
     private MyRecyclerViewAdapter mRequestsAdapter;
@@ -52,6 +54,10 @@ public class SearchContactsFragment extends Fragment {
         // Required empty public constructor
     }
 
+    /**
+     * Called when the fragment is starting. Stores multiple lists as fields.
+     * @param savedInstanceState contains data most recently supplied if activity reactivated
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,6 +71,14 @@ public class SearchContactsFragment extends Fragment {
         }
     }
 
+    /**
+     * Called to have the fragment instantiate its user interface view.
+     * @param inflater The LayoutInflater object that can be used to inflate any views in the fragment
+     * @param container parent view that the fragment's UI should be attached to
+     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous
+     *                           saved state as given here
+     * @return Return the View for the fragment's UI, or null.
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -72,6 +86,10 @@ public class SearchContactsFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_search_contacts, container, false);
     }
 
+    /**
+     * Called when the Fragment is visible to the user.
+     * Method calls helper methods to set up the Views for all of the search results
+     */
     @Override
     public void onStart() {
         super.onStart();
@@ -83,6 +101,10 @@ public class SearchContactsFragment extends Fragment {
 
     }
 
+    /**
+     * Called when a fragment is first attached to its context.
+     * @param context Activity fragment is attached to
+     */
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -94,13 +116,21 @@ public class SearchContactsFragment extends Fragment {
         }
     }
 
+    /**
+     * Called when the fragment is no longer attached to its activity
+     */
     @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;
     }
 
-
+    /**
+     * Callback method to be invoked when an item in the mNewPeopleAdapter has been clicked.
+     * @param v The view within the AdapterView that was clicked
+     *          (this will be a view provided by the adapter)
+     * @param position he position of the view in the adapter.
+     */
     private void onItemClickNewPeople(View v, int position) {
         String str = mNewPeopleAdapter.getItem(position);
         final String username = str.substring(0, str.indexOf(" "));
@@ -137,6 +167,12 @@ public class SearchContactsFragment extends Fragment {
         builder.show();
     }
 
+    /**
+     * Callback method to be invoked when an item in the mRequestsAdapter has been clicked.
+     * @param v The view within the AdapterView that was clicked
+     *          (this will be a view provided by the adapter)
+     * @param position he position of the view in the adapter.
+     */
     private void onItemClickRequests(View v, int position) {
         String str = mRequestsAdapter.getItem(position);
         String fragment = "search";
@@ -178,6 +214,12 @@ public class SearchContactsFragment extends Fragment {
 
     }
 
+    /**
+     * Callback method to be invoked when an item in the mPendingAdapter has been clicked.
+     * @param v The view within the AdapterView that was clicked
+     *          (this will be a view provided by the adapter)
+     * @param position he position of the view in the adapter.
+     */
     private void onItemClickPending(View v, int position) {
         String str = mPendingAdapter.getItem(position);
         final String username = str.substring(0, str.indexOf(" "));
@@ -237,6 +279,12 @@ public class SearchContactsFragment extends Fragment {
         builder.show();
     }
 
+    /**
+     * Callback method to be invoked when an item in the mContactsAdapter has been clicked.
+     * @param v The view within the AdapterView that was clicked
+     *          (this will be a view provided by the adapter)
+     * @param position he position of the view in the adapter.
+     */
     private void onItemClickContacts(View v, int position) {
         String connections = "connections";
         String str = mContactsAdapter.getItem(position);
@@ -293,6 +341,10 @@ public class SearchContactsFragment extends Fragment {
         builder.show();
     }
 
+    /**
+     * Helper method that takes the list of "new people", or users that are not related to the user yet
+     * but are using this app, and sets up the recycler view for them
+     */
     private void setUpNewPeople() {
         if (mNewPeople.isEmpty()) {
             return;
@@ -309,6 +361,9 @@ public class SearchContactsFragment extends Fragment {
 
     }
 
+    /**
+     * Helper method that takes the list of current contacts and sets up the recycler view for them
+     */
     private void setUpContacts() {
         if (mContacts.isEmpty()) {
             TextView tv = getView().findViewById(R.id.searchConnectionsCurrentConnectionsHeader);
@@ -329,6 +384,10 @@ public class SearchContactsFragment extends Fragment {
 
     }
 
+    /**
+     * Helper method that takes the list of users that have requested the user as a connection
+     * and sets up the recycler view for them
+     */
     private void setUpRequests() {
         if (mRequests.isEmpty()) {
             TextView tv = getView().findViewById(R.id.searchConnectionsRequestHeaderText);
@@ -349,6 +408,10 @@ public class SearchContactsFragment extends Fragment {
 
     }
 
+    /**
+     * Helper method that takes the list of users that the user has requested as a connection
+     * and sets up the recycler view for them
+     */
     private void setUpPending() {
         if (mPending.isEmpty()) {
             TextView tv = getView().findViewById(R.id.searchConnectionsPendingHeaderText);
@@ -369,11 +432,23 @@ public class SearchContactsFragment extends Fragment {
 
     }
 
+    /**
+     * Called before the app launches an AsyncTask to disable the views that the user can
+     * interact with and show a progress bar.
+     */
     public void handleRequestOnPre() {
         ViewGroup vg = (ViewGroup) getView().findViewById(R.id.searchFrameLayout);
         enableDisableViewGroup(vg, false);
     }
 
+    /**
+     * Method to be called after the user makes a decision about a connection request. Depending on
+     * whether they accepted or declined, requesting user gets placed into current contacts. Request
+     * gets deleted from request list. All views become enabled again.
+     * @param success success of the AsyncTask
+     * @param username username of request user accepted or declined
+     * @param accept whether user accepted the request or not
+     */
     public void handleRequestOnPost(boolean success, String username, boolean accept) {
         ViewGroup vg = (ViewGroup) getView().findViewById(R.id.searchFrameLayout);
 
@@ -422,6 +497,12 @@ public class SearchContactsFragment extends Fragment {
 
     }
 
+    /**
+     * Method to be called after the user deletes a pending request they've made. Pending request
+     * gets deleted from pending list. All views become enabled again.
+     * @param success whether the AsyncTask was successful
+     * @param username username of request the user wants to revoke
+     */
     public void handlePendingOnPost(boolean success, String username) {
         ViewGroup vg = (ViewGroup) getView().findViewById(R.id.searchFrameLayout);
 
@@ -454,6 +535,12 @@ public class SearchContactsFragment extends Fragment {
         enableDisableViewGroup(vg, true);
     }
 
+    /**
+     * Called after the AsyncTask has finished when the user has requested a new connection with a
+     * contact from the search result. Method will put the pending request in the appropriate list
+     * and remove from the new people list
+     * @param username username of contact the user wants to add
+     */
     public void handleAddOnPost(String username) {
         ViewGroup vg = (ViewGroup) getView().findViewById(R.id.searchFrameLayout);
 
@@ -492,6 +579,12 @@ public class SearchContactsFragment extends Fragment {
 
     }
 
+    /**
+     * Method to be called after the user deletes a contact. Contact will be
+     * deleted from the contact list. All views become enabled again.
+     * @param success success of the AsyncTask
+     * @param username username of pending contact request
+     */
     public void handleContactDeletedOnPost(boolean success, String username) {
         ViewGroup vg = (ViewGroup) getView().findViewById(R.id.searchFrameLayout);
 
@@ -530,11 +623,20 @@ public class SearchContactsFragment extends Fragment {
         enableDisableViewGroup(vg, true);
     }
 
+    /**
+     * Method called if there is an error within an AsyncTask
+     * @param err error that occurred
+     */
     public void setError(String err) {
         Toast.makeText(getActivity(), "Request unsuccessful for reason: " + err,
                 Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * Method called if there is an error that occurs within an AsyncTask.
+     * Re-Enables the viewgroup
+     * @param e error that occurred
+     */
     public void handleOnError(String e) {
         ViewGroup vg = (ViewGroup) getView().findViewById(R.id.searchFrameLayout);
 
@@ -544,6 +646,11 @@ public class SearchContactsFragment extends Fragment {
         enableDisableViewGroup(vg, true);
     }
 
+    /**
+     * Method disables all children of the viewgroup that is passed in.
+     * @param vg viewgroup to enable or disable
+     * @param enabled boolean to decide whether to enable or disable
+     */
     private void enableDisableViewGroup(ViewGroup vg, boolean enabled) {
         int children = vg.getChildCount();
         for (int i = 0; i < children; i++) {
@@ -563,6 +670,9 @@ public class SearchContactsFragment extends Fragment {
         }
     }
 
+    /**
+     * Interface that contains methods that pertain to button clicks.
+     */
     public interface OnSearchFragmentInteractionListener {
         void onSearchRequestInteraction(String username, boolean accept, String fragment);
         void onSearchAddInteraction(String username);

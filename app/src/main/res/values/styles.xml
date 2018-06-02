@@ -13,6 +13,9 @@
         <item name="windowNoTitle">true</item>
     </style>
 
+    
+    /**List of styles for this app**/
+
     <style name="AppTheme.Rugged" parent="AppTheme.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary1</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark1</item>

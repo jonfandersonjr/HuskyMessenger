@@ -17,9 +17,13 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-
 /**
- * A simple {@link Fragment} subclass.
+ * Fragment that acts as a Reset Password page for the app
+ *
+ * Mostly handles the UI for resetting password
+ *
+ * @author Marshall Freed
+ * @version 5/31/2018
  */
 public class ResetPassword extends Fragment {
 
@@ -30,7 +34,15 @@ public class ResetPassword extends Fragment {
         // Required empty public constructor
     }
 
-
+    /**
+     * Called to have the fragment instantiate its user interface view.
+     * Sets onClickListeners to all buttons in view
+     * @param inflater The LayoutInflater object that can be used to inflate any views in the fragment
+     * @param container parent view that the fragment's UI should be attached to
+     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous
+     *                           saved state as given here
+     * @return Return the View for the fragment's UI, or null.
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -54,6 +66,10 @@ public class ResetPassword extends Fragment {
         return v;
     }
 
+    /**
+     * Called when a fragment is first attached to its context.
+     * @param context Activity fragment is attached to
+     */
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -65,6 +81,11 @@ public class ResetPassword extends Fragment {
         }
     }
 
+    /**
+     * Called before the app launches an AsyncTask when the user hits the
+     * "verify" button to disable the views that the user can
+     * interact with and show a progress bar.
+     */
     public void handleVerifyOnPre() {
         Button b = getView().findViewById(R.id.verifyChangePasswordButton);
         b.setEnabled(false);
@@ -88,6 +109,11 @@ public class ResetPassword extends Fragment {
         progBar.setVisibility(ProgressBar.VISIBLE);
     }
 
+    /**
+     * Called before the app launches an AsyncTask when the user hits the
+     * "I'm Done" button to disable the views that the user can
+     * interact with and show a progress bar.
+     */
     public void handleResetOnPre() {
         EditText enter = getView().findViewById(R.id.changePasswordEditText);
         enter.setEnabled(false);
@@ -102,6 +128,12 @@ public class ResetPassword extends Fragment {
         progBar.setVisibility(ProgressBar.VISIBLE);
     }
 
+    /**
+     * Called after the AsyncTask is finished when the user's code has been verified.
+     * This method applies/shows all of the correct views to the user based on whether
+     * the code they entered was valid or not
+     * @param success whether the code they entered was valid or not
+     */
     public void handleVerifyOnPost(boolean success) {
         ProgressBar progBar = getView().findViewById(R.id.verifyResetProgressBar);
         progBar.setVisibility(ProgressBar.GONE);
@@ -148,6 +180,11 @@ public class ResetPassword extends Fragment {
         }
     }
 
+    /**
+     * Called after the AsyncTask has finished when the user has successfully reset their
+     * password. The method shows an alert dialog that the user cannot click outside of telling
+     * them that their password changed was a success.
+     */
     public void handleResetOnPost() {
         ProgressBar progBar = getView().findViewById(R.id.resetPasswordProgressBar);
         progBar.setVisibility(ProgressBar.GONE);
@@ -168,6 +205,10 @@ public class ResetPassword extends Fragment {
         dialog.setCanceledOnTouchOutside(false);
     }
 
+    /**
+     * Called after the app launches an AsyncTask and encounters an error to re-enable
+     * the views that the user can interact with and hide the progress bar.
+     */
     public void handleOnError() {
         EditText enter = getView().findViewById(R.id.changePasswordEditText);
         enter.setEnabled(true);
@@ -185,6 +226,10 @@ public class ResetPassword extends Fragment {
                 Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * Called when the user clicks the "I'm Done" button. Method calls other helper methods
+     * to check client-side constraints before the app launches an AsyncTask from the activity
+     */
     private void onResetButtonClick() {
         boolean meetsConstraints = passMeetsConstraints();
         boolean isNotEmpty = checkIsEmpty();
@@ -197,6 +242,11 @@ public class ResetPassword extends Fragment {
         }
     }
 
+    /**
+     * Helper method to check if at least one EditText between
+     * the two password EditTexts are empty.
+     * @return if at least one of them is empty
+     */
     boolean checkIsEmpty() {
         boolean fieldOneIsEmpty = true;
         boolean fieldTwoIsEmpty = true;
@@ -226,6 +276,11 @@ public class ResetPassword extends Fragment {
         return false;
     }
 
+    /**
+     * Helper method to check if the password they typed in meets our constraints.
+     * Passwords must have at least 5 characters, an uppercase character and at least one digit
+     * @return whether the password meets the constraints or not
+     */
     public boolean passMeetsConstraints() {
         boolean hasUpper = false;
         boolean hasDigit = false;
@@ -269,6 +324,11 @@ public class ResetPassword extends Fragment {
         return meetsConstraints;
     }
 
+    /**
+     * Helper method to check if the both passwords that the user entered are exactly matching
+     * or not.
+     * @return whether they are matching
+     */
     public boolean passwordsMatch() {
         boolean isMatching;
 
@@ -287,6 +347,10 @@ public class ResetPassword extends Fragment {
         return isMatching;
     }
 
+    /**
+     * Interface that contains callback methods for the Activity to do some heavy lifting
+     * when buttons on this fragment are pressed.
+     */
     public interface OnResetPasswordFragmentInteractionListener {
         void onVerifyResetButtonInteraction(int code);
         void onResetButtonInteraction(Editable pass);

@@ -31,21 +31,23 @@ import java.util.GregorianCalendar;
  */
 public class HomeFragment extends Fragment implements View.OnClickListener {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+    /**Default fields added by Android Studio**/
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
 
+    /**Default string for home page buttons if user is not part of 5+ chats**/
+    private final static String BUTTON_EMPTY = "Click to create a chat.";
+
+    /**Listener for get requests in this fragment**/
     private OnFragmentInteractionListener mListener;
 
-    private final static String BUTTON_EMPTY = "Click to create a chat.";
+    /**Storage of this user's username**/
     private String mUsername;
-    private ArrayList<Message> mRecentMessageInfo = new ArrayList<>();
 
+    /**Collections for home page buttons, recent chats, and what those chats say**/
+    private ArrayList<Message> mRecentMessageInfo = new ArrayList<>();
     private Button[] mButtons = new Button[5];
     private Message[] mMesseges = new Message[5];
 
@@ -54,14 +56,12 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
     }
 
     /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
+     * Default factory method
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
      * @return A new instance of fragment HomeFragment.
      */
-    // TODO: Rename and change types and number of parameters
     public static HomeFragment newInstance(String param1, String param2) {
         HomeFragment fragment = new HomeFragment();
         Bundle args = new Bundle();
@@ -71,6 +71,10 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
         return fragment;
     }
 
+    /**
+     * Default factory method
+     * @param savedInstanceState
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,15 +84,16 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
         }
     }
 
+    /*
+    * Open the new fragment and initializes the buttons with recent chat information
+    */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_home, container, false);
 
-
         SharedPreferences prefs = getActivity().
                 getSharedPreferences(getString(R.string.keys_shared_prefs), Context.MODE_PRIVATE);
-
         mUsername = prefs.getString(getString(R.string.keys_prefs_username), "");
 
         TextView tv = v.findViewById(R.id.homeWelcome);
@@ -101,10 +106,11 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
             }
         });
 
-        tv.setText("Welcome, " + mUsername + "!");
+        tv.setText("Welcome, " + mUsername + "!"); //sets text for welcome message
+
+        //Update recent chats for this user
         initButtons(v);
         getRecentChats();
-
         return v;
     }
 
@@ -113,6 +119,10 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
         super.onViewCreated(view, savedInstanceState);
     }
 
+    /**
+     * Sets on click listeners for recent chat buttons
+     * @param v the home fragment
+     */
     private void initButtons(View v) {
         mButtons[0] = v.findViewById(R.id.chat0);
         mButtons[0].setOnClickListener(this);
@@ -126,6 +136,10 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
         mButtons[4].setOnClickListener(this);
     }
 
+    /**
+     * Reads through our list of chats and orders them such that
+     * the most recent can be put onto the buttons
+     */
     private void initRecentMessages() {
         Collections.sort(mRecentMessageInfo);
         for (int i = 0; i < Math.min(mMesseges.length, mRecentMessageInfo.size()); i++) {
@@ -141,6 +155,9 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
 
     }
 
+    /**
+     * DB call to get all the chats this user is a part of
+     */
     private void getRecentChats() {
 
         Uri uri = new Uri.Builder()
@@ -164,9 +181,13 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
     }
 
     private void getRecentChatsOnPre() {
-
     }
 
+    /**
+     * Takes the chats this user is a part of and makes a DB call to get the
+     * most recent messages from those chats
+     * @param result chats
+     */
     private void getRecentChatsOnPost(String result) {
 
         try {
@@ -219,9 +240,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
 
     }
 
-
-    public void handleGetMessagesOnPre() {
-
+    private void handleGetMessagesOnPre() {
     }
 
     /**
@@ -254,8 +273,36 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
         }
     }
 
+    /**
+     * Gracefully handle any errors on AsyncTask
+     * @param e the error message
+     */
     private void handleError(String e) {
         Log.e("LISTEN ERROR!!!", e);
+    }
+
+    /**
+     * Attached my listener to this fragment
+     * @param context
+     */
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof OnFragmentInteractionListener) {
+            mListener = (OnFragmentInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
+    }
+
+    /**
+     * Detaches my listener from this fragment.
+     */
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
     }
 
     /**
@@ -270,10 +317,14 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
         }
     }
 
+    /**
+     * Sets the on click listener for whichever button is sent to it
+     * @param theButton to set
+     */
     @Override
-    public void onClick(View v) {
+    public void onClick(View theButton) {
         if (mListener != null) {
-            switch (v.getId()) {
+            switch (theButton.getId()) {
                 case R.id.chat0:
                     setButtonListener(0);
                     break;
@@ -293,24 +344,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
                     Log.wtf("", "Didn't expect to see me...");
             }
         }
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
-    }
-
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
     }
 
     /**
@@ -342,6 +375,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
             return (this.mMessageTime.compareTo(o.mMessageTime) * -1);
         }
     }
+
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
