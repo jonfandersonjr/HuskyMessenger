@@ -35,23 +35,26 @@ import tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask;
  * A simple {@link Fragment} subclass.
  * Use the {@link ChatManagerFragment#newInstance} factory method to
  * create an instance of this fragment.
+ * Fragment that allows the user to send and display messages.
+ *
+ * @author Mahad Fahiye
+ * @version 5/31/2018
  */
 public class ChatManagerFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+
+    //Default fields added by Android Studio
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
-    private String mUsername;
-    private Button chat1;
-    private Button chat2;
-    private int listSize = 0;
+
+
+    //Data structures to store the chatrooms' chatIDs and a map of the chatrooms with their chatIDs
     private ArrayList<String> chatIdList = new ArrayList<String>();
     private HashMap<String, String> mChatMap = new HashMap<>();
-    private ArrayList<String> addedNames = new ArrayList<String>();
-    private LinearLayout mChatManagerLayout;// = new LinearLayout(this.getContext());
 
-
-    private ListenManager mListenerManager;
+    //Field for the layout of the ChatManagerFragment
+    private LinearLayout mChatManagerLayout;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -80,6 +83,9 @@ public class ChatManagerFragment extends Fragment {
         return fragment;
     }
 
+    /**
+     * Called when the Fragment is created
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
@@ -96,34 +102,10 @@ public class ChatManagerFragment extends Fragment {
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
     }
-    private void loadChats1(String result)  {
-        // JSONObject res = new JSONObject(result);
-        //res.getString("messages");
-        // JSONObject message = result.getJSONObject("messages");
-        //JSONArray ids = message.toJSONArray(
-        System.out.println(result);
-        JSONObject res = null;
-        try {
-            res = new JSONObject(result);
-            String message = res.getString("message");
-            JSONObject res2 = new JSONObject(message);
-            System.out.println(message);
 
-            JSONArray out = res2.getJSONArray("chatid");
-
-        }
-
-        catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void loadChat() {
-        Intent j = new Intent(getActivity(), ChatFragment.class);
-        startActivity(j);
-    }
-
-
+    /*
+     * Opens the new fragment and inflates it
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -131,6 +113,11 @@ public class ChatManagerFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_chat_manager, container, false);
         return rootView;
     }
+
+    /**
+     * Once the fragment is inflated it binds mChatManagerLayout to the chatButtons layout inside
+     * this fragment and then proceeds to call the getAllChats method
+     */
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -138,7 +125,10 @@ public class ChatManagerFragment extends Fragment {
         getAllChats();
     }
 
-
+    /**
+     * Method that retrieves all the chatrooms a user is in, it creates a JSON Object
+     * containing the username of the person who is currently logged in and sends it to the backend
+     */
     private void getAllChats() {
         SharedPreferences prefs = getActivity().getSharedPreferences(getString(R.string.keys_shared_prefs),
                 Context.MODE_PRIVATE);
@@ -146,8 +136,6 @@ public class ChatManagerFragment extends Fragment {
         if (!prefs.contains(getString(R.string.keys_prefs_username))) {
             throw new IllegalStateException("No username in prefs!");
         }
-
-        //mUsername = "test1";
         JSONObject msg = new JSONObject();
         try {
             msg.put("username", prefs.getString(getString(R.string.keys_prefs_username), ""));
@@ -160,24 +148,32 @@ public class ChatManagerFragment extends Fragment {
                 .appendPath(getString(R.string.ep_get_all_chats))
                 .build();
 
-        Log.e("CONTENT",retrieveRequests.toString());
+        Log.e("CONTENT", retrieveRequests.toString());
 
         new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(retrieveRequests.toString(), msg)
-                .onPreExecute(this::handleGetChatsOnPre)
                 .onPostExecute(this::publishRequests)
                 .onCancelled(this::handleError)
                 .build().execute();
 
 
-
     }
-    public void handleGetChatsOnPre() {
 
-    }
+    /**
+     * Method to handle errors that occur when retrieving the chatrooms
+     *
+     * @param e the string signifying the error message
+     */
     private void handleError(String e) {
         Log.e("LISTEN ERROR!!!", e);
     }
 
+    /**
+     * Method that parses through the JSON object retrieved from the call to the backend
+     * and goes through the list of chatrooms that the user is in, it then loads up the chatroom
+     * names into buttons that are loaded up onto the screen
+     *
+     * @param result the JSON object retrieved from the call to the backend
+     */
     public void publishRequests(String result) {
         try {
             JSONObject requests = new JSONObject(result);
@@ -199,69 +195,54 @@ public class ChatManagerFragment extends Fragment {
                             if (!(chatIdList.contains(chatid))) {
                                 chatIdList.add(chatid);
                             }
-                            if(!(mChatMap.containsKey(chatid))){
-                                mChatMap.put(chatid,chatname);
+                            if (!(mChatMap.containsKey(chatid))) {
+                                mChatMap.put(chatid, chatname);
                             }
                         }
 
-                        for(int i = 0; i < chatIdList.size(); i++) {
-                        //    if(!(addedNames.contains(mChatnames.get(i)))){
-                                Button b = new Button(getActivity());
-                                b.setTextColor(Color.parseColor("#ffffff"));
-                                b.setText(mChatMap.get(chatIdList.get(i))); //Get chat name here!
-                                Drawable mDrawable = getContext().getResources().getDrawable(R.drawable.start_chat_box,null);
+                        for (int i = 0; i < chatIdList.size(); i++) {
+                            Button b = new Button(getActivity());
+                            b.setTextColor(Color.parseColor("#ffffff"));
+                            b.setText(mChatMap.get(chatIdList.get(i))); //Get chat name here!
+                            Drawable mDrawable = getContext().getResources().getDrawable(R.drawable.start_chat_box, null);
 
 
-                                b.setBackgroundResource(R.drawable.start_chat_box);
-                                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                                params.setMargins(5,5,5,5);
-                                b.setLayoutParams(params);
-                                // b.setBackground(mDrawable);
+                            b.setBackgroundResource(R.drawable.start_chat_box);
+                            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                            params.setMargins(5, 5, 5, 5);
+                            b.setLayoutParams(params);
                             int finalI = i;
                             b.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        Log.e("BUTTON","" + b.getText());
-                                        Intent intent = new Intent(getActivity(), ChatActivity.class);
-                                        intent.putExtra("CHAT_ID",chatIdList.get(finalI));
-                                        startActivity(intent);
-                                    }
-                                });
-                                mChatManagerLayout.addView(b);
-                                listSize = chatIdList.size();
-                                addedNames.add(chatIdList.get(i));
-                     //       }
+                                @Override
+                                public void onClick(View v) {
+                                    Intent intent = new Intent(getActivity(), ChatActivity.class);
+                                    intent.putExtra("CHAT_ID", chatIdList.get(finalI));
+                                    startActivity(intent);
+                                }
+                            });
+                            mChatManagerLayout.addView(b);
                         }
 
                     } catch (JSONException e) {
                         e.printStackTrace();
                         return;
                     }
-                    Log.e("HOW MANY CHATS", "" + chatIdList.size());
                 }
             }
-            } catch (JSONException e) {
+        } catch (JSONException e) {
             e.printStackTrace();
         }
-        //Log.e("HOW MANY CHATS", ""+mChatnames.size());
     }
-    public void loadFragment(Fragment theFragment) {
-        FragmentTransaction transaction = getActivity().getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.chatContainer, theFragment);
-        // Commit the transaction
-        transaction.commit();
-    }
+
     @Override
     public void onStart() {
         super.onStart();
-        Log.e("HOW MANY CHATS", ""+chatIdList.size());
 
     }
+
     @Override
     public void onResume() {
         super.onResume();
-        //mListenerManager.startListening();
     }
 
 

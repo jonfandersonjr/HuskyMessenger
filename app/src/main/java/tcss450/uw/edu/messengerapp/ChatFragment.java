@@ -42,21 +42,38 @@ import tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask;
  * A simple {@link Fragment} subclass.
  * Use the {@link ChatFragment newInstance} factory method to
  * create an instance of this fragment.
+ * Fragment that allows the user to send and display messages.
+ *
+ * @author Mahad Fahiye
+ * @version 5/31/2018
  */
 @SuppressLint("ValidFragment")
 public class ChatFragment extends Fragment {
-
+    //Fields for User information
     private String mUsername;
-    private String chatUsername;
-    private String mSendUrl;
-    private TextView mOutputTextView;
-    private ListenManager mListenManager;
-    private LinearLayout mFragment;
-    private int currentMessages;
     private String mUserchatID = "1";
     private String chatID;
-    private static final int[] MESSAGE_COLORS = {R.color.colorPrimary3,R.color.colorAccent4,
-            R.color.colorPrimary4,R.color.colorAccent5,R.color.colorPrimary,R.color.colorPrimaryDark2};
+
+    //Field for the path to sendMessages endpoint
+    private String mSendUrl;
+
+    //Field for output screen for messages
+    private TextView mOutputTextView;
+
+    //listen manager for message updates
+    private ListenManager mListenManager;
+
+    //Field for the current ChatFragment
+    private LinearLayout mFragment;
+
+    //Field for storing the number of current messages the user has before
+    //a new message gets sent or recieved
+    private int currentMessages;
+
+    //Data structures to store message bubble color, all the usernames in the chat and what
+    //color their text bubble should be
+    private static final int[] MESSAGE_COLORS = {R.color.colorPrimary3, R.color.colorAccent4,
+            R.color.colorPrimary4, R.color.colorAccent5, R.color.colorPrimary, R.color.colorPrimaryDark2};
     public ArrayList<String> allUsernames = new ArrayList<>();
     public HashMap<String, Integer> userColors = new HashMap<>();
 
@@ -68,12 +85,15 @@ public class ChatFragment extends Fragment {
         // Required empty public constructor
     }
 
+    /*
+     * Opens the new fragment and retrieves chatID from ChatActivity
+     * also initializes the send button and attaches a sendMessage method as a listener
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         if (getArguments() != null) {
             mUserchatID = getArguments().getString("CHAT_ID");
-            Log.e("IN CHAT FRAGMENT", mUserchatID);
         }
         getActivity().getWindow().setSoftInputMode(
                 WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
@@ -84,26 +104,22 @@ public class ChatFragment extends Fragment {
         mOutputTextView.setMovementMethod(new ScrollingMovementMethod());
 
 
-
         return v;
     }
+
+    /*
+     * Maps mFragment field to the current ChatFragment
+     */
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mFragment = (LinearLayout) view.findViewById(R.id.chatLayout);
-
-//        scroll.post(new Runnable() {
-//            @Override
-//            public void run() {
-//                scroll.fullScroll(View.FOCUS_DOWN);
-//            }
-//        });
-
-//        Button b = new Button(getActivity());
-//        b.setText("HI!!!!!");
-//        mFragment.addView(b);
     }
 
+    /**
+     * Method called when this fragment comes into view.
+     * Sets the username and builds the path to the sendMessages endpoint
+     */
     @Override
     public void onStart() {
 
@@ -134,12 +150,6 @@ public class ChatFragment extends Fragment {
                 .appendPath(getString(R.string.ep_get_message))
                 .appendQueryParameter("chatId", mUserchatID)
                 .build();
-        Log.e("GETTING MESSAGES FROM THIS ",retrieve.toString());
-
-        //ADD FIRST CALL
-
-
-
         if (prefs.contains(getString(R.string.keys_prefs_time_stamp))) {
             //ignore all of the seen messages. You may want to store these messages locally
             mListenManager = new ListenManager.Builder(retrieve.toString(),
@@ -160,6 +170,10 @@ public class ChatFragment extends Fragment {
 
     }
 
+    /**
+     * Method called when fragment is brought back into view.
+     * Sets the current messages to 0 and makes the listener for new messages start listening again.
+     */
     @Override
     public void onResume() {
         super.onResume();
@@ -168,6 +182,10 @@ public class ChatFragment extends Fragment {
         mListenManager.startListening();
     }
 
+    /**
+     * Method called when fragment is no longer visible.
+     * Stops the new messages listener and records the most recent message timestamp.
+     */
     @Override
     public void onStop() {
         super.onStop();
@@ -186,9 +204,12 @@ public class ChatFragment extends Fragment {
     }
 
 
-
+    /**
+     * listener method for the send button in the chat fragment
+     *
+     * @param theButton the button that this listener method is attached to
+     */
     private void sendMessage(final View theButton) {
-        Log.e("SEND MESSAGE", "I HAVE BEEN CALLED!");
         JSONObject messageJson = new JSONObject();
         String msg = ((EditText) getView().findViewById(R.id.chatInput))
                 .getText().toString();
@@ -196,7 +217,7 @@ public class ChatFragment extends Fragment {
         try {
             messageJson.put(getString(R.string.keys_json_username), mUsername);
             messageJson.put(getString(R.string.keys_json_message), msg);
-            messageJson.put(getString(R.string.keys_json_chat_id), chatID); //
+            messageJson.put(getString(R.string.keys_json_chat_id), chatID);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -207,15 +228,26 @@ public class ChatFragment extends Fragment {
                 .build().execute();
     }
 
+    /**
+     * Method to handle errors that occur when sending a message
+     *
+     * @param msg the string signifying the error message
+     */
     private void handleError(final String msg) {
         Log.e("CHAT ERROR!!!", msg.toString());
     }
 
+    /**
+     * Method that parses the string returned from the backend and clears the input box
+     * once the user hits the send button
+     *
+     * @param result the string retrieved once the backend call was made
+     */
     private void endOfSendMsgTask(final String result) {
         try {
             JSONObject res = new JSONObject(result);
 
-            if(res.get(getString(R.string.keys_json_success)).toString()
+            if (res.get(getString(R.string.keys_json_success)).toString()
                     .equals(getString(R.string.keys_json_success_value_true))) {
 
                 ((EditText) getView().findViewById(R.id.chatInput))
@@ -226,30 +258,40 @@ public class ChatFragment extends Fragment {
         }
     }
 
+    /**
+     * Method to handle errors that occur when removing a user
+     *
+     * @param e the string signifying the error message
+     */
     private void handleError(final Exception e) {
         Log.e("LISTEN ERROR!!!", e.getMessage());
     }
 
+    /**
+     * Method that parses through the JSON object retrieved from the call to the backend
+     * and goes through the list of messages in the particular chat, it then determines who sent
+     * the message and assigns a unique text bubble color to that user and displays it on the screen
+     *
+     * @param messages the JSON object retrieved from the call to the backend
+     */
     private void publishProgress(JSONObject messages) {
         final String[] msgs;
 
-        if(messages.has(getString(R.string.keys_json_messages))) {
+        if (messages.has(getString(R.string.keys_json_messages))) {
             try {
 
                 JSONArray jMessages = messages.getJSONArray(getString(R.string.keys_json_messages));
 
                 msgs = new String[jMessages.length()];
 
-                //Log.e("LIST OF MESSAGES TO LOAD", msgs.length + "");
                 for (int i = 0; i < jMessages.length(); i++) {
                     JSONObject msg = jMessages.getJSONObject(i);
                     String username = msg.get(getString(R.string.keys_json_username)).toString();
                     //chatUsername = username;
                     String userMessage = msg.get(getString(R.string.keys_json_message)).toString();
                     msgs[i] = username + ":" + userMessage;
-                    Log.e("MESSAGES", msgs[i]);
                     allUsernames.add(username);
-                    if(!(userColors.containsKey(username))) {
+                    if (!(userColors.containsKey(username))) {
                         Random r = new Random();
                         userColors.put(username, MESSAGE_COLORS[r.nextInt(MESSAGE_COLORS.length)]);
                     }
@@ -260,97 +302,48 @@ public class ChatFragment extends Fragment {
             }
 
             getActivity().runOnUiThread(() -> {
-
-                //Log.e("CURRENT MESSAGES", currentMessages + "");
-                //Log.e("MSGLENGTH", msgs.length + "");
-                //check if new messages!
                 mOutputTextView = getView().findViewById(R.id.chatOutput);
 
-                if(msgs.length !=  0 && currentMessages!= msgs.length) {
-                    Log.e("CHANGE","CHANGE");
+                if (msgs.length != 0 && currentMessages != msgs.length) {
                     mFragment.removeAllViews();
                     currentMessages = msgs.length;
-                    for(int i = 0; i <msgs.length;i++) {
-                        String [] sendUsername = msgs[i].split(":");
+                    for (int i = 0; i < msgs.length; i++) {
+                        String[] sendUsername = msgs[i].split(":");
 
-
-
-                        //smFragment.addView(b);
-//                        ConstraintLayout c = (ConstraintLayout) getView().findViewById(R.id.chatFragment);
-//                        TextView t = new TextView(getContext());
-//                        ConstraintLayout.LayoutParams lp = new ConstraintLayout.LayoutParams(
-//                                ConstraintLayout.LayoutParams.WRAP_CONTENT, // Width of TextView
-//                                ConstraintLayout.LayoutParams.WRAP_CONTENT);
-//                        t.setLayoutParams(lp);
-//                        t.setGravity(Gravity.CENTER);
-//
-//                        Log.e("MESSAGES", "ADDED");
-//                        t.setText("HELLO");
-                        if(mUsername.equals(sendUsername[0])) {
+                        //check to see if the user that's logged in was the person who sent
+                        //the message, if so assign a default green color to their text bubble and
+                        //display it on the right side else, give the text bubble a random color
+                        //and display it on the left side of the screen
+                        if (mUsername.equals(sendUsername[0])) {
                             Button b = new Button(getActivity());
                             b.setText(msgs[i]);
                             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                            params.setMargins(10,10,10,10);
+                            params.setMargins(10, 10, 10, 10);
                             params.weight = 1.0f;
                             params.gravity = Gravity.RIGHT;
                             b.setLayoutParams(params);
-                            //Log.e("TAG",""+test);
-                            Log.e("Logged in", mUsername);
-                            Log.e("Sender", sendUsername[0]);
                             b.setTextColor(Color.parseColor("#ffffff"));
                             b.setBackgroundResource(R.drawable.sent_messagee_box);
-                            b.setPadding(8,8,8,8);
+                            b.setPadding(8, 8, 8, 8);
                             mFragment.addView(b);
                         } else {
                             Button b = new Button(getActivity());
                             b.setText(msgs[i]);
-                            Drawable mDrawable = getContext().getResources().getDrawable(R.drawable.message_box,null);
-                            mDrawable.setColorFilter(getResources().getColor(userColors.get(sendUsername[0]),null), PorterDuff.Mode.MULTIPLY);
-                            //r.s
+                            Drawable mDrawable = getContext().getResources().getDrawable(R.drawable.message_box, null);
+                            mDrawable.setColorFilter(getResources().getColor(userColors.get(sendUsername[0]), null), PorterDuff.Mode.MULTIPLY);
                             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                            params.setMargins(10,10,10,10);
+                            params.setMargins(10, 10, 10, 10);
                             b.setLayoutParams(params);
                             b.setTextColor(Color.parseColor("#ffffff"));
-                            //b.setBackgroundResource(mDrawable);
                             b.setBackground(mDrawable);
-
-
-                            b.setPadding(8,8,8,8);
+                            b.setPadding(8, 8, 8, 8);
                             mFragment.addView(b);
-                           // b.setGravity(Gravity.RIGHT);
 
                         }
 
-//
-//                        c.addView(t);
-
-//                        mOutputTextView.append(msgs[i]);
-//                        mOutputTextView.append(System.lineSeparator());
                     }
                 }
-
-//                if(currentMessages == 0) {
-//                    for(int i = 0; i <msgs.length;i++) {
-//                        mOutputTextView.append(msgs[i]);
-//                        mOutputTextView.append(System.lineSeparator());
-//                    }
-//                    currentMessages = msgs.length;
-//                }
-//
-//                else if(currentMessages < msgs.length) {
-//                    int dif = msgs.length - currentMessages;
-//
-//                    for(int i = msgs.length-dif; i <msgs.length;i++) {
-//                        mOutputTextView.append(msgs[i]);
-//                        mOutputTextView.append(System.lineSeparator());
-//                    }
-//
-//                    currentMessages = msgs.length;
-//                }
             });
         }
     }
-
-
-
 }

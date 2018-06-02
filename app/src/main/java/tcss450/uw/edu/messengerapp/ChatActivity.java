@@ -39,16 +39,31 @@ import tcss450.uw.edu.messengerapp.HomeFragment;
 import tcss450.uw.edu.messengerapp.R;
 import tcss450.uw.edu.messengerapp.WeatherFragment;
 
+
+/**
+ * Activity for the Chat portion of the app
+ * <p>
+ * Activity displays and loads up the appropriate ChatFragment once a chatroom is entered,
+ * This activity also handles adding and removing users from a chat.
+ *
+ * @author Mahad Fahiye
+ * @version 5/31/2018
+ */
+
 public class ChatActivity extends AppCompatActivity {
 
-    /**Storage of information needed for chats**/
+    /**
+     * Storage of information needed for chats
+     **/
     Bundle extras;
     String mUsername;
     String mChatId;
 
     /**
-     * Gets a chat ID from the passed bundle and loads the appropriate chat
-     * @param savedInstanceState
+     * Called when the activity is starting. Handles loading the required information to start a
+     * chat and processes adding/removing users
+     *
+     * @param savedInstanceState contains data most recently supplied if activity reactivated
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,6 +114,7 @@ public class ChatActivity extends AppCompatActivity {
     /**
      * Gives the user the option to either add a user to this chat or
      * remove a user from this chat.
+     *
      * @param item that was selected
      * @return
      */
@@ -149,13 +165,11 @@ public class ChatActivity extends AppCompatActivity {
                         LinearLayout.LayoutParams.MATCH_PARENT);
                 input2.setLayoutParams(lp2);
                 alertDialog2.setView(input2);
-                //alertDialog.setIcon(R.drawable.key);
 
                 alertDialog2.setPositiveButton("Remove",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 mUsername = input2.getText().toString();
-                                //removeFromChat();
                                 removeFromChat();
                             }
                         });
@@ -163,7 +177,6 @@ public class ChatActivity extends AppCompatActivity {
                 alertDialog2.setNegativeButton("Cancel",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
-                                //dialog.cancel();
                                 dialog.dismiss();
                             }
                         });
@@ -177,9 +190,10 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     /**
-     * Creates the menu to add or remove people from chats
-     * @param menu
-     * @return that it was created
+     * This method is ran when the our chat toolbar menu is created, it inflates the toolbar menu
+     *
+     * @param menu the chat toolbar
+     * @return a boolean true or false depending on whether it successfully inflated the Menu or not
      */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -190,6 +204,7 @@ public class ChatActivity extends AppCompatActivity {
 
     /**
      * Loads whichever chat fragment you choose to send it
+     *
      * @param theFragment to be loaded
      */
     public void loadFragment(Fragment theFragment) {
@@ -209,6 +224,12 @@ public class ChatActivity extends AppCompatActivity {
         super.onBackPressed();
     }
 
+
+    /**
+     * Method to remove user from chat, this method creates a JSON object containing the username and
+     * chatID, builds the link to our backend server and starts up the async task to send a post
+     * request containing the username and chatID JSON object
+     */
     public void removeFromChat() {
         SharedPreferences prefs = this.getSharedPreferences(getString(R.string.keys_shared_prefs),
                 Context.MODE_PRIVATE);
@@ -221,7 +242,7 @@ public class ChatActivity extends AppCompatActivity {
         JSONObject msg = new JSONObject();
         try {
             msg.put("username", mUsername);
-            msg.put("chatId",mChatId);
+            msg.put("chatId", mChatId);
         } catch (JSONException e) {
             Log.wtf("JSON EXCEPTION", e.toString());
         }
@@ -231,10 +252,7 @@ public class ChatActivity extends AppCompatActivity {
                 .appendPath("removeUserFromChat")
                 .build();
 
-        Log.e("CONTENT", retrieveRequests.toString());
-
         new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(retrieveRequests.toString(), msg)
-                .onPreExecute(this::handleRemoveOnPre)
                 .onPostExecute(this::publishRequests)
                 .onCancelled(this::handleError)
                 .build().execute();
@@ -242,24 +260,29 @@ public class ChatActivity extends AppCompatActivity {
 
     }
 
-    public void handleRemoveOnPre() {
-
-    }
-
     /**
-     * Gracefully handle errors from AsyncTaks
-     * @param e error
+     * Method to handle errors that occur when removing a user
+     *
+     * @param e the string signifying the error message
      */
     private void handleError(String e) {
         Log.e("LISTEN ERROR!!!", e);
     }
 
+    /**
+     * Method called when user selects the menu option to remove a user from the chat.
+     * Parses the JSON and removes the appropriate user if they exist in the chat.
+     *
+     * @param result JSON object returned by listener containing username and chatID
+     */
     public void publishRequests(String result) {
         try {
             JSONObject requests = new JSONObject(result);
             boolean success = requests.getBoolean("success");
+            //Upon success, show a toast confirming that the user has been removed from the chat.
             if (success) {
-                Log.e("CHAT","USER SUCCESFULLY DELETED");
+                Toast.makeText(this, "User has been successfully removed from the chat",
+                        Toast.LENGTH_LONG).show();
             } else {
                 Toast.makeText(this, "You can only remove people who are in this Chat",
                         Toast.LENGTH_LONG).show();
@@ -267,8 +290,13 @@ public class ChatActivity extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        //Log.e("HOW MANY CHATS", ""+mChatnames.size());
     }
+
+    /**
+     * Method to add user to chat, this method creates a JSON object containing the username and
+     * chatID, builds the link to our backend server and starts up the async task to send a post
+     * request containing the username and chatID JSON object
+     */
     public void addToChat() {
         SharedPreferences prefs = this.getSharedPreferences(getString(R.string.keys_shared_prefs),
                 Context.MODE_PRIVATE);
@@ -281,7 +309,7 @@ public class ChatActivity extends AppCompatActivity {
         JSONObject msg = new JSONObject();
         try {
             msg.put("username", mUsername);
-            msg.put("chatId",mChatId);
+            msg.put("chatId", mChatId);
         } catch (JSONException e) {
             Log.wtf("JSON EXCEPTION", e.toString());
         }
@@ -291,31 +319,34 @@ public class ChatActivity extends AppCompatActivity {
                 .appendPath("addUserToChat")
                 .build();
 
-        Log.e("CONTENT", retrieveRequests.toString());
-
         new tcss450.uw.edu.messengerapp.utils.SendPostAsyncTask.Builder(retrieveRequests.toString(), msg)
-                .onPreExecute(this::handleAddingOnPre)
                 .onPostExecute(this::publishAddingRequests)
-                .onCancelled(this::handleError)
+                .onCancelled(this::handleAddingError)
                 .build().execute();
-
-
     }
 
-    public void handleAddingOnPre() {
-
-    }
-
+    /**
+     * Method to handle errors when adding a user
+     *
+     * @param e the string signifying the error message
+     */
     private void handleAddingError(String e) {
         Log.e("LISTEN ERROR!!!", e);
     }
 
+    /**
+     * Method called when user selects the menu option to add a user to the chat.
+     * Parses the JSON and adds the user accordingly.
+     *
+     * @param result JSON object returned by listener containing username and chatID
+     */
     public void publishAddingRequests(String result) {
         try {
             JSONObject requests = new JSONObject(result);
             boolean success = requests.getBoolean("success");
             if (success) {
-                Log.e("CHAT","USER SUCCESFULLY ADDED");
+                Toast.makeText(this, "User has been successfully added!",
+                        Toast.LENGTH_LONG).show();
             } else {
                 Toast.makeText(this, "Please enter a valid username",
                         Toast.LENGTH_LONG).show();
@@ -323,13 +354,7 @@ public class ChatActivity extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        //Log.e("HOW MANY CHATS", ""+mChatnames.size());
     }
-
-
-
-
-
 
 
 }
