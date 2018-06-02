@@ -6,12 +6,7 @@ Jon Anderson
 Karan Kurbur
 Mahad Fahiye
 
-Links:
-Google Drive: https://drive.google.com/drive/folders/1omcy1Qqcv_DX3HQEdOuXY8-AaqrPs3Kn
-Android Repository: https://github.com/karankurbur/TCSS-450-Group-3
-Heroku Backend: https://dashboard.heroku.com/apps/group3-messenger-backend
-
-Successfully implemented:
+Implemented:
 
 Register
 	Required info:
@@ -93,10 +88,9 @@ Look and Feel
 			Saved in shared preferences
 	
 	
-Not Implemented:
+Not Yet Implemented:
 
 UI for weather data
 Chat is not scaled correctly on all devices
-Notification for a new conversation request (app does not have conversation requests)
 The ability to display weather forecast by selecting location on a map
 A location searched for by zip code
