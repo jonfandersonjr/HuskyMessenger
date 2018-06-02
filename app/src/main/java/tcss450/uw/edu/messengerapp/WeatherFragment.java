@@ -54,6 +54,7 @@ public class WeatherFragment extends Fragment {
     private String mParam2;
 
 
+    //Fragment constructor
     public WeatherFragment() {
         // Required empty public constructor
     }
@@ -76,6 +77,7 @@ public class WeatherFragment extends Fragment {
         return fragment;
     }
 
+    //Creates fragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,6 +87,7 @@ public class WeatherFragment extends Fragment {
         }
     }
 
+    //Loads saved weather from database.
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -98,6 +101,7 @@ public class WeatherFragment extends Fragment {
         return v;
     }
 
+    //Loads saved weather for user.
     private void loadSavedWeather() {
         JSONObject messageJson = new JSONObject();
         try {
@@ -114,6 +118,7 @@ public class WeatherFragment extends Fragment {
         }
     }
 
+    //Add buttons for each saved location.
     private void loadSavedWeather(String s) {
         try {
             JSONObject messageJson = new JSONObject(s);
@@ -151,8 +156,6 @@ public class WeatherFragment extends Fragment {
                     });
                     LinearLayout  scrollView = (LinearLayout ) getView().findViewById(R.id.saveWeather);
                     scrollView.addView(b);
-
-
                 }
             }
         } catch (JSONException e) {
@@ -162,6 +165,7 @@ public class WeatherFragment extends Fragment {
     }
 
 
+    //Loads the zip code search.
     private void loadSearch(View view) {
         JSONObject messageJson = new JSONObject();
         TextView zipSearch = (TextView) getView().findViewById(R.id.zipSearch);
@@ -174,8 +178,6 @@ public class WeatherFragment extends Fragment {
                      .appendPath("getWeatherZip")
                      .build()
                      .toString();
-             Log.e("url","10.0.0.94:5000/getWeatherZip");
-             Log.e("long",messageJson.toString());
              new SendPostAsyncTask.Builder("http://group3-messenger-backend.herokuapp.com/", messageJson).onCancelled(this::handleError).onPostExecute(this::loadSearchHelper).build().execute();
 
          } catch (JSONException e) {
@@ -184,10 +186,12 @@ public class WeatherFragment extends Fragment {
     }
 
 
+    //Handles api error.
     private void handleError(final String msg) {
         Log.e("CHAT ERROR!!!", msg.toString());
     }
 
+    //Helper to load zip search.
     private void loadSearchHelper(String s) {
         try {
             JSONObject res = new JSONObject(s);
@@ -209,6 +213,7 @@ public class WeatherFragment extends Fragment {
         }
     }
 
+    //Loads current location data.
     private void loadCurrent(View view) {
         SharedPreferences sharedPreferences =
                 getActivity().getSharedPreferences(getString(R.string.keys_shared_prefs),
@@ -225,11 +230,13 @@ public class WeatherFragment extends Fragment {
     }
 
 
+    //Starts listening.
     private void startListener(final View theButton) {
         //PullService.startServiceAlarm(getContext(), true);
         mStartButton.setEnabled(false);
     }
 
+    //Stops listening.
     private void stopListener(final View theButton) {
         //PullService.stopServiceAlarm(getContext());
         mStartButton.setEnabled(true);

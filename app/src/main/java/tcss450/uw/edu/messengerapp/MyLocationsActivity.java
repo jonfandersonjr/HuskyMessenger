@@ -63,8 +63,10 @@ public class MyLocationsActivity extends AppCompatActivity implements
     private String long1 = "";
 
 
-
-
+    //Attach load weather function to fab.
+    //Attack save location to save button.
+    //Load location services if using local location.
+    //Write location to screen
     @SuppressLint("RestrictedApi")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,7 +80,6 @@ public class MyLocationsActivity extends AppCompatActivity implements
 
         Button button = (Button) findViewById(R.id.saveButton);
         button.setOnClickListener(this::saveLocation);
-
 
         // Create an instance of GoogleAPIClient.
         if (mGoogleApiClient == null) {
@@ -111,10 +112,9 @@ public class MyLocationsActivity extends AppCompatActivity implements
                     MY_PERMISSIONS_LOCATIONS);
         }
         mLocationTextView = (TextView) findViewById(R.id.location_text_view);
-
-
     }
 
+    //Saves searched location to database.
     private void saveLocation(View view) {
         JSONObject messageJson = new JSONObject();
         SharedPreferences sharedPreferences = getSharedPreferences(getString(R.string.keys_shared_prefs),
@@ -135,10 +135,12 @@ public class MyLocationsActivity extends AppCompatActivity implements
         }
     }
 
+    //Check if valid response.
     private void check(String s) {
         Log.e("WORK","WROK");
     }
 
+    //Loads weather for current location in sharedpreferences.
     private void handleWeather(View view) {
         JSONObject messageJson = new JSONObject();
         //Check shared preferences for location ->
@@ -198,10 +200,12 @@ public class MyLocationsActivity extends AppCompatActivity implements
 
     }
 
+    //Async error
     private void handleError(final String msg) {
         Log.e("CHAT ERROR!!!", msg.toString());
     }
 
+    //Displays api response on screen.
     private void endOfSendMsgTask(final String result) {
         Log.e("NO ERROR!!!", result);
 
@@ -211,13 +215,9 @@ public class MyLocationsActivity extends AppCompatActivity implements
             JSONObject allInfo = res.getJSONObject("allInfo");
             TextView a =  (TextView) findViewById(R.id.currentTemp);
             String timeZone = allInfo.getString("timezone").toString();
-           // a.setText("Current Information Temperature: " + current.getString("temperature").toString() +  " Summary: " + current.getString("summary").toString());
             a.setText("Current: " + current.getString("temperature").toString() +  "\nSummary: " + current.getString("summary").toString() );
-            //FIX THIS
-
             mLocationTextView.setText(mCurrentLocation.getLatitude() + "," +
                     mCurrentLocation.getLongitude()+ "\n " + timeZone);
-
             JSONObject hourly = res.getJSONObject("hourly");
             JSONArray hourlyData = hourly.getJSONArray("data");
             String hour = "Hourly Data\n";
@@ -235,32 +235,23 @@ public class MyLocationsActivity extends AppCompatActivity implements
             String day = "Daily Data     High     Low\n";
             int counter = 1;
             for (int i = 0 ; i < dailyData.length(); i++) {
-                Log.e("I INDEX",i + "");
-
                 JSONObject msg = dailyData.getJSONObject(i);
                 String temperatureMin = msg.get("temperatureMin").toString();
-
                 String temperatureMax = msg.get("temperatureMax").toString();
-
-
                 String summary = msg.get("summary").toString();
-
-
                 String data = "+" + counter + ":            " + temperatureMin + "          " + temperatureMax + "\n " + summary + "\n";
                 day = day + data;
                 counter++;
-
             }
             TextView c =  (TextView) findViewById(R.id.dailyData);
             c.setText(day);
-
-
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
 
+    //Removes api connection.
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -269,6 +260,7 @@ public class MyLocationsActivity extends AppCompatActivity implements
             mGoogleApiClient.disconnect();
     }
 
+    //Starts google api connection
     protected void onStart() {
         if (mGoogleApiClient != null) {
             mGoogleApiClient.connect();
@@ -276,6 +268,7 @@ public class MyLocationsActivity extends AppCompatActivity implements
         super.onStart();
     }
 
+    //Removes api connection.
     protected void onStop() {
         if (mGoogleApiClient != null) {
             mGoogleApiClient.disconnect();
@@ -283,6 +276,7 @@ public class MyLocationsActivity extends AppCompatActivity implements
         super.onStop();
     }
 
+    //Asks for location permission.
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
@@ -313,6 +307,7 @@ public class MyLocationsActivity extends AppCompatActivity implements
         }
     }
 
+    //Doesnt do anything.
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -320,6 +315,8 @@ public class MyLocationsActivity extends AppCompatActivity implements
         return true;
     }
 
+
+    //Doesnt do anything.
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
