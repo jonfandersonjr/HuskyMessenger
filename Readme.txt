@@ -1,8 +1,8 @@
 Husky Messenger
 
 Developed by:
-Marshall Freed
 Jon Anderson
+Marshall Freed
 Karan Kurbur
 Mahad Fahiye
 
