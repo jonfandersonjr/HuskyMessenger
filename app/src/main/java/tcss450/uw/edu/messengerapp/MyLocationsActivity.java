@@ -128,7 +128,7 @@ public class MyLocationsActivity extends AppCompatActivity implements
             messageJson.put("city", city);
             messageJson.put("username", sharedPreferences.getString("username",""));
             Log.e("long",messageJson.toString());
-            new SendPostAsyncTask.Builder("http://10.0.0.94:5000/addWeatherLocation", messageJson).onCancelled(this::handleError)
+            new SendPostAsyncTask.Builder("http://group3-messenger-backend.herokuapp.com/addWeatherLocation", messageJson).onCancelled(this::handleError)
                     .onPostExecute(this::check).build().execute();
         } catch (JSONException e) {
             e.printStackTrace();

@@ -21,7 +21,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.339"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:clickable="false" />
 
     <Button
         android:id="@+id/searchButton"
@@ -30,10 +31,12 @@
         android:layout_marginEnd="16dp"
         android:layout_marginStart="5dp"
         android:layout_marginTop="16dp"
+        android:contextClickable="false"
         android:text="Search"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/zipSearch"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:clickable="false" />
 
     <ScrollView
         android:layout_width="351dp"

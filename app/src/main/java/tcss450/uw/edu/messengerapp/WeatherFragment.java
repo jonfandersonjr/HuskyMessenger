@@ -90,13 +90,10 @@ public class WeatherFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         View v = inflater.inflate(R.layout.fragment_weather, container, false);
-
         Button currentLocation = (Button) v.findViewById(R.id.currentLocation);
         currentLocation.setOnClickListener(this::loadCurrent);
-
         Button searchButton = (Button) v.findViewById(R.id.searchButton);
-        searchButton.setOnClickListener(this::loadSearch);
-
+        //searchButton.setOnClickListener(this::loadSearch);
         loadSavedWeather();
         return v;
     }
@@ -111,25 +108,19 @@ public class WeatherFragment extends Fragment {
 
             messageJson.put("username", sharedPreferences.getString("username",""));
             Log.e("long",messageJson.toString());
-            new SendPostAsyncTask.Builder("http://10.0.0.94:5000/getWeatherLocations", messageJson).onCancelled(this::handleError).onPostExecute(this::loadSavedWeather).build().execute();
-
+            new SendPostAsyncTask.Builder("http://group3-messenger-backend.herokuapp.com/getWeatherLocations", messageJson).onCancelled(this::handleError).onPostExecute(this::loadSavedWeather).build().execute();
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
     }
 
     private void loadSavedWeather(String s) {
-
         try {
             JSONObject messageJson = new JSONObject(s);
             JSONArray msgs = messageJson.getJSONArray("data");
-
-
             for (int i = 0; i < msgs.length(); i++) {
                 JSONObject msg = msgs.getJSONObject(i);
                 String city = msg.getString("city");
-
                 if(!city.equals("undefined") ) {
                     String long1 = msg.getString("long");
                     String lat1 = msg.getString("lat");
@@ -185,7 +176,7 @@ public class WeatherFragment extends Fragment {
                      .toString();
              Log.e("url","10.0.0.94:5000/getWeatherZip");
              Log.e("long",messageJson.toString());
-             new SendPostAsyncTask.Builder("http://10.0.0.94:5000/getWeatherZip", messageJson).onCancelled(this::handleError).onPostExecute(this::loadSearchHelper).build().execute();
+             new SendPostAsyncTask.Builder("http://group3-messenger-backend.herokuapp.com/", messageJson).onCancelled(this::handleError).onPostExecute(this::loadSearchHelper).build().execute();
 
          } catch (JSONException e) {
              e.printStackTrace();
@@ -198,8 +189,6 @@ public class WeatherFragment extends Fragment {
     }
 
     private void loadSearchHelper(String s) {
-        Log.e("response",s);
-
         try {
             JSONObject res = new JSONObject(s);
             String longInfo = res.getString("long").toString();
