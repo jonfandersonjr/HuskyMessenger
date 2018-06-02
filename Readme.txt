@@ -69,13 +69,12 @@ Notifications
 
 Weather
 	Displays the weather forecast for:
-		//The devices location (?)
-		//A location searched for by zip code (?)
+		The devices location
 	Ability to save any of the above locations to display that weather locations forecast at this time
 	Weather display includes:
-		//Current conditions (?)
-		//24 hour forecast (?)
-		//10-day forecast (?)
+		Current conditions 
+		24 hour forecast
+		10-day forecast 
 	
 Home/Landing Page
 	When a user logs in our home page will display:
@@ -100,3 +99,4 @@ UI for weather data
 Chat is not scaled correctly on all devices
 Notification for a new conversation request (app does not have conversation requests)
 The ability to display weather forecast by selecting location on a map
+A location searched for by zip code
