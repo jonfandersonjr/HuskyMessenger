@@ -31,6 +31,12 @@ import java.util.Date;
 import tcss450.uw.edu.messengerapp.HomeActivity;
 import tcss450.uw.edu.messengerapp.R;
 
+/**
+ * Polls database periodically for new chat or connections notifications
+ *
+ * @author Jon Anderson
+ * @author Charles Bryan
+ */
 public class PullService extends IntentService {
 
     /**Tags for detecting which notification was received**/

@@ -39,7 +39,6 @@ import tcss450.uw.edu.messengerapp.HomeFragment;
 import tcss450.uw.edu.messengerapp.R;
 import tcss450.uw.edu.messengerapp.WeatherFragment;
 
-
 /**
  * Activity for the Chat portion of the app
  * <p>
@@ -47,6 +46,7 @@ import tcss450.uw.edu.messengerapp.WeatherFragment;
  * This activity also handles adding and removing users from a chat.
  *
  * @author Mahad Fahiye
+ * @author Jon Anderson
  * @version 5/31/2018
  */
 
