@@ -13,7 +13,7 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    
+
     /**List of styles for this app**/
 
     <style name="AppTheme.Rugged" parent="AppTheme.NoActionBar">

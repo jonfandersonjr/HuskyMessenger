@@ -55,11 +55,8 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
         // Required empty public constructor
     }
 
-    /**
+    /*
      * Default factory method
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
      * @return A new instance of fragment HomeFragment.
      */
     public static HomeFragment newInstance(String param1, String param2) {
@@ -84,7 +81,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
         }
     }
 
-    /*
+    /**
     * Open the new fragment and initializes the buttons with recent chat information
     */
     @Override
