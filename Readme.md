@@ -87,7 +87,6 @@ Look and Feel<br>
 		Option to select from 4 themes<br>
 			Saved in shared preferences<br>
 	
-	<br>
 Not Yet Implemented:<br>
 
 UI for weather data<br>
